@@ -1,0 +1,27 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Node / RN (anticipation build)
+node_modules/
+.expo/
+dist/
+build/
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+
+# Mobile build artifacts
+*.ipa
+*.apk
+*.aab
