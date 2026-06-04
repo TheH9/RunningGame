@@ -23,21 +23,20 @@ L'écran le plus important. Voir détail carte dans [03 §4](03-design-systeme-v
 ┌─────────────────────────────────────────────┐
 │  Belleville          🔵 42%   [avatar]      │  ← bandeau quartier + part équipe
 │                                             │
-│        ⬡ ⬡ ⬡                                │
-│      ⬡ ⬡ ⬡ ⬡   ← hexagones pastel          │
-│        ⬡ ✦ ⬡    ← ✦ = DROP or qui flashe    │
-│      ⬡ ⬡ ⬡                                  │
-│                                             │
-│                                             │
+│     ╱──╲___                                 │
+│    │ rues │═══╗   ← rues colorées par équipe│
+│    ╲__╱    ║  📍 ← 📍 = DROP (pin or qui flashe)│
+│       ║════╝                                │
+│   ·· · parcours du run (pointillé bleu)     │
 │                 ╭───────╮                   │
 │                 │ START │  ← bouton massif  │
 │                 ╰───────╯                   │
 └─────────────────────────────────────────────┘
 ```
 
-- Territoires pastel transparents, zones de défi qui respirent, drops qui flashent.
+- **Rues colorées** par équipe sur une vraie carte premium ([ADR-001](decisions/ADR-001-conquete-par-rue.md)), zones de défi qui respirent, drops qui flashent (pin doré).
 - **START** massif et instinctif (couleur de l'équipe).
-- Pendant un run : passage en **mode session** (chrono, distance, hexagones capturés en temps réel, vague de couleur qui s'étend en live).
+- Pendant un run : passage en **mode session** (chrono, distance, rues capturées en temps réel, vague de couleur qui s'étend le long du parcours).
 
 ## Onglet 2 — Classement Local
 
@@ -49,9 +48,9 @@ L'écran le plus important. Voir détail carte dans [03 §4](03-design-systeme-v
 │      🔵 42%  🔴 28%  🟡 18%  🟢 12%          │
 │                                             │
 │   Leaderboard du quartier — Juin            │
-│   1. 🔵 Léa          128 hex                │
-│   2. 🔴 Marco        119 hex                │
-│   3. 🟡 Sofia         97 hex                │
+│   1. 🔵 Léa          128 rues               │
+│   2. 🔴 Marco        119 rues               │
+│   3. 🟡 Sofia         97 rues               │
 │   …                                         │
 └─────────────────────────────────────────────┘
 ```
@@ -85,11 +84,11 @@ L'écran le plus important. Voir détail carte dans [03 §4](03-design-systeme-v
 │   [avatar]  Léa — 🔵 Les Vagues             │
 │                                             │
 │   Stats de conquête                         │
-│   312 hex · 47 km · 8 quartiers touchés     │
+│   312 rues · 47 km · 8 quartiers touchés    │
 │                                             │
 │   Historique (3 derniers mois — gratuit)    │
-│   • Run du 02/06 — 12 hex — vidéo ▶         │
-│   • Run du 31/05 — 8 hex  — vidéo ▶         │
+│   • Run du 02/06 — 12 rues — vidéo ▶        │
+│   • Run du 31/05 — 8 rues  — vidéo ▶        │
 │                                             │
 │   [ Passer à Bornes+ ]                      │
 └─────────────────────────────────────────────┘
@@ -109,7 +108,7 @@ Déclenché à l'arrêt du run, avant retour à la Map. Voir [03 §5](03-design-
 │                                             │
 │     [ animation 3 s : vague de couleur ]    │
 │                                             │
-│   +12 hexagones   ·   5,4 km   ·   🔵 +2%   │
+│   +12 rues   ·   5,4 km   ·   🔵 +2%         │
 │                                             │
 │        [ Partager en Story ]  [ Fermer ]    │
 └─────────────────────────────────────────────┘

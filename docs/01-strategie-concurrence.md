@@ -61,7 +61,7 @@ Quatre leviers vraiment différenciants :
 |---------|------|---------|
 | Désir utilisateur | 8/10 | Running social en explosion, besoin de comparer/partager/appartenir |
 | Différenciation | 7/10 | Forte mais pas unique sur la mécanique GPS |
-| Scalabilité technique | 8/10 | H3, GPS, Mapbox, backend géospatial : faisable |
+| Scalabilité technique | 8/10 | Map-matching OSM, GPS, Mapbox, backend géospatial : faisable |
 | Scalabilité business | 6,5/10 | Partenariats locaux lents mais industrialisables |
 | Monétisation | 7/10 | B2B >> premium B2C |
 | Défensibilité | 6/10 → forte | Faible si tech seule, forte si communautés+partenaires+data |

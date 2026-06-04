@@ -32,7 +32,7 @@ Bornes n'est pas « une app de running ». C'est **le Pokémon GO du running loc
 |-----|---------|
 | [00 — Vision](docs/00-vision.md) | Le pitch, la cible, le manifeste |
 | [01 — Stratégie & concurrence](docs/01-strategie-concurrence.md) | Positionnement, analyse concurrents, défensibilité |
-| [02 — Fonctionnalités (Core Game)](docs/02-fonctionnalites-core-game.md) | H3, équipes, défis, drops |
+| [02 — Fonctionnalités (Core Game)](docs/02-fonctionnalites-core-game.md) | Conquête par rue, équipes, défis, drops |
 | **[03 — Design & système visuel](docs/03-design-systeme-visuel.md)** | **⭐ Identité, couleurs, carte, moment Instagram** |
 | [04 — UI & écrans](docs/04-ui-ecrans.md) | Les 4 onglets, wireframes, le moment de fin de run |
 | [05 — Architecture technique](docs/05-architecture-technique.md) | Stack, géospatial, tracking background |

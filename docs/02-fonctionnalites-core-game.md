@@ -2,10 +2,14 @@
 
 > ⚠️ Ce document décrit la **vision complète** des mécaniques. Le périmètre réellement construit en V1 est volontairement plus restreint — voir [08-roadmap-mvp](08-roadmap-mvp.md) et [10-backlog-v1](10-backlog-v1.md).
 
-## A. Découpage territorial & rétention équilibrée
+## A. Découpage territorial : conquête par RUE & rétention équilibrée
 
-- **Technologie :** grille **Uber H3** (hexagones ~150 m de diamètre).
-- **Décroissance lente :** un hexagone non revisité **pâlit après 14 jours**, redevient **neutre après 30 jours**.
+> ✅ **Décision** : la conquête se fait **rue par rue** (pas en hexagones). Voir [ADR-001](decisions/ADR-001-conquete-par-rue.md). Plus beau, plus premium, émotion « *la Rue de Belleville est bleue* ».
+
+- **Unité de capture :** le **segment de rue** (graphe **OpenStreetMap**, découpé aux intersections). On court une rue → elle se colore à ta couleur d'équipe.
+- **Technologie :** **map-matching** de la trace GPS sur le graphe (Valhalla/Meili, OSRM ou GraphHopper).
+- **Hors-rue (parcs, berges, stades) :** fallback en **capture de zone** (le contour OSM du parc se capture en bloc) pour ne pas pénaliser ces parcours.
+- **Décroissance lente :** une rue non revisitée **pâlit après 14 jours**, redevient **neutre après 30 jours**.
 
 > 💡 **Différenciant :** contrairement aux jeux où on perd tout en une nuit (frustration → abandon), la décroissance douce **valorise le coureur occasionnel** et crée un rendez-vous régulier (rétention J14/J30).
 
@@ -22,14 +26,14 @@
 
 - **Concept :** chaque mois, un **quartier réel** (délimité via OpenStreetMap) est sponsorisé par un partenaire (Kiprun, Distance, Salomon…).
 - **Victoire :** l'équipe qui possède le plus grand **% du quartier au dernier jour du mois** qualifie ses membres.
-- **Attribution :** lot (ex. 2 dossards pour les 20 km de Paris) **tiré au sort** parmi les joueurs de l'équipe gagnante ayant capturé ≥ 1 hexagone dans la zone — tirage en vidéo sur Instagram.
+- **Attribution :** lot (ex. 2 dossards pour les 20 km de Paris) **tiré au sort** parmi les joueurs de l'équipe gagnante ayant capturé ≥ 1 rue dans la zone — tirage en vidéo sur Instagram.
 
 > 💡 **Différenciant :** la **performance pure ne garantit pas le gain**. Le coureur du dimanche a autant de chances que l'ultra-marathonien → engagement du cœur de cible + dynamiques de groupe réelles (on s'organise pour « sauver » son quartier).
 
 ## Feature C — Le « Drop » flash sur la map (chasse au trésor)
 
 - **Concept :** notification push — *« Une paire de [Modèle] a été parachutée au Parc Monceau. »*
-- **L'hexagone s'illumine en or** sur la carte.
+- **Un pin doré** type map-marker s'illumine sur la carte (Parc Monceau, etc.).
 
 ### ⚠️ Correction sécurité (importante)
 
@@ -45,7 +49,7 @@ On garde le frisson de la chasse au trésor, on réduit le risque physique et ju
 
 | Mécanique | Rôle | Statut V1 |
 |-----------|------|-----------|
-| Capture d'hexagones H3 | Cœur du jeu | ✅ Must |
+| Conquête de rues (map-matching OSM) | Cœur du jeu | ✅ Must |
 | 4 équipes / couleurs | Appartenance | ✅ Must |
 | Classement quartier | Compétition | ✅ Must |
 | Défi sponsorisé mensuel | Monétisation + lots | ✅ Must (1 seul type) |

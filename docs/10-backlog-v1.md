@@ -28,7 +28,7 @@
 |---|-------|------|
 | 2.1 | Bouton START massif lance un run | M |
 | 2.2 | Tracking GPS en background (Transistor SDK) | M |
-| 2.3 | Mode session live (chrono, distance, hex en temps réel) | M |
+| 2.3 | Mode session live (chrono, distance, rues capturées en temps réel) | M |
 | 2.4 | Anti-triche : seuil 22 km/h + anti-téléportation | M |
 | 2.5 | Privacy Zone 200 m (stats oui, capture publique non) | M |
 
@@ -36,8 +36,8 @@
 | # | Story | Prio |
 |---|-------|------|
 | 3.1 | Carte Mapbox premium = écran d'accueil | M |
-| 3.2 | Conversion trace → hexagones H3 | M |
-| 3.3 | Capture & rendu hexagones pastel par équipe | M |
+| 3.2 | Map-matching trace GPS → segments de rue (OSM) | M |
+| 3.3 | Capture & rendu des rues colorées par équipe (+ fallback zones parcs) | M |
 | 3.4 | États visuels (neutre / capturé / décroissance / défi / drop) | S |
 | 3.5 | Décroissance 14 j (pâlit) / 30 j (neutre) | S |
 | 3.6 | Maj temps réel de la carte | S |

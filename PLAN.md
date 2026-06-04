@@ -4,16 +4,17 @@
 > **Fil rouge non négociable : le visuel est l'arme #1.** Cf. [docs/03](docs/03-design-systeme-visuel.md).
 
 ## Le projet en 3 lignes
-- **Quoi :** le Pokémon GO du running local — cours pour la couleur de ton équipe, capture des hexagones, gagne de **vrais lots** retirés en boutique.
+- **Quoi :** le Pokémon GO du running local — cours pour la couleur de ton équipe, capture des **rues** ([ADR-001](docs/decisions/ADR-001-conquete-par-rue.md)), gagne de **vrais lots** retirés en boutique.
 - **Pour qui (V1) :** coureurs urbains occasionnels-réguliers, une seule micro-zone parisienne, 100-300 testeurs.
 - **Comment on gagne :** B2B Drive-to-Store (défis/drops sponsorisés) + viralité de l'animation de fin de run.
 
-## Les 5 décisions structurantes (déjà prises)
+## Les 6 décisions structurantes (déjà prises)
 1. **Visuel = priorité produit**, pas finition (carte Mapbox premium + moment Instagram).
-2. **V1 tranchante** (10 features, pas la spec V1.2 entière) — build 6-8 semaines.
-3. **Lancement hyper-local** (une seule zone) pour garantir la densité.
-4. **Pas de paywall** sur le jeu ; premier argent = partenaires locaux.
-5. **Drop = fenêtre + tirage** (pas « premier arrivé »), pour la sécurité et la conformité.
+2. **Conquête par RUE** (pas hexagones) — plus beau, plus premium ([ADR-001](docs/decisions/ADR-001-conquete-par-rue.md)).
+3. **V1 tranchante** (10 features, pas la spec V1.2 entière) — build 6-8 semaines.
+4. **Lancement hyper-local** (une seule zone) pour garantir la densité.
+5. **Pas de paywall** sur le jeu ; premier argent = partenaires locaux.
+6. **Drop = fenêtre + tirage** (pas « premier arrivé »), pour la sécurité et la conformité.
 
 ## Plan d'action par phases
 
@@ -27,7 +28,7 @@
 
 ### ▶︎ Phase 1 — Build MVP (semaines 1-8)
 Suivre le découpage en lots de [docs/08](docs/08-roadmap-mvp.md#découpage-en-lots-de-build-8-semaines) et le backlog [docs/10](docs/10-backlog-v1.md).
-Stack proposée : RN/Flutter + Mapbox + H3 + Transistor Background Geolocation + Supabase/PostGIS ([docs/05](docs/05-architecture-technique.md)).
+Stack proposée : RN/Flutter + Mapbox + graphe OSM & map-matching (Valhalla/Meili) + Transistor Background Geolocation + Supabase/PostGIS ([docs/05](docs/05-architecture-technique.md)).
 
 ### ▶︎ Phase 2 — Closed Beta (50-100 coureurs, 2-3 clubs)
 - [ ] Valider le tracking background en réel
@@ -39,7 +40,7 @@ Stack proposée : RN/Flutter + Mapbox + H3 + Transistor Background Geolocation +
 - [ ] Signer 3-5 micro-partenaires
 
 ### ▶︎ Phase 4 — Extension 92
-- [ ] Ouvrir H3 sur Boulogne/Issy/Neuilly une fois la rétention validée
+- [ ] Ouvrir le graphe de rues sur Boulogne/Issy/Neuilly une fois la rétention validée
 
 ## Risques & parades
 | Risque | Parade |

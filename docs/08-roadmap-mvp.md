@@ -18,7 +18,7 @@
 2. Choix d'équipe.
 3. Bouton **Start Run**.
 4. Tracking GPS (background).
-5. Capture d'hexagones H3.
+5. Capture de rues (map-matching OSM).
 6. Carte Mapbox avec couleurs d'équipes.
 7. Classement quartier.
 8. Défi sponsorisé du mois (1 seul).
@@ -33,8 +33,8 @@
 |---------|-----|----------|
 | 0 | **Design first** ⭐ | Style Mapbox custom (clair+sombre), maquettes hi-fi des 4 écrans, storyboard animation fin de run, design tokens |
 | 1-2 | Fondations | Auth, choix d'équipe, modèle de données (Supabase/PostGIS), intégration Mapbox |
-| 2-3 | Tracking & capture | SDK Background Geolocation, enregistrement run, conversion trace → H3, capture |
-| 3-4 | Carte vivante | Rendu hexagones colorés, états (neutre/capturé/décroissance), temps réel |
+| 2-3 | Tracking & capture | SDK Background Geolocation, enregistrement run, **map-matching** trace → rues, capture |
+| 3-4 | Carte vivante | Rendu **rues colorées** par équipe, états (neutre/capturé/décroissance), temps réel |
 | 4-5 | Méta-jeu | Classement quartier, camembert de contrôle, défi sponsorisé mensuel |
 | 5-6 | Moment viral ⭐ | Animation de fin de run 9:16 + partage Story |
 | 6-7 | Lots & conformité | QR codes, coffre-fort, Privacy Zone, anti-triche v1, RGPD/règlement |
@@ -53,7 +53,7 @@
 - **Premier événement Drop** avec un shop local.
 
 ### Phase 3 — Extension 92
-- Ouverture de la grille H3 sur **Boulogne / Issy / Neuilly** une fois la rétention validée à Paris.
+- Ouverture du graphe de rues sur **Boulogne / Issy / Neuilly** une fois la rétention validée à Paris.
 
 ## Au-delà de la V1 (backlog stratégique)
 

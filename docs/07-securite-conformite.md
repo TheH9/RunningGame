@@ -5,14 +5,14 @@
 ## 1. Algorithme anti-triche
 
 - **Analyse de la trace GPS en fin de run** (pas en live, pour préserver la batterie).
-- **Seuil vélo/trottinette :** si la vitesse moyenne entre 3 hexagones dépasse **22 km/h**, le run est **bloqué** pour suspicion.
+- **Seuil vélo/trottinette :** si la vitesse moyenne sur un tronçon dépasse **22 km/h**, le run est **bloqué** pour suspicion.
 - **Téléportation (Fake GPS) :** sauts impossibles → **rejet immédiat** du run.
 - À étoffer : cohérence accéléromètre/pas, plausibilité d'allure, scoring de confiance plutôt que blocage binaire (réduire les faux positifs).
 
 ## 2. Privacy Zone (floutage vie privée) 🔒
 
 - **Zone d'exclusion de 200 m** autour du domicile / bureau de l'utilisateur.
-- Le run y est **compté pour ses stats**, mais **aucun hexagone n'est capturé publiquement** dans cette zone.
+- Le run y est **compté pour ses stats**, mais **aucune rue n'est capturée publiquement** dans cette zone.
 
 > 💡 **Différenciant :** on protège contre le harcèlement — impossible de savoir où habite le joueur qui a pris ton territoire. C'est un point noir récurrent des autres apps géolocalisées. **À garder dès la V1.**
 

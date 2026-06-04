@@ -22,7 +22,7 @@ Trois mots d'ordre :
 
 ## 2. Palette — couleurs d'équipes (les 4 clans)
 
-Ce sont les couleurs **signature** de la marque. Deux variantes par équipe : une **vive** (UI, accents, badges) et une **pastel transparente** (remplissage des hexagones sur la carte, ~35-45 % d'opacité).
+Ce sont les couleurs **signature** de la marque. Deux variantes par équipe : une **vive** (rues capturées, UI, accents, badges) et une **pastel transparente** (halo/fallback de zone sur la carte, ~35-45 % d'opacité).
 
 | Équipe | Nom | Vive (HEX) | Pastel carte (HEX @ ~40%) |
 |--------|-----|-----------|---------------------------|
@@ -55,13 +55,13 @@ Ce sont les couleurs **signature** de la marque. Deux variantes par équipe : un
 C'est l'objet le plus important de toute l'app.
 
 - **Base :** style **Mapbox customisé**, monochrome désaturé (gris-bleu clair / sombre profond), routes fines, peu de POI, labels discrets. Le fond s'efface pour laisser les couleurs d'équipes briller.
-- **Hexagones (H3) :** remplissage pastel transparent + liseré léger de la couleur vive. Transitions animées douces à la capture.
+- **Rues capturées ([ADR-001](decisions/ADR-001-conquete-par-rue.md)) :** la ligne de la rue se colore à la couleur vive de l'équipe (léger glow). Pas de quadrillage — la carte reste lisible. Parcs/berges : halo pastel de zone en fallback. Transitions animées douces à la capture.
 - **Hiérarchie visuelle des états :**
   - *Neutre* — gris très clair, quasi transparent.
   - *Capturé* — pastel d'équipe.
   - *En décroissance* — pastel qui pâlit progressivement (J14→J30).
   - *Zone de défi* — liseré qui **respire** (pulse lent).
-  - *Drop actif* — hexagone **or qui flashe**, halo lumineux.
+  - *Drop actif* — **pin doré** type map-marker qui flashe, halo lumineux.
 - **Le bouton START :** gros bouton circulaire flottant, centré bas, couleur de l'équipe du joueur, légère pulsation au repos.
 
 ## 5. ⭐ Le moment signature : l'animation de fin de run
@@ -70,18 +70,18 @@ C'est l'objet le plus important de toute l'app.
 
 À la fin de chaque run, l'app génère une **mini-animation vidéo de ~3 secondes** :
 - La carte se centre sur le parcours.
-- La **vague de couleur du joueur envahit** les hexagones capturés (effet « marée » fluide, easing soft).
-- Overlay : distance, hexagones gagnés, % du quartier, logo Bornes discret.
+- La **vague de couleur du joueur envahit** les rues capturées (effet « marée » fluide le long du parcours, easing soft).
+- Overlay : distance, rues gagnées, % du quartier, logo Bornes discret.
 - **Format vertical 9:16**, taillé exclusivement pour la **Story Instagram**.
 - Bouton **« Partager »** immédiat + watermark élégant (acquisition organique).
 
-Variantes à tester : compteur animé d'hexagones, « avant/après » du quartier, classement d'équipe qui bascule.
+Variantes à tester : compteur animé de rues, « avant/après » du quartier, classement d'équipe qui bascule.
 
 ## 6. Iconographie & motion
 
 - **Icônes :** trait constant (stroke ~2 px), coins arrondis, set cohérent et minimal.
-- **Motion :** tout est *fluide et doux* (easing `ease-out`, durées 200-400 ms). La capture d'un hexagone, l'apparition d'un drop, le passage d'onglet — chaque transition renforce le premium.
-- **Haptique :** retour haptique léger à la capture d'un hexagone et au ramassage d'un drop (sensation de « collecte »).
+- **Motion :** tout est *fluide et doux* (easing `ease-out`, durées 200-400 ms). La capture d'une rue, l'apparition d'un drop, le passage d'onglet — chaque transition renforce le premium.
+- **Haptique :** retour haptique léger à la capture d'une rue et au ramassage d'un drop (sensation de « collecte »).
 
 ## 7. Design tokens (référence implémentation)
 
