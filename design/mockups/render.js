@@ -4,6 +4,7 @@ const path = require('path');
 const SCREENS = [
   ['map-light', 'Map (clair)'],
   ['map-dark', 'Map (sombre)'],
+  ['map-streets', 'Map (conquête par rue)'],
   ['rank', 'Classement'],
   ['rewards', 'Récompenses'],
   ['profile', 'Profil'],

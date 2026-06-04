@@ -276,6 +276,52 @@
   </div>
 </div>
 
+<!-- ============ 2bis. MAP — CONQUÊTE PAR RUE ============ -->
+<div class="phone" id="map-streets">
+  <div class="notch"></div>
+  <div class="status"><span>9:41</span><div class="dots">
+    <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="7" width="3" height="5" rx="1" fill="#16181D"/><rect x="5" y="4" width="3" height="8" rx="1" fill="#16181D"/><rect x="10" y="2" width="3" height="10" rx="1" fill="#16181D"/><rect x="15" y="0" width="3" height="12" rx="1" fill="#16181D"/></svg>
+    <svg width="24" height="12" viewBox="0 0 24 12"><rect x="1" y="1" width="20" height="10" rx="3" fill="none" stroke="#16181D" stroke-width="1.3"/><rect x="3" y="3" width="13" height="6" rx="1.5" fill="#16181D"/><rect x="22" y="4" width="1.5" height="4" rx="1" fill="#16181D"/></svg>
+  </div></div>
+
+  <div class="mapwrap">
+    <svg class="base" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice" id="streetmap"></svg>
+  </div>
+
+  <div class="map-pin" style="left:300px;top:248px;">
+    <div class="halo"></div><div class="body"></div>
+    <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M2 15.5l5.4-1 2.4-3.9 2 1 1.6-1 1 2 5.6 1c1.2.2 2 .9 2 2V19H2z" fill="#fff"/></svg></div>
+  </div>
+  <div class="me-dot" style="left:330px;top:336px;"></div>
+
+  <div class="topbar">
+    <div class="pin"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 21s7-5.7 7-11a7 7 0 1 0-14 0c0 5.3 7 11 7 11z" fill="#fff"/><circle cx="12" cy="10" r="2.6" fill="#3B82F6"/></svg></div>
+    <div><div class="q-name">Belleville</div><div class="q-sub">Conquête par rue</div></div>
+    <div class="pct"><b>42%</b><span>Les Vagues</span></div>
+  </div>
+
+  <div class="legend">
+    <div class="lg"><i style="background:#3B82F6"></i>Toi</div>
+    <div class="lg"><i style="background:#FF4D5E"></i>Braises</div>
+    <div class="lg"><i style="background:#FFC93C"></i>Soleils</div>
+    <div class="lg"><i style="background:#34D399"></i>Pousses</div>
+  </div>
+
+  <div class="drop-chip" style="right:24px;top:300px;">
+    <div class="gicon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 2l2 6h6l-5 4 2 7-7-4-7 4 2-7-5-4h6z" fill="#fff"/></svg></div>
+    <div class="dt">Drop · Parc<br><small>Paire Asics ✦ 19–21h</small></div>
+  </div>
+
+  <div class="startbtn"><b>GO</b><span>START</span></div>
+
+  <div class="tabs">
+    <div class="tab active">__ICON_MAP__<span>Map</span></div>
+    <div class="tab">__ICON_RANK__<span>Classement</span></div>
+    <div class="tab">__ICON_GIFT__<span>Récompenses</span></div>
+    <div class="tab">__ICON_USER__<span>Profil</span></div>
+  </div>
+</div>
+
 <!-- ============ 3. CLASSEMENT ============ -->
 <div class="phone" id="rank">
   <div class="notch"></div>
@@ -564,6 +610,79 @@ const ROUTE='M 168 560 C 196 510, 238 482, 262 432 S 300 372, 332 344';
 buildHex('hex-light',{dark:false,r:20,clusters:CL_MAP,route:ROUTE});
 buildHex('hex-dark',{dark:true,r:20,clusters:CL_MAP,route:ROUTE});
 buildHex('hex-story',{dark:true,r:12,blur:0.6,clusters:[{cx:115,cy:75,r:90,density:.9,team:'blue'}],route:'M 60 120 C 90 95, 120 80, 150 70'});
+
+/* ---- VARIANT: street-by-street conquest (no hexagons) ---- */
+function buildStreetMap(id){
+  const s=document.getElementById(id); if(!s)return;
+  const rnd=makeRng(424242);
+  const C={land:'#EFF1F4',block:'#F8F9FB',blockEdge:'#E6E9EF',roadCase:'#E1E4EA',road:'#FFFFFF',
+    water:'#CFE2F0',waterEdge:'#BCD9EE',park:'#DEEBD8',parkEdge:'#CFE3C8',label:'#9aa1ad',metro:'#3B82F6'};
+  let h='';
+  h+=`<defs>
+    <filter id="halo_s" x="-20%" y="-20%" width="140%" height="140%"><feMorphology operator="dilate" radius="1.6" in="SourceAlpha"/><feFlood flood-color="#fff"/><feComposite in2="SourceAlpha" operator="in" result="ha"/><feMerge><feMergeNode in="ha"/><feMergeNode in="ha"/></feMerge></filter>
+    <filter id="strglow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3"/></filter>
+  </defs>`;
+  h+=`<rect width="390" height="844" fill="${C.land}"/>`;
+  // blocks
+  for(let gy=-1;gy<13;gy++)for(let gx=-1;gx<7;gx++){
+    if(rnd()<0.08)continue;
+    const x=gx*62+rnd()*8+6,y=gy*64+rnd()*8,w=46+rnd()*14,ht=48+rnd()*12;
+    h+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${ht.toFixed(1)}" rx="6" fill="${C.block}" stroke="${C.blockEdge}" stroke-width="1"/>`;
+  }
+  // park + canal
+  h+=`<path d="M14 96 q54 -34 104 -6 q40 26 24 78 q-18 56 -86 50 q-66 -8 -64 -64 q2 -38 22 -58z" fill="${C.park}" stroke="${C.parkEdge}" stroke-width="1.5"/>`;
+  h+=`<path d="M-30 712 C 90 678, 210 740, 330 690 S 470 654, 470 712 L470 760 C 350 760, 230 800, 110 762 S -30 770, -30 760 z" fill="${C.water}" stroke="${C.waterEdge}" stroke-width="1.5"/>`;
+
+  // ---- street graph: irregular grid of nodes ----
+  const COLS=8,ROWS=15,GX=52,GY=58;
+  const node=(i,j)=>({x:i*GX+ ((j%2)?14:0)+ (rnd()*10-5)+2, y:j*GY+ (rnd()*8-4)+10});
+  const N=[];
+  for(let j=0;j<ROWS;j++){N[j]=[];for(let i=0;i<COLS;i++)N[j][i]=node(i,j);}
+  const clusters=[
+    {cx:250,cy:470,r:150,team:'blue'},
+    {cx:120,cy:250,r:96,team:'red'},
+    {cx:305,cy:660,r:84,team:'yellow'},
+    {cx:60,cy:600,r:74,team:'green'}
+  ];
+  function teamAt(x,y){let best=null,bp=0;for(const c of clusters){const d=Math.hypot(x-c.cx,y-c.cy);if(d>c.r)continue;const p=1-d/c.r;if(p>bp){bp=p;best=c;}}return best?{team:best.team,p:bp}:null;}
+
+  const segs=[];
+  for(let j=0;j<ROWS;j++)for(let i=0;i<COLS;i++){
+    if(i<COLS-1 && rnd()>0.12){const a=N[j][i],b=N[j][i+1];segs.push([a,b]);}
+    if(j<ROWS-1 && rnd()>0.12){const a=N[j][i],b=N[j+1][i];segs.push([a,b]);}
+  }
+  // neutral street casing + fill first
+  let neutral='',painted='';
+  for(const [a,b] of segs){
+    const mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+    const t=teamAt(mx,my);
+    const captured = t && rnd()<(0.35+t.p*0.6);
+    if(captured){
+      const vivid=TEAM[t.team][0];
+      painted+=`<line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" stroke="${vivid}" stroke-opacity=".5" stroke-width="9" stroke-linecap="round" filter="url(#strglow)"/>`;
+      painted+=`<line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" stroke="${vivid}" stroke-width="5" stroke-linecap="round"/>`;
+    }else{
+      neutral+=`<line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" stroke="${C.roadCase}" stroke-width="5" stroke-linecap="round"/>`;
+      neutral+=`<line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" stroke="${C.road}" stroke-width="3" stroke-linecap="round"/>`;
+    }
+  }
+  h+=neutral+painted;
+
+  // live run route (bright, on top)
+  const ROUTE='M 168 560 C 196 510, 238 482, 262 432 S 300 372, 330 344';
+  h+=`<path d="${ROUTE}" fill="none" stroke="#1d4ed8" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>`;
+  h+=`<path d="${ROUTE}" fill="none" stroke="#fff" stroke-width="1.5" stroke-opacity=".75" stroke-dasharray="1 7" stroke-linecap="round"/>`;
+
+  // labels + metro
+  function lab(x,y,txt,rot,sz){return `<text x="${x}" y="${y}" font-family="Inter,Arial,sans-serif" font-size="${sz||10.5}" font-weight="600" fill="${C.label}" text-anchor="middle" transform="rotate(${rot} ${x} ${y})" filter="url(#halo_s)" letter-spacing=".3">${txt}</text>`;}
+  h+=lab(96,150,'Parc de Belleville',-6,11);
+  h+=lab(150,735,'Canal Saint-Martin',-9,10.5);
+  h+=lab(300,250,'Rue de Belleville',58,10);
+  function metro(x,y){return `<circle cx="${x}" cy="${y}" r="8.5" fill="${C.metro}"/><text x="${x}" y="${y+3.4}" font-size="10" font-weight="800" fill="#fff" text-anchor="middle" font-family="Arial">M</text>`;}
+  h+=metro(206,312)+metro(322,196);
+  s.innerHTML=h;
+}
+buildStreetMap('streetmap');
 
 /* ---- fake QR ---- */
 (function(){
