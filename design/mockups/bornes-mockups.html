@@ -79,6 +79,18 @@
   .drop-chip .dt{font-size:12px;font-weight:800;color:var(--ink);line-height:1.25;}
   .drop-chip .dt small{display:block;font-weight:700;color:var(--gold-h);font-size:10px;}
 
+  /* map pins (Pokémon-GO style markers over the real map) */
+  .map-pin{position:absolute;z-index:33;transform:translate(-50%,-100%);}
+  .map-pin .halo{position:absolute;left:50%;top:78%;transform:translate(-50%,-50%);width:62px;height:62px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,179,0,.40) 0%,rgba(255,179,0,.12) 50%,transparent 72%);z-index:-1;}
+  .map-pin .body{width:44px;height:44px;border-radius:50% 50% 50% 4px;transform:rotate(45deg);
+    background:linear-gradient(135deg,var(--gold),var(--gold-h));box-shadow:0 8px 18px rgba(255,150,0,.5),0 0 0 3px #fff;}
+  .map-pin .ic{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);}
+  .map-pin.team .body{border-radius:50%;transform:none;background:#fff;box-shadow:0 6px 14px rgba(16,24,40,.25),0 0 0 3px #fff;width:30px;height:30px;}
+  .map-pin.team .dotc{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;}
+  .me-dot{position:absolute;z-index:33;transform:translate(-50%,-50%);width:22px;height:22px;border-radius:50%;
+    background:var(--blue);box-shadow:0 0 0 4px rgba(59,130,246,.30),0 0 0 7px rgba(59,130,246,.14),0 2px 6px rgba(0,0,0,.3),inset 0 0 0 2.5px #fff;}
+
   /* ---------- generic content ---------- */
   .content{position:absolute;top:54px;left:0;right:0;bottom:88px;overflow:hidden;padding:8px 20px 0;}
   .h-title{font-size:28px;font-weight:800;letter-spacing:-.6px;margin:8px 0 2px;}
@@ -181,6 +193,13 @@
     <svg class="hexsvg" viewBox="0 0 390 844" id="hex-light"></svg>
   </div>
 
+  <div class="map-pin" style="left:300px;top:248px;">
+    <div class="halo"></div><div class="body"></div>
+    <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M2 15.5l5.4-1 2.4-3.9 2 1 1.6-1 1 2 5.6 1c1.2.2 2 .9 2 2V19H2z" fill="#fff"/></svg></div>
+  </div>
+  <div class="map-pin team" style="left:122px;top:236px;"><div class="body"></div><div class="dotc" style="background:#FF4D5E"></div></div>
+  <div class="me-dot" style="left:332px;top:344px;"></div>
+
   <div class="topbar">
     <div class="pin"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 21s7-5.7 7-11a7 7 0 1 0-14 0c0 5.3 7 11 7 11z" fill="#fff"/><circle cx="12" cy="10" r="2.6" fill="#3B82F6"/></svg></div>
     <div><div class="q-name">Belleville</div><div class="q-sub">Paris 20ᵉ · ta zone</div></div>
@@ -221,6 +240,13 @@
     <svg class="base" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice" id="base-dark"></svg>
     <svg class="hexsvg" viewBox="0 0 390 844" id="hex-dark"></svg>
   </div>
+
+  <div class="map-pin" style="left:300px;top:248px;">
+    <div class="halo"></div><div class="body"></div>
+    <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M2 15.5l5.4-1 2.4-3.9 2 1 1.6-1 1 2 5.6 1c1.2.2 2 .9 2 2V19H2z" fill="#fff"/></svg></div>
+  </div>
+  <div class="map-pin team" style="left:122px;top:236px;"><div class="body"></div><div class="dotc" style="background:#FF4D5E"></div></div>
+  <div class="me-dot" style="left:332px;top:344px;"></div>
 
   <div class="topbar">
     <div class="pin"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 21s7-5.7 7-11a7 7 0 1 0-14 0c0 5.3 7 11 7 11z" fill="#fff"/><circle cx="12" cy="10" r="2.6" fill="#3B82F6"/></svg></div>
@@ -388,85 +414,156 @@ document.body.innerHTML=document.body.innerHTML
   .split('__ICON_GIFT__').join(ICONS.GIFT)
   .split('__ICON_USER__').join(ICONS.USER);
 
-/* ---- map base (faux desaturated map) ---- */
+/* ---- seeded RNG (deterministic renders) ---- */
+function makeRng(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296;};}
+
+/* ---- realistic Mapbox-style base map ---- */
 function buildBase(id,dark){
   const s=document.getElementById(id); if(!s)return;
-  const road=dark?'#23282f':'#E7EAF0', road2=dark?'#1b2026':'#EEF1F6';
-  const water=dark?'#16202b':'#DCE6F0', park=dark?'#172019':'#E2ECDF';
+  const rnd=makeRng(id.length*7919+ (dark?13:1));
+  const C = dark ? {
+    land:'#0E1116', block:'#161A21', blockEdge:'#1c2129',
+    roadCase:'#0a0d12', road:'#2b313b', roadMin:'#20262e',
+    water:'#13202e', waterEdge:'#1b2f44', park:'#13201a', parkEdge:'#1a2c20',
+    label:'#7e8794', labelHalo:'#0E1116', metro:'#3a86ff', plaza:'#1a1f27'
+  } : {
+    land:'#EFF1F4', block:'#F8F9FB', blockEdge:'#E6E9EF',
+    roadCase:'#E3E6EC', road:'#FFFFFF', roadMin:'#FCFCFD',
+    water:'#CFE2F0', waterEdge:'#Bcdaee', park:'#DEEBD8', parkEdge:'#CFE3C8',
+    label:'#9aa1ad', labelHalo:'#FFFFFF', metro:'#3B82F6', plaza:'#F4F6F9'
+  };
+  const P={x:206,y:312}; // la "Place" (rond-point) avec avenues rayonnantes
   let h='';
-  h+=`<rect width="390" height="844" fill="${dark?'#0E1116':'#F2F4F8'}"/>`;
-  // park blob
-  h+=`<path d="M250 90 q70 -10 90 60 q15 70 -50 95 q-70 15 -80 -55 q-10 -75 40 -100z" fill="${park}"/>`;
-  // water river
-  h+=`<path d="M-20 520 C 80 480, 150 600, 250 560 S 430 520, 430 600 L430 700 C 330 700, 220 760, 120 720 S -20 720, -20 700 z" fill="${water}"/>`;
-  // blocks
-  for(let i=0;i<6;i++)for(let j=0;j<9;j++){
-    if(Math.random()<.45)continue;
-    const x=10+i*65+ (Math.random()*8), y=120+j*78+(Math.random()*8), w=40+Math.random()*18, ht=42+Math.random()*16;
-    h+=`<rect x="${x}" y="${y}" width="${w}" height="${ht}" rx="7" fill="${road2}"/>`;
+  // defs: halo for labels
+  h+=`<defs><filter id="halo_${id}" x="-20%" y="-20%" width="140%" height="140%"><feMorphology operator="dilate" radius="1.6" in="SourceAlpha"/><feFlood flood-color="${C.labelHalo}"/><feComposite in2="SourceAlpha" operator="in" result="ha"/><feMerge><feMergeNode in="ha"/><feMergeNode in="ha"/></feMerge></filter></defs>`;
+  // land
+  h+=`<rect width="390" height="844" fill="${C.land}"/>`;
+
+  // ---- city blocks (parcels) ----
+  for(let gy=-1;gy<13;gy++)for(let gx=-1;gx<7;gx++){
+    if(rnd()<0.10)continue;
+    const x=gx*62+ rnd()*10+6, y=gy*64+ rnd()*10, w=44+rnd()*16, ht=46+rnd()*14;
+    h+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${ht.toFixed(1)}" rx="6" fill="${C.block}" stroke="${C.blockEdge}" stroke-width="1"/>`;
   }
-  // roads grid
-  for(let i=0;i<8;i++) h+=`<rect x="${ -10+i*55}" y="0" width="7" height="844" fill="${road}"/>`;
-  for(let j=0;j<14;j++) h+=`<rect x="0" y="${j*70}" width="390" height="6" fill="${road}"/>`;
-  // diagonal avenue
-  h+=`<rect x="-40" y="380" width="500" height="9" fill="${road}" transform="rotate(24 195 422)"/>`;
+
+  // ---- park (Parc de Belleville) ----
+  h+=`<path d="M14 96 q54 -34 104 -6 q40 26 24 78 q-18 56 -86 50 q-66 -8 -64 -64 q2 -38 22 -58z" fill="${C.park}" stroke="${C.parkEdge}" stroke-width="1.5"/>`;
+  // little tree dots
+  for(let i=0;i<9;i++){const tx=30+rnd()*100,ty=70+rnd()*120;h+=`<circle cx="${tx.toFixed(0)}" cy="${ty.toFixed(0)}" r="3.2" fill="${dark?'#23402c':'#CBE0C0'}"/>`;}
+
+  // ---- water (Canal) ----
+  h+=`<path d="M-30 712 C 90 678, 210 740, 330 690 S 470 654, 470 712 L470 760 C 350 760, 230 800, 110 762 S -30 770, -30 760 z" fill="${C.water}" stroke="${C.waterEdge}" stroke-width="1.5"/>`;
+
+  // ---- roads ----
+  // minor street grid (thin)
+  const minor=[];
+  for(let i=0;i<7;i++) minor.push(`M ${-10+i*64+rnd()*8} -10 C ${10+i*64} 260, ${ -10+i*64} 520, ${0+i*64+rnd()*10} 860`);
+  for(let j=0;j<13;j++) minor.push(`M -10 ${j*66+rnd()*8} C 130 ${j*66+8}, 260 ${j*66-8}, 400 ${j*66+rnd()*8}`);
+  for(const d of minor){
+    h+=`<path d="${d}" fill="none" stroke="${C.roadCase}" stroke-width="3.4"/>`;
+  }
+  for(const d of minor){
+    h+=`<path d="${d}" fill="none" stroke="${C.roadMin}" stroke-width="2"/>`;
+  }
+  // major avenues radiating from the Place + a couple of crossing boulevards
+  const avenues=[];
+  const angs=[18,70,128,182,236,300];
+  for(const a of angs){const r=520;const rad=a*Math.PI/180;
+    avenues.push(`M ${P.x} ${P.y} L ${(P.x+Math.cos(rad)*r).toFixed(0)} ${(P.y+Math.sin(rad)*r).toFixed(0)}`);
+  }
+  avenues.push(`M -20 188 C 120 168, 260 232, 410 196`);            // Bd haut
+  avenues.push(`M -20 612 C 130 596, 250 648, 410 604`);            // Bd bas
+  // casing then fill
+  for(const d of avenues) h+=`<path d="${d}" fill="none" stroke="${C.roadCase}" stroke-width="9" stroke-linecap="round"/>`;
+  for(const d of avenues) h+=`<path d="${d}" fill="none" stroke="${C.road}" stroke-width="6" stroke-linecap="round"/>`;
+
+  // ---- roundabout (the Place) ----
+  h+=`<circle cx="${P.x}" cy="${P.y}" r="30" fill="none" stroke="${C.roadCase}" stroke-width="9"/>`;
+  h+=`<circle cx="${P.x}" cy="${P.y}" r="30" fill="none" stroke="${C.road}" stroke-width="6"/>`;
+  h+=`<circle cx="${P.x}" cy="${P.y}" r="20" fill="${C.plaza}" stroke="${C.parkEdge}" stroke-width="1"/>`;
+  h+=`<circle cx="${P.x}" cy="${P.y}" r="9" fill="${dark?'#1a2c20':'#D6E7CD'}"/>`;
+
+  // ---- labels (sell the "real map") ----
+  function lab(x,y,txt,rot,sz){
+    return `<text x="${x}" y="${y}" font-family="${'Inter,Arial,sans-serif'}" font-size="${sz||10.5}" font-weight="600" fill="${C.label}" text-anchor="middle" transform="rotate(${rot} ${x} ${y})" filter="url(#halo_${id})" letter-spacing=".3">${txt}</text>`;
+  }
+  h+=lab(96,150,'Parc de Belleville',-6,11);
+  h+=lab(150,735,'Canal Saint-Martin',-9,10.5);
+  h+=lab(300,250,'Rue de Belleville',58,10);
+  h+=lab(110,430,'Av. Simon Bolivar',-62,10);
+  h+=lab(250,540,'Bd de la Villette',26,10);
+  // metro roundels
+  function metro(x,y){return `<circle cx="${x}" cy="${y}" r="8.5" fill="${C.metro}"/><text x="${x}" y="${y+3.4}" font-size="10" font-weight="800" fill="#fff" text-anchor="middle" font-family="Arial">M</text>`;}
+  h+=metro(206,312);
+  h+=metro(78,508);
+  h+=metro(322,196);
+
   s.innerHTML=h;
 }
 buildBase('base-light',false);
 buildBase('base-dark',true);
 
-/* ---- hexagon honeycomb ---- */
-const TEAM={blue:['#3B82F6','#A9CBFF'],red:['#FF4D5E','#FFB3BA'],yellow:['#FFC93C','#FFE6A1'],green:['#34D399','#A7E8C8']};
+/* ---- territory: soft clustered H3 zones over the real map ---- */
+const TEAM={blue:['#3B82F6','#9DC2FF'],red:['#FF4D5E','#FF9AA3'],yellow:['#FFC93C','#FFDE82'],green:['#34D399','#86E0BB']};
 function hexPoints(cx,cy,r){
   let p=[];
   for(let i=0;i<6;i++){const a=Math.PI/180*(60*i-90);p.push((cx+r*Math.cos(a)).toFixed(1)+','+(cy+r*Math.sin(a)).toFixed(1));}
   return p.join(' ');
 }
+// clusters = captured neighbourhoods (not a full-screen grid)
 function buildHex(id,opts){
   const s=document.getElementById(id); if(!s)return;
+  const rnd=makeRng(id.length*104729+ (opts.dark?5:2));
   const vb=s.viewBox.baseVal; const W=vb.width,H=vb.height;
   const R=opts.r||21; const dx=Math.sqrt(3)*R, dy=1.5*R;
-  let h='';
-  h+=`<defs><filter id="goldglow_${id}" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`;
+  const clusters=opts.clusters||[];
+  let body='';
   const cols=Math.ceil(W/dx)+2, rows=Math.ceil(H/dy)+2;
-  let goldX=opts.gold?opts.gold[0]:-1, goldY=opts.gold?opts.gold[1]:-1;
-  let gx=0,gy=0;
   for(let row=0;row<rows;row++){
     for(let col=0;col<cols;col++){
       const cx=col*dx + (row%2?dx/2:0) - dx/2;
       const cy=row*dy - dy;
       if(cx<-R||cx>W+R||cy<-R||cy>H+R)continue;
-      // territory pattern via smooth noise
-      const n=Math.sin(cx*0.012+cy*0.02)*Math.cos(cy*0.015-cx*0.01)+Math.sin((cx+cy)*0.018);
-      let team=null;
-      if(n>0.75) team='blue';
-      else if(n>0.2) team=(Math.sin(cx*.05)>0.3?'blue':'red');
-      else if(n>-0.25) team=(cy<H*0.4?'yellow':'green');
-      else if(n>-0.7) team=(Math.random()<.5?'red':null);
-      const isGold=(row===goldY&&col===goldX);
-      const pts=hexPoints(cx,cy,R-1.5);
-      if(isGold){ gx=cx; gy=cy;
-        continue; // draw later on top
+      // pick the strongest cluster covering this cell
+      let best=null,bestP=0;
+      for(const cl of clusters){
+        const d=Math.hypot(cx-cl.cx,cy-cl.cy);
+        if(d>cl.r)continue;
+        const p=(1-d/cl.r)*cl.density;
+        if(p>bestP){bestP=p;best=cl;}
       }
-      if(!team){
-        h+=`<polygon points="${pts}" fill="${opts.dark?'rgba(255,255,255,0.025)':'rgba(16,24,40,0.03)'}" stroke="${opts.dark?'rgba(255,255,255,0.05)':'rgba(16,24,40,0.05)'}" stroke-width="1"/>`;
-      }else{
-        const [vivid,pastel]=TEAM[team];
-        h+=`<polygon points="${pts}" fill="${pastel}" fill-opacity="${opts.dark?0.5:0.62}" stroke="${vivid}" stroke-opacity="0.55" stroke-width="1.4"/>`;
-      }
+      if(!best) continue;
+      if(rnd()>bestP*1.15) continue;            // organic, holes let the map show
+      const [vivid,pastel]=TEAM[best.team];
+      const pts=hexPoints(cx,cy,R-1.2);
+      // soft fill + same-color round stroke => merges into organic territory blobs
+      body+=`<polygon points="${pts}" fill="${pastel}" fill-opacity="${opts.dark?0.46:0.40}" stroke="${pastel}" stroke-opacity="${opts.dark?0.46:0.40}" stroke-width="6" stroke-linejoin="round"/>`;
+      body+=`<polygon points="${pts}" fill="none" stroke="${vivid}" stroke-opacity="0.22" stroke-width="0.9"/>`;
     }
   }
-  // gold drop on top
-  if(opts.gold && gx){
-    const pts=hexPoints(gx,gy,R-1);
-    h+=`<polygon points="${pts}" fill="#FFD54A" stroke="#FFB300" stroke-width="2.2" filter="url(#goldglow_${id})"/>`;
-    h+=`<text x="${gx}" y="${gy+5}" text-anchor="middle" font-size="16" fill="#7a4d00">✦</text>`;
+  // group with a touch of blur so it reads as zones of influence, not a board
+  let h=`<g filter="url(#soft_${id})">${body}</g>`;
+  h=`<defs><filter id="soft_${id}" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="${opts.blur||0.7}"/></filter></defs>`+h;
+
+  // run route (the actual path through the player's zone)
+  if(opts.route){
+    h+=`<defs><filter id="rglow_${id}" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter></defs>`;
+    h+=`<path d="${opts.route}" fill="none" stroke="#3B82F6" stroke-opacity=".35" stroke-width="9" stroke-linecap="round" filter="url(#rglow_${id})"/>`;
+    h+=`<path d="${opts.route}" fill="none" stroke="#3B82F6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>`;
+    h+=`<path d="${opts.route}" fill="none" stroke="#fff" stroke-width="1.4" stroke-opacity=".7" stroke-linecap="round" stroke-dasharray="1 7"/>`;
   }
   s.innerHTML=h;
 }
-buildHex('hex-light',{dark:false,r:21,gold:[6,9]});
-buildHex('hex-dark',{dark:true,r:21,gold:[6,9]});
-buildHex('hex-story',{dark:true,r:13,gold:null});
+const CL_MAP=[
+  {cx:250,cy:470,r:150,density:.82,team:'blue'},
+  {cx:120,cy:250,r:92,density:.7,team:'red'},
+  {cx:300,cy:660,r:80,density:.62,team:'yellow'},
+  {cx:60,cy:600,r:70,density:.55,team:'green'}
+];
+const ROUTE='M 168 560 C 196 510, 238 482, 262 432 S 300 372, 332 344';
+buildHex('hex-light',{dark:false,r:20,clusters:CL_MAP,route:ROUTE});
+buildHex('hex-dark',{dark:true,r:20,clusters:CL_MAP,route:ROUTE});
+buildHex('hex-story',{dark:true,r:12,blur:0.6,clusters:[{cx:115,cy:75,r:90,density:.9,team:'blue'}],route:'M 60 120 C 90 95, 120 80, 150 70'});
 
 /* ---- fake QR ---- */
 (function(){
