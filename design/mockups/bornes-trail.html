@@ -1,0 +1,113 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;}
+body{background:#c9ccd6;font-family:'Inter','Helvetica Neue',Arial,sans-serif;padding:40px;display:flex;gap:44px;flex-wrap:wrap;align-items:flex-start;}
+.cap{width:390px;text-align:center;font-weight:800;color:#3a3f4a;font-size:14px;margin:-14px 0 -6px;}
+.phone{width:390px;height:844px;border-radius:46px;overflow:hidden;position:relative;background:#0E1116;box-shadow:0 30px 70px rgba(16,24,40,.35),0 0 0 11px #16181D,0 0 0 13px #2a2d35;flex:0 0 auto;color:#fff;}
+.notch{position:absolute;top:14px;left:50%;transform:translateX(-50%);width:120px;height:32px;background:#16181D;border-radius:20px;z-index:50;}
+.status{position:absolute;top:0;left:0;right:0;height:54px;display:flex;align-items:center;justify-content:space-between;padding:18px 30px 0;font-size:15px;font-weight:700;z-index:40;}
+.mapwrap{position:absolute;inset:0;}.mapwrap svg{position:absolute;inset:0;width:100%;height:100%;}
+.topbar{position:absolute;top:62px;left:16px;right:16px;z-index:30;display:flex;align-items:center;gap:12px;background:rgba(22,26,33,.8);backdrop-filter:blur(20px);border-radius:22px;padding:12px 16px;box-shadow:0 8px 24px rgba(0,0,0,.4);}
+.topbar .pin{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,#3B82F6,#6aa6ff);display:flex;align-items:center;justify-content:center;}
+.topbar .q-name{font-size:18px;font-weight:800;}.topbar .q-sub{font-size:12px;color:#9aa3b2;font-weight:600;margin-top:1px;}
+.topbar .pct{margin-left:auto;text-align:right;}.topbar .pct b{font-size:20px;font-weight:800;color:#6aa6ff;}.topbar .pct span{display:block;font-size:10px;font-weight:700;color:#9aa3b2;text-transform:uppercase;letter-spacing:.5px;}
+.legend{position:absolute;left:16px;top:132px;z-index:30;display:flex;flex-direction:column;gap:7px;}
+.lg{display:flex;align-items:center;gap:7px;background:rgba(22,26,33,.8);backdrop-filter:blur(14px);padding:5px 11px 5px 7px;border-radius:999px;font-size:11px;font-weight:700;color:#e8ebf0;box-shadow:0 4px 14px rgba(0,0,0,.3);}
+.lg i{width:11px;height:11px;border-radius:50%;display:block;}
+.run-top{position:absolute;top:58px;left:16px;right:16px;z-index:30;background:rgba(22,26,33,.86);backdrop-filter:blur(20px);border-radius:24px;padding:16px 18px;box-shadow:0 12px 30px rgba(0,0,0,.45);}
+.run-time{font-size:44px;font-weight:800;letter-spacing:-2px;text-align:center;line-height:1;}
+.run-grid{display:flex;margin-top:13px;border-top:1px solid rgba(255,255,255,.08);padding-top:12px;}
+.run-grid .g{flex:1;text-align:center;border-right:1px solid rgba(255,255,255,.08);}.run-grid .g:last-child{border:none;}
+.run-grid .g b{font-size:20px;font-weight:800;display:block;letter-spacing:-.5px;}.run-grid .g b .u{font-size:12px;color:#9aa3b2;}
+.run-grid .g span{font-size:10px;font-weight:700;color:#9aa3b2;text-transform:uppercase;letter-spacing:.4px;}
+.run-live{position:absolute;top:188px;left:50%;transform:translateX(-50%);z-index:30;background:#3B82F6;color:#fff;font-size:11px;font-weight:800;padding:5px 14px;border-radius:999px;display:flex;align-items:center;gap:6px;box-shadow:0 6px 16px rgba(59,130,246,.5);}
+.run-live .rec{width:8px;height:8px;border-radius:50%;background:#fff;}
+.run-ctrl{position:absolute;bottom:46px;left:0;right:0;z-index:35;display:flex;justify-content:center;align-items:center;gap:26px;}
+.run-ctrl .rb{width:60px;height:60px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 24px rgba(0,0,0,.3);}
+.run-ctrl .stop{width:86px;height:86px;border-radius:50%;background:linear-gradient(160deg,#FF4D5E,#e23a4a);box-shadow:0 14px 30px rgba(255,77,94,.5);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;}
+.cursor{position:absolute;z-index:34;transform:translate(-50%,-50%);}
+.cursor .halo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,.45),rgba(59,130,246,.12) 45%,transparent 70%);}
+.cursor .core{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:22px;height:22px;border-radius:50%;background:#3B82F6;box-shadow:0 0 14px rgba(59,130,246,.9),0 0 0 4px rgba(255,255,255,.9),0 0 0 7px rgba(59,130,246,.3);}
+.tipchip{position:absolute;z-index:34;background:rgba(22,26,33,.92);border:1px solid rgba(255,255,255,.12);border-radius:13px;padding:8px 12px;font-size:12px;font-weight:700;color:#eaf2ff;box-shadow:0 8px 20px rgba(0,0,0,.4);}
+.tipchip b{color:#6aa6ff;}
+</style></head><body>
+
+<div class="cap">A · RUN ACTIF — curseur + traînée qui peint</div>
+<div class="phone" id="t-run">
+  <div class="mapwrap"><svg id="run-map" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg></div>
+  <div class="cursor" style="left:330px;top:360px;"><div class="halo"></div><div class="core"></div></div>
+  <div class="tipchip" style="left:200px;top:392px;">tu peins <b>Rue de Paris</b> ✦ +90 m</div>
+  <div class="notch"></div>
+  <div class="status"><span>9:41</span><span>⌁ ▦ ▮</span></div>
+  <div class="run-top">
+    <div class="run-time">00:32:14</div>
+    <div class="run-grid"><div class="g"><b>5,42<span class="u"> km</span></b><span>Distance</span></div><div class="g"><b>5:56<span class="u"> /km</span></b><span>Allure</span></div><div class="g"><b style="color:#6aa6ff">+1,9<span class="u"> km</span></b><span>Peint</span></div></div>
+  </div>
+  <div class="run-live"><span class="rec"></span>EN COURS · Asnières passe au bleu</div>
+  <div class="run-ctrl"><div class="rb">❚❚</div><div class="stop">STOP</div><div class="rb">🔒</div></div>
+</div>
+
+<div class="cap">B · CARTE AU REPOS — territoire de l'équipe en « veines »</div>
+<div class="phone" id="t-rest">
+  <div class="mapwrap"><svg id="rest-map" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg></div>
+  <div class="notch"></div>
+  <div class="status"><span>9:41</span><span>⌁ ▦ ▮</span></div>
+  <div class="topbar"><div class="pin"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 21s7-5.7 7-11a7 7 0 1 0-14 0c0 5.3 7 11 7 11z" fill="#fff"/><circle cx="12" cy="10" r="2.6" fill="#3B82F6"/></svg></div><div><div class="q-name">Asnières-sur-Seine</div><div class="q-sub">Ton équipe mène</div></div><div class="pct"><b>42%</b><span>Les Vagues</span></div></div>
+  <div class="legend"><div class="lg"><i style="background:#3B82F6"></i>Toi</div><div class="lg"><i style="background:#FF4D5E"></i>Braises</div><div class="lg"><i style="background:#FFC93C"></i>Soleils</div><div class="lg"><i style="background:#34D399"></i>Pousses</div></div>
+  <div class="tipchip" style="right:22px;top:300px;">🔴 Rue contestée<br><span style="font-weight:600;color:#9aa3b2">repasse pour la reprendre</span></div>
+</div>
+
+<script>
+function makeRng(s){s=s>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296;};}
+const TEAM={blue:['#3B82F6','#9DC2FF'],red:['#FF4D5E','#FF9AA3'],yellow:['#FFC93C','#FFDE82'],green:['#34D399','#86E0BB']};
+function smooth(p){if(p.length<2)return'';let d=`M ${p[0].x.toFixed(1)} ${p[0].y.toFixed(1)}`;for(let i=0;i<p.length-1;i++){const p0=p[i-1]||p[i],p1=p[i],p2=p[i+1],p3=p[i+2]||p2;const c1x=p1.x+(p2.x-p0.x)/6,c1y=p1.y+(p2.y-p0.y)/6,c2x=p2.x-(p3.x-p1.x)/6,c2y=p2.y-(p3.y-p1.y)/6;d+=` C ${c1x.toFixed(1)} ${c1y.toFixed(1)} ${c2x.toFixed(1)} ${c2y.toFixed(1)} ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;}return d;}
+
+function buildVeins(id,opts){
+  const s=document.getElementById(id);if(!s)return;const rnd=makeRng(913);
+  const C={land:'#0E1116',block:'#141821',roadCase:'#070a0e',road:'#222932',water:'#0f2133',waterEdge:'#163049',park:'#10201a',parkEdge:'#18301f',label:'#7e8794',metro:'#4a90ff'};
+  let h=`<defs>
+    <filter id="hl_${id}" x="-20%" y="-20%" width="140%" height="140%"><feMorphology operator="dilate" radius="1.6" in="SourceAlpha"/><feFlood flood-color="#0E1116"/><feComposite in2="SourceAlpha" operator="in" result="ha"/><feMerge><feMergeNode in="ha"/><feMergeNode in="ha"/></feMerge></filter>
+    <filter id="vein_${id}" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="6"/></filter>
+    <filter id="trail_${id}" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="5"/></filter>
+  </defs>`;
+  h+=`<rect width="390" height="844" fill="${C.land}"/>`;
+  for(let gy=-1;gy<14;gy++)for(let gx=-1;gx<7;gx++){if(rnd()<0.2)continue;const x=gx*62+rnd()*8+6,y=gy*60+rnd()*8,w=48+rnd()*12,ht=44+rnd()*12;h+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${ht.toFixed(1)}" rx="7" fill="${C.block}"/>`;}
+  h+=`<path d="M10 92 q56 -34 108 -6 q40 26 22 80 q-20 56 -88 48 q-66 -8 -62 -66 q2 -38 20 -56z" fill="${C.park}" stroke="${C.parkEdge}" stroke-width="1.4"/>`;
+  h+=`<path d="M-30 700 C 80 666, 150 742, 250 700 S 430 656, 470 712 L470 770 C 360 760, 250 806, 130 766 S -30 768, -30 752 z" fill="${C.water}" stroke="${C.waterEdge}" stroke-width="1.5"/>`;
+  // street network
+  const streets=[];
+  for(let r=-12;r<=858;r+=60){const amp=7+rnd()*15,fq=0.010+rnd()*0.012,ph=rnd()*7;const pts=[];for(let x=-30;x<=420;x+=46)pts.push({x,y:r+Math.sin(x*fq+ph)*amp});streets.push(pts);}
+  for(let c=-12;c<=402;c+=56){const amp=7+rnd()*15,fq=0.010+rnd()*0.012,ph=rnd()*7;const pts=[];for(let y=-30;y<=882;y+=46)pts.push({x:c+Math.sin(y*fq+ph)*amp,y});streets.push(pts);}
+  const clusters=[{cx:255,cy:430,r:178,team:'blue'},{cx:108,cy:248,r:120,team:'red'},{cx:302,cy:662,r:120,team:'yellow'},{cx:74,cy:612,r:108,team:'green'}];
+  const regionAt=(x,y)=>{let b=null,bc=0;for(const c of clusters){const d=Math.hypot(x-c.cx,y-c.cy);if(d>c.r)continue;const cl=1-d/c.r;if(cl>bc){bc=cl;b=c;}}return b?{team:b.team,close:bc}:null;};
+  let base='',road='';
+  for(const pts of streets){const d=smooth(pts);base+=`<path d="${d}" fill="none" stroke="${C.roadCase}" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>`;road+=`<path d="${d}" fill="none" stroke="${C.road}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`;}
+  h+=base+road;
+  // territory as SOFT glowing veins
+  let halo='',cores='';
+  for(const pts of streets){const regs=pts.map(p=>regionAt(p.x,p.y));let i=0;
+    while(i<pts.length){const r=regs[i];if(!r){i++;continue;}let j=i;while(j+1<pts.length&&regs[j+1]&&regs[j+1].team===r.team)j++;
+      if(j-i>=1){const sub=pts.slice(i,j+1);let avg=0;for(let k=i;k<=j;k++)avg+=regs[k].close;avg/=(j-i+1);
+        if(rnd()<0.4+0.55*avg){const v=TEAM[r.team][0],d=smooth(sub);const op=(0.18+0.4*avg).toFixed(2);
+          halo+=`<path d="${d}" fill="none" stroke="${v}" stroke-opacity="${op}" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" filter="url(#vein_${id})"/>`;
+          cores+=`<path d="${d}" fill="none" stroke="${v}" stroke-opacity="${(0.35+0.4*avg).toFixed(2)}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`;}}
+      i=j+1;}}
+  h+=halo+cores;
+  // a contested street (rest screen): bicolor dashes
+  if(opts.contested){h+=`<path d="${opts.contested}" fill="none" stroke="#FF4D5E" stroke-width="3" stroke-dasharray="7 7" stroke-linecap="round"/><path d="${opts.contested}" fill="none" stroke="#3B82F6" stroke-width="3" stroke-dasharray="7 7" stroke-dashoffset="7" stroke-linecap="round"/>`;}
+  // today's bright TRAIL + cursor
+  if(opts.trail){const T=opts.trail;
+    h+=`<path d="${T}" fill="none" stroke="#3B82F6" stroke-opacity=".55" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" filter="url(#trail_${id})"/>`;
+    h+=`<path d="${T}" fill="none" stroke="#6aa6ff" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+    h+=`<path d="${T}" fill="none" stroke="#eaf2ff" stroke-width="2" stroke-opacity=".85" stroke-dasharray="1 8" stroke-linecap="round"/>`;
+    h+=`<circle cx="150" cy="600" r="4.5" fill="#0E1116" stroke="#6aa6ff" stroke-width="2.5"/>`;
+  }
+  const lab=(x,y,t,r,sz)=>`<text x="${x}" y="${y}" font-size="${sz||10.5}" font-weight="600" fill="${C.label}" text-anchor="middle" transform="rotate(${r} ${x} ${y})" filter="url(#hl_${id})">${t}</text>`;
+  h+=lab(92,148,'Parc Robinson',-6,11)+lab(170,742,'La Seine',-6,11)+lab(298,250,'Bd Voltaire',58,10);
+  const metro=(x,y)=>`<circle cx="${x}" cy="${y}" r="8.5" fill="${C.metro}"/><text x="${x}" y="${y+3.4}" font-size="10" font-weight="800" fill="#fff" text-anchor="middle">M</text>`;
+  h+=metro(206,312)+metro(322,196);
+  s.innerHTML=h;
+}
+buildVeins('run-map',{trail:'M 150 600 C 180 540, 220 510, 250 470 S 300 410, 330 360'});
+buildVeins('rest-map',{contested:'M 250 470 C 280 455, 305 470, 330 455'});
+</script>
+</body></html>
