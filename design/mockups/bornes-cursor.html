@@ -1,0 +1,126 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;}
+body{background:#c9ccd6;font-family:'Inter','Helvetica Neue',Arial,sans-serif;padding:40px;display:flex;gap:40px;flex-wrap:wrap;align-items:flex-start;}
+.col{display:flex;flex-direction:column;align-items:center;gap:8px;}
+.cap{font-weight:800;color:#23262e;font-size:15px;}
+.cap small{display:block;font-weight:600;color:#5a606b;font-size:12px;margin-top:2px;max-width:330px;text-align:center;}
+.phone{width:360px;height:760px;border-radius:44px;overflow:hidden;position:relative;background:#0E1116;box-shadow:0 24px 60px rgba(16,24,40,.35),0 0 0 10px #16181D,0 0 0 12px #2a2d35;color:#fff;}
+.notch{position:absolute;top:13px;left:50%;transform:translateX(-50%);width:110px;height:28px;background:#16181D;border-radius:18px;z-index:50;}
+.hud{position:absolute;top:30px;left:14px;right:14px;z-index:30;background:rgba(22,26,33,.86);backdrop-filter:blur(18px);border-radius:22px;padding:13px 16px;box-shadow:0 12px 30px rgba(0,0,0,.45);display:flex;justify-content:space-between;align-items:center;}
+.hud .t{font-size:30px;font-weight:800;letter-spacing:-1.5px;}
+.hud .m{text-align:right;}.hud .m b{font-size:16px;font-weight:800;color:#6aa6ff;}.hud .m span{display:block;font-size:9px;color:#9aa3b2;text-transform:uppercase;letter-spacing:.4px;font-weight:700;}
+.mapwrap{position:absolute;inset:0;}.mapwrap svg{position:absolute;inset:0;width:100%;height:100%;}
+
+/* A — comète */
+.curA{position:absolute;z-index:34;transform:translate(-50%,-50%);}
+.curA .halo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:74px;height:74px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,.5),rgba(59,130,246,.12) 45%,transparent 70%);}
+.curA .dot{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:20px;height:20px;border-radius:50%;background:#3B82F6;box-shadow:0 0 16px rgba(59,130,246,1),0 0 0 4px #fff,0 0 0 6px rgba(59,130,246,.35);}
+
+/* B — navigateur (flèche directionnelle) */
+.curB{position:absolute;z-index:34;transform:translate(-50%,-50%);}
+.curB .halo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:70px;height:70px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,.42),transparent 68%);}
+.curB .nav{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-30deg);width:34px;height:34px;border-radius:50%;background:#3B82F6;box-shadow:0 0 0 4px #fff,0 6px 14px rgba(0,0,0,.4),0 0 14px rgba(59,130,246,.7);display:flex;align-items:center;justify-content:center;}
+
+/* C — pinceau / splash */
+.curC{position:absolute;z-index:34;transform:translate(-50%,-50%);}
+.curC .halo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,.5),transparent 68%);}
+.curC .dot{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:24px;height:24px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#9cc2ff,#3B82F6);box-shadow:0 0 16px rgba(59,130,246,.9),0 0 0 4px #fff;}
+.sp{position:absolute;border-radius:50%;background:#3B82F6;}
+</style></head><body>
+
+<div class="col">
+  <div class="cap">A · Comète <small>Trace fine ; tête « blanc chaud » qui fond vers le bleu. Net, élégant, lisible.</small></div>
+  <div class="phone">
+    <div class="mapwrap"><svg id="mA" viewBox="0 0 360 760" preserveAspectRatio="xMidYMid slice"></svg></div>
+    <div class="curA" style="left:300px;top:330px;"><div class="halo"></div><div class="dot"></div></div>
+    <div class="notch"></div>
+    <div class="hud"><div class="t">32:14</div><div class="m"><b>+1,9 km</b><span>Peint</span></div></div>
+  </div>
+</div>
+
+<div class="col">
+  <div class="cap">B · Navigateur <small>Flèche directionnelle (sens de course) façon Maps + trace épaisse pleine. Clair, « je sais où je vais ».</small></div>
+  <div class="phone">
+    <div class="mapwrap"><svg id="mB" viewBox="0 0 360 760" preserveAspectRatio="xMidYMid slice"></svg></div>
+    <div class="curB" style="left:300px;top:330px;"><div class="halo"></div><div class="nav"><svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 3l7 16-7-4-7 4z" fill="#fff"/></svg></div></div>
+    <div class="notch"></div>
+    <div class="hud"><div class="t">32:14</div><div class="m"><b>+1,9 km</b><span>Peint</span></div></div>
+  </div>
+</div>
+
+<div class="col">
+  <div class="cap">C · Pinceau <small>Trace épaisse « peinture » + éclaboussures. Plus fun / ludique, très « screenshot ».</small></div>
+  <div class="phone">
+    <div class="mapwrap"><svg id="mC" viewBox="0 0 360 760" preserveAspectRatio="xMidYMid slice"></svg></div>
+    <div class="curC" style="left:300px;top:330px;"><div class="halo"></div><div class="dot"></div>
+      <div class="sp" style="left:-12px;top:8px;width:7px;height:7px;opacity:.8"></div>
+      <div class="sp" style="left:18px;top:-10px;width:5px;height:5px;opacity:.7"></div>
+      <div class="sp" style="left:14px;top:16px;width:4px;height:4px;opacity:.6"></div>
+    </div>
+    <div class="notch"></div>
+    <div class="hud"><div class="t">32:14</div><div class="m"><b>+1,9 km</b><span>Peint</span></div></div>
+  </div>
+</div>
+
+<script>
+function makeRng(s){s=s>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296;};}
+const TEAM={blue:['#3B82F6','#9DC2FF'],red:['#FF4D5E','#FF9AA3'],yellow:['#FFC93C','#FFDE82'],green:['#34D399','#86E0BB']};
+function smooth(p){if(p.length<2)return'';let d=`M ${p[0].x.toFixed(1)} ${p[0].y.toFixed(1)}`;for(let i=0;i<p.length-1;i++){const p0=p[i-1]||p[i],p1=p[i],p2=p[i+1],p3=p[i+2]||p2;const c1x=p1.x+(p2.x-p0.x)/6,c1y=p1.y+(p2.y-p0.y)/6,c2x=p2.x-(p3.x-p1.x)/6,c2y=p2.y-(p3.y-p1.y)/6;d+=` C ${c1x.toFixed(1)} ${c1y.toFixed(1)} ${c2x.toFixed(1)} ${c2y.toFixed(1)} ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;}return d;}
+
+// dark territory map (W=360,H=760)
+function buildMap(id,variant){
+  const s=document.getElementById(id);if(!s)return;const rnd=makeRng(913);
+  const C={land:'#0E1116',block:'#141821',roadCase:'#070a0e',road:'#222932',water:'#0f2133',waterEdge:'#163049',park:'#10201a',parkEdge:'#18301f',label:'#7e8794'};
+  let h=`<defs>
+    <filter id="vein_${id}" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="6"/></filter>
+    <filter id="trail_${id}" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="5"/></filter>
+    <filter id="hot_${id}" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="3"/></filter>
+  </defs>`;
+  h+=`<rect width="360" height="760" fill="${C.land}"/>`;
+  for(let gy=-1;gy<14;gy++)for(let gx=-1;gx<7;gx++){if(rnd()<0.2)continue;const x=gx*58+rnd()*8+6,y=gy*56+rnd()*8,w=44+rnd()*12,ht=40+rnd()*12;h+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${ht.toFixed(1)}" rx="7" fill="${C.block}"/>`;}
+  h+=`<path d="M8 86 q52 -32 100 -6 q38 24 20 74 q-18 52 -82 46 q-62 -8 -58 -62 q2 -36 20 -52z" fill="${C.park}" stroke="${C.parkEdge}" stroke-width="1.3"/>`;
+  h+=`<path d="M-30 640 C 70 610, 140 678, 234 640 S 400 600, 430 650 L430 700 C 330 692, 230 734, 120 700 S -30 700, -30 688 z" fill="${C.water}" stroke="${C.waterEdge}" stroke-width="1.4"/>`;
+  const streets=[];
+  for(let r=-12;r<=772;r+=56){const amp=6+rnd()*14,fq=0.011+rnd()*0.012,ph=rnd()*7;const pts=[];for(let x=-30;x<=390;x+=44)pts.push({x,y:r+Math.sin(x*fq+ph)*amp});streets.push(pts);}
+  for(let c=-12;c<=372;c+=54){const amp=6+rnd()*14,fq=0.011+rnd()*0.012,ph=rnd()*7;const pts=[];for(let y=-30;y<=792;y+=44)pts.push({x:c+Math.sin(y*fq+ph)*amp,y});streets.push(pts);}
+  const clusters=[{cx:235,cy:400,r:170,team:'blue'},{cx:100,cy:230,r:112,team:'red'},{cx:280,cy:600,r:112,team:'yellow'},{cx:68,cy:560,r:100,team:'green'}];
+  const regionAt=(x,y)=>{let b=null,bc=0;for(const c of clusters){const d=Math.hypot(x-c.cx,y-c.cy);if(d>c.r)continue;const cl=1-d/c.r;if(cl>bc){bc=cl;b=c;}}return b?{team:b.team,close:bc}:null;};
+  let base='',road='';
+  for(const pts of streets){const d=smooth(pts);base+=`<path d="${d}" fill="none" stroke="${C.roadCase}" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>`;road+=`<path d="${d}" fill="none" stroke="${C.road}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`;}
+  h+=base+road;
+  let halo='',cores='';
+  for(const pts of streets){const regs=pts.map(p=>regionAt(p.x,p.y));let i=0;
+    while(i<pts.length){const r=regs[i];if(!r){i++;continue;}let j=i;while(j+1<pts.length&&regs[j+1]&&regs[j+1].team===r.team)j++;
+      if(j-i>=1){const sub=pts.slice(i,j+1);let avg=0;for(let k=i;k<=j;k++)avg+=regs[k].close;avg/=(j-i+1);
+        if(rnd()<0.4+0.55*avg){const v=TEAM[r.team][0],d=smooth(sub);
+          halo+=`<path d="${d}" fill="none" stroke="${v}" stroke-opacity="${(0.16+0.36*avg).toFixed(2)}" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" filter="url(#vein_${id})"/>`;
+          cores+=`<path d="${d}" fill="none" stroke="${v}" stroke-opacity="${(0.32+0.4*avg).toFixed(2)}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;}}
+      i=j+1;}}
+  h+=halo+cores;
+
+  // TODAY'S TRAIL — variant-specific
+  const T='M 150 560 C 175 500, 210 470, 235 430 S 280 375, 300 330';
+  const HOT='M 270 372 C 282 355, 292 343, 300 330';
+  if(variant==='A'){
+    h+=`<path d="${T}" fill="none" stroke="#3B82F6" stroke-opacity=".5" stroke-width="13" stroke-linecap="round" filter="url(#trail_${id})"/>`;
+    h+=`<path d="${T}" fill="none" stroke="#6aa6ff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+    h+=`<path d="${HOT}" fill="none" stroke="#fff" stroke-width="5" stroke-opacity=".9" stroke-linecap="round" filter="url(#hot_${id})"/>`;
+    h+=`<path d="${T}" fill="none" stroke="#eaf2ff" stroke-width="1.6" stroke-opacity=".8" stroke-dasharray="1 8" stroke-linecap="round"/>`;
+  } else if(variant==='B'){
+    h+=`<path d="${T}" fill="none" stroke="#3B82F6" stroke-opacity=".45" stroke-width="14" stroke-linecap="round" filter="url(#trail_${id})"/>`;
+    h+=`<path d="${T}" fill="none" stroke="#3B82F6" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>`;
+    h+=`<path d="${T}" fill="none" stroke="#bcd6ff" stroke-width="2.4" stroke-opacity=".8" stroke-linecap="round"/>`;
+  } else {
+    h+=`<path d="${T}" fill="none" stroke="#3B82F6" stroke-opacity=".55" stroke-width="18" stroke-linecap="round" filter="url(#trail_${id})"/>`;
+    h+=`<path d="${T}" fill="none" stroke="#4f93ff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>`;
+    h+=`<path d="${T}" fill="none" stroke="#9cc2ff" stroke-width="3" stroke-opacity=".7" stroke-linecap="round"/>`;
+    // paint specks
+    const rr=makeRng(55);for(let i=0;i<14;i++){const t=rr();const x=150+t*150+(rr()*22-11),y=560-t*230+(rr()*22-11);h+=`<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${(1.5+rr()*2.5).toFixed(1)}" fill="#6aa6ff" opacity="${(0.4+rr()*0.4).toFixed(2)}"/>`;}
+  }
+  // start dot
+  h+=`<circle cx="150" cy="560" r="4" fill="#0E1116" stroke="#6aa6ff" stroke-width="2.4"/>`;
+  s.innerHTML=h;
+}
+buildMap('mA','A');buildMap('mB','B');buildMap('mC','C');
+</script>
+</body></html>
