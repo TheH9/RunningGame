@@ -92,9 +92,11 @@
 - [ ] Mode sombre, micro-interactions, haptique → **build bêta**
 - **Démo attendue :** app testable en conditions réelles par les bêta-testeurs.
 
+> 🎯 **Zone de lancement retenue : 92 nord — Asnières-sur-Seine / Levallois / Clichy / Bois-Colombes.** Bassin dense et continu le long de la Seine, idéal pour la densité locale.
+
 ## 4. Ce qu'on fait CETTE semaine (pour démarrer)
 
-1. **Figer la zone de lancement** (ex. Paris 20ᵉ / Belleville) et valider les **noms d'équipes**.
+1. **Zone figée** : Asnières / Levallois / Clichy / Bois-Colombes. Valider les **noms d'équipes**.
 2. **Créer les comptes** : Mapbox, Supabase, (Transistor en sprint 2).
 3. **Scaffolder le repo Expo** + brancher le design system (couleurs, typo, composants de base).
 4. **Importer le graphe OSM** du quartier choisi dans PostGIS.

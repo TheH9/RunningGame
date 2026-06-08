@@ -55,7 +55,7 @@ Ce sont les couleurs **signature** de la marque. Deux variantes par équipe : un
 C'est l'objet le plus important de toute l'app.
 
 - **Base :** style **Mapbox customisé**, monochrome désaturé (gris-bleu clair / sombre profond), routes fines, peu de POI, labels discrets. Le fond s'efface pour laisser les couleurs d'équipes briller.
-- **Rues capturées ([ADR-001](decisions/ADR-001-conquete-par-rue.md)) :** la ligne de la rue se colore à la couleur vive de l'équipe (léger glow). Pas de quadrillage — la carte reste lisible. Parcs/berges : halo pastel de zone en fallback. Transitions animées douces à la capture.
+- **Rues capturées ([ADR-001](decisions/ADR-001-conquete-par-rue.md)) :** style **heatmap façon Strava / CityStrides** — la rue parcourue devient une **ligne lumineuse continue** (halo + cœur vif + liseré clair) qui épouse le tracé réel. Pas de quadrillage. Parcs/berges : halo pastel de zone en fallback. Transitions animées douces à la capture.
 - **Hiérarchie visuelle des états :**
   - *Neutre* — gris très clair, quasi transparent.
   - *Capturé* — pastel d'équipe.
