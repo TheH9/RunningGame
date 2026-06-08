@@ -8,8 +8,8 @@
 |--------|---------------|---------------|
 | Mobile | **React Native (Expo)** ou **Flutter** | Cross-platform, vélocité, une seule équipe |
 | Carte | **Mapbox** (SDK natif via wrapper) | Style premium customisable — non négociable (cf. design) |
-| Graphe de rues | **OpenStreetMap** (import + découpage en segments) | Unité de capture = la rue ([ADR-001](decisions/ADR-001-conquete-par-rue.md)) |
-| Map-matching | **Valhalla / Meili** (ou OSRM, GraphHopper) | Coller la trace GPS bruitée sur le bon segment de rue |
+| Conquête | **Trail Paint** — trace GPS peinte + scoring async en cellules H3 ([ADR-002](decisions/ADR-002-trail-paint.md)) | Visuel direct, pas de map-matching en MVP |
+| Map-matching (V2) | Valhalla/Meili (ou OSRM, GraphHopper) | Rues exactes — amélioration post-MVP, non bloquant |
 | Tracking background | **Transistor Software — Background Geolocation** | SDK robuste, gère iOS/Android background, batterie |
 | Backend | **Supabase** (Postgres + **PostGIS**) | Auth, DB géospatiale, temps réel, edge functions, rapide à lever |
 | Temps réel | Supabase Realtime / WebSocket | Maj carte live, drops, scores |
@@ -42,12 +42,13 @@ partners     (id, name, shop_geom, contact)
 
 ## Flux clés
 
-### Capture de rues (fin de run)
-1. Le client enregistre la `track_geom` (GPS).
-2. À la fin : passage anti-triche (vitesse, téléportation — voir [07](07-securite-conformite.md)).
-3. Si valide : **map-matching** de la trace sur le graphe → liste des `streets` parcourues + `covered_ratio`. Les segments au-dessus du seuil → upsert `street_state` (couleur = équipe, `last_seen_at` = now). Parcs/berges traversés → `zone_state`.
-4. Application du **floutage Privacy Zone** : rues dans la zone domicile/bureau comptées pour les stats mais **non capturées publiquement**.
-5. Recalcul des scores quartier/équipe (par longueur de rue) → push temps réel.
+### Trail Paint — pendant & après le run ([ADR-002](decisions/ADR-002-trail-paint.md))
+1. Client : trace GPS **simplifiée** (Douglas-Peucker ~5 m) → upload par batch → `run_points`.
+2. **Rendu temps réel** : la trace se peint (Mapbox line layer) + curseur ; aucun map-matching requis pour l'affichage.
+3. Anti-triche (vitesse > 40 km/h, trace « trop lisse », horodatage serveur — voir [07](07-securite-conformite.md)).
+4. **Scoring asynchrone** (worker) : agrégation de la trace en cellules **H3 (~25 m)** → upsert `territory_cells` (score par équipe, `last_seen`). Zone = équipe au **score dominant**.
+5. **Privacy Zone 200 m** : points dans la zone domicile/bureau comptés pour les stats mais **ni stockés ni affichés** publiquement.
+6. Recalcul des `team_scores` (couverture) → push temps réel.
 
 ### Décroissance (job planifié)
 - Cron quotidien : `street_state` (et `zone_state`) avec `last_seen_at` > 14 j → `decay_state = pâlissant` ; > 30 j → `team_id = null` (neutre).
@@ -64,7 +65,8 @@ partners     (id, name, shop_geom, contact)
 ## Décisions ouvertes (à trancher)
 
 - [ ] React Native vs Flutter ?
-- [ ] Moteur de map-matching : Valhalla/Meili vs OSRM vs GraphHopper ?
-- [ ] Seuil de capture d'un segment (`covered_ratio`) après test terrain.
+- [ ] Résolution H3 du scoring (~25 m = rés. 11 ?) après test terrain.
+- [ ] Règle de conflit exacte (score dominant vs dernier passage) à figer avant compétition.
+- [ ] (V2) Moteur de map-matching pour les rues exactes.
 - [ ] Génération vidéo : 100 % client ou pipeline serveur ?
 - [ ] Mapbox : budget MAU acceptable à l'échelle visée ?

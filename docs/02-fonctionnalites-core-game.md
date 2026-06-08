@@ -2,16 +2,17 @@
 
 > ⚠️ Ce document décrit la **vision complète** des mécaniques. Le périmètre réellement construit en V1 est volontairement plus restreint — voir [08-roadmap-mvp](08-roadmap-mvp.md) et [10-backlog-v1](10-backlog-v1.md).
 
-## A. Découpage territorial : conquête par RUE & rétention équilibrée
+## A. Découpage territorial : conquête « Trail Paint » & rétention équilibrée
 
-> ✅ **Décision** : la conquête se fait **rue par rue** (pas en hexagones). Voir [ADR-001](decisions/ADR-001-conquete-par-rue.md). Plus beau, plus premium, émotion « *la Rue de Belleville est bleue* ».
+> ✅ **Décision** : on **peint sa trace** en courant ([ADR-002](decisions/ADR-002-trail-paint.md), qui affine [ADR-001](decisions/ADR-001-conquete-par-rue.md)). Le coureur est un **curseur lumineux** ; sa trace rejoint le **territoire de l'équipe** (heatmap en « veines »). Plus beau, plus intuitif, plus simple en MVP.
 
-- **Unité de capture :** le **segment de rue** (graphe **OpenStreetMap**, découpé aux intersections). On court une rue → elle se colore à ta couleur d'équipe.
-- **Technologie :** **map-matching** de la trace GPS sur le graphe (Valhalla/Meili, OSRM ou GraphHopper).
-- **Hors-rue (parcs, berges, stades) :** fallback en **capture de zone** (le contour OSM du parc se capture en bloc) pour ne pas pénaliser ces parcours.
-- **Décroissance lente :** une rue non revisitée **pâlit après 14 jours**, redevient **neutre après 30 jours**.
+- **Geste = résultat :** tu cours → tu peins ta trace GPS, à ta couleur d'équipe (curseur = flèche directionnelle + traînée comète).
+- **Affichage :** peinture directe de la trace (pas de map-matching nécessaire au rendu) + territoire d'équipe en veines douces.
+- **Scoring (arrière-plan) :** la trace est agrégée en cellules ; une zone appartient à l'équipe au **score dominant**, % de contrôle par couverture.
+- **Conflit :** pour reprendre une zone tenue, il faut y **repasser** (zone « contestée » en pointillés bicolores). Pas d'effacement brutal.
+- **Décroissance lente :** une zone non revisitée **pâlit après 14 jours**, redevient **neutre après 30 jours**.
 
-> 💡 **Différenciant :** contrairement aux jeux où on perd tout en une nuit (frustration → abandon), la décroissance douce **valorise le coureur occasionnel** et crée un rendez-vous régulier (rétention J14/J30).
+> 💡 **Différenciant :** la décroissance douce **valorise le coureur occasionnel** (effort = surface peinte, peu importe le niveau) et crée un rendez-vous régulier (rétention J14/J30).
 
 ## B. Système d'équipes à équilibrage dynamique
 
@@ -49,7 +50,9 @@ On garde le frisson de la chasse au trésor, on réduit le risque physique et ju
 
 | Mécanique | Rôle | Statut V1 |
 |-----------|------|-----------|
-| Conquête de rues (map-matching OSM) | Cœur du jeu | ✅ Must |
+| Trail Paint (curseur + trace peinte) | Cœur du jeu | ✅ Must |
+| Scoring de territoire en arrière-plan (cellules) | Cœur du jeu | ✅ Must |
+| Map-matching précis (rues exactes) | Précision/affichage | ⛔ V2 |
 | 4 équipes / couleurs | Appartenance | ✅ Must |
 | Classement quartier | Compétition | ✅ Must |
 | Défi sponsorisé mensuel | Monétisation + lots | ✅ Must (1 seul type) |
