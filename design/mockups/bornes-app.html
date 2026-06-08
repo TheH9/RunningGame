@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<style>
+  :root{
+    --red:#FF4D5E; --red-p:#FF9AA3; --blue:#3B82F6; --blue-p:#9DC2FF;
+    --yellow:#FFC93C; --yellow-p:#FFDE82; --green:#34D399; --green-p:#86E0BB;
+    --gold:#FFD54A; --gold-h:#FFB300;
+    --bg:#F7F8FA; --bg-d:#0E1116; --ink:#16181D; --ink2:#6B7280;
+    --radius:24px; --font:'Inter','Helvetica Neue',Arial,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;}
+  body{background:#c9ccd6;font-family:var(--font);padding:40px;display:flex;flex-wrap:wrap;gap:30px 44px;align-items:flex-start;}
+  .cap{width:390px;text-align:center;font-weight:800;color:#3a3f4a;font-size:14px;margin:-14px 0 -6px;letter-spacing:.2px;}
+  .phone{width:390px;height:844px;border-radius:46px;overflow:hidden;position:relative;background:var(--bg);
+    box-shadow:0 30px 70px rgba(16,24,40,.35),0 0 0 11px #16181D,0 0 0 13px #2a2d35;flex:0 0 auto;}
+  .phone.dark{background:var(--bg-d);color:#fff;}
+  .notch{position:absolute;top:14px;left:50%;transform:translateX(-50%);width:120px;height:32px;background:#16181D;border-radius:20px;z-index:50;}
+  .status{position:absolute;top:0;left:0;right:0;height:54px;display:flex;align-items:center;justify-content:space-between;padding:18px 30px 0;font-size:15px;font-weight:700;z-index:40;}
+  .status.w{color:#fff;}
+  .status .dots{display:flex;gap:6px;align-items:center;}
+
+  /* tabs */
+  .tabs{position:absolute;bottom:0;left:0;right:0;height:88px;background:rgba(255,255,255,.92);backdrop-filter:blur(18px);border-top:1px solid rgba(16,24,40,.06);display:flex;justify-content:space-around;align-items:flex-start;padding-top:12px;z-index:40;}
+  .dark .tabs{background:rgba(20,24,31,.94);border-top:1px solid rgba(255,255,255,.06);}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:5px;color:#B6BCC8;font-size:11px;font-weight:600;}
+  .tab.active{color:var(--blue);}
+  .tab svg{width:25px;height:25px;}
+
+  /* map */
+  .mapwrap{position:absolute;inset:0;}
+  .mapwrap svg{position:absolute;inset:0;width:100%;height:100%;}
+  .topbar{position:absolute;top:62px;left:16px;right:16px;z-index:30;display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.82);backdrop-filter:blur(20px);border-radius:22px;padding:12px 16px;box-shadow:0 8px 24px rgba(16,24,40,.10);}
+  .topbar .pin{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,var(--blue),#6aa6ff);display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+  .topbar .q-name{font-size:18px;font-weight:800;letter-spacing:-.3px;}
+  .topbar .q-sub{font-size:12px;color:var(--ink2);font-weight:600;margin-top:1px;}
+  .topbar .pct{margin-left:auto;text-align:right;}
+  .topbar .pct b{font-size:20px;font-weight:800;color:var(--blue);}
+  .topbar .pct span{display:block;font-size:10px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.5px;}
+  .legend{position:absolute;left:16px;top:132px;z-index:30;display:flex;flex-direction:column;gap:7px;}
+  .lg{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.82);backdrop-filter:blur(14px);padding:5px 11px 5px 7px;border-radius:999px;font-size:11px;font-weight:700;box-shadow:0 4px 14px rgba(16,24,40,.08);}
+  .lg i{width:11px;height:11px;border-radius:50%;display:block;}
+  .startbtn{position:absolute;bottom:112px;left:50%;transform:translateX(-50%);z-index:35;width:96px;height:96px;border-radius:50%;background:linear-gradient(160deg,var(--blue),#2f6fe0);box-shadow:0 14px 34px rgba(59,130,246,.55),0 0 0 8px rgba(59,130,246,.16);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;}
+  .startbtn b{font-size:21px;font-weight:800;}
+  .startbtn span{font-size:10px;font-weight:700;opacity:.9;letter-spacing:1px;}
+  .drop-chip{position:absolute;z-index:34;background:#fff;border-radius:14px;padding:8px 12px;display:flex;align-items:center;gap:9px;box-shadow:0 10px 26px rgba(255,179,0,.45);border:1.5px solid var(--gold);}
+  .drop-chip .gicon{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--gold),var(--gold-h));display:flex;align-items:center;justify-content:center;}
+  .drop-chip .dt{font-size:12px;font-weight:800;color:var(--ink);line-height:1.25;}
+  .drop-chip .dt small{display:block;font-weight:700;color:var(--gold-h);font-size:10px;}
+  .map-pin{position:absolute;z-index:33;transform:translate(-50%,-100%);}
+  .map-pin .halo{position:absolute;left:50%;top:78%;transform:translate(-50%,-50%);width:62px;height:62px;border-radius:50%;background:radial-gradient(circle,rgba(255,179,0,.40),rgba(255,179,0,.12) 50%,transparent 72%);z-index:-1;}
+  .map-pin .body{width:44px;height:44px;border-radius:50% 50% 50% 4px;transform:rotate(45deg);background:linear-gradient(135deg,var(--gold),var(--gold-h));box-shadow:0 8px 18px rgba(255,150,0,.5),0 0 0 3px #fff;}
+  .map-pin .ic{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);}
+  .map-pin.team .body{border-radius:50%;transform:none;background:#fff;box-shadow:0 6px 14px rgba(16,24,40,.25),0 0 0 3px #fff;width:30px;height:30px;}
+  .map-pin.team .dotc{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;}
+  .me-dot{position:absolute;z-index:33;transform:translate(-50%,-50%);width:22px;height:22px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 4px rgba(59,130,246,.30),0 0 0 7px rgba(59,130,246,.14),0 2px 6px rgba(0,0,0,.3),inset 0 0 0 2.5px #fff;}
+
+  /* generic content */
+  .content{position:absolute;top:54px;left:0;right:0;bottom:88px;overflow:hidden;padding:8px 20px 0;}
+  .content.nt{bottom:0;}
+  .h-title{font-size:28px;font-weight:800;letter-spacing:-.6px;margin:8px 0 2px;}
+  .h-sub{font-size:13px;color:var(--ink2);font-weight:600;margin-bottom:18px;}
+  .sec{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--ink2);margin:14px 4px 10px;}
+  .cta{height:56px;border-radius:18px;display:flex;align-items:center;justify-content:center;gap:9px;font-weight:800;font-size:16px;color:#fff;background:linear-gradient(135deg,var(--blue),#2f6fe0);box-shadow:0 12px 26px rgba(59,130,246,.4);}
+  .cta.dark2{background:linear-gradient(135deg,#16181D,#2a2d35);box-shadow:0 12px 26px rgba(0,0,0,.3);}
+  .cta.gold{background:linear-gradient(135deg,var(--gold),var(--gold-h));color:#5a3d00;box-shadow:0 12px 26px rgba(255,179,0,.45);}
+  .backbtn{position:absolute;top:64px;left:18px;z-index:30;width:40px;height:40px;border-radius:14px;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(16,24,40,.1);}
+
+  /* onboarding */
+  .onb{position:absolute;inset:0;overflow:hidden;background:#0E1116;}
+  .onb .grad{position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,17,22,.15) 0%,rgba(14,17,22,.6) 55%,rgba(14,17,22,.97) 100%);}
+  .ob-c{position:absolute;left:0;right:0;bottom:0;padding:0 28px 44px;color:#fff;z-index:6;}
+  .brand{display:flex;align-items:center;gap:9px;font-size:15px;font-weight:800;letter-spacing:3px;color:#fff;opacity:.85;position:absolute;top:70px;left:28px;z-index:5;}
+  .brand .dia{width:16px;height:16px;background:linear-gradient(135deg,var(--blue),#7c3aed);transform:rotate(45deg);border-radius:3px;}
+  .onb h1{font-size:38px;font-weight:800;line-height:1.05;letter-spacing:-1.2px;margin-bottom:14px;}
+  .onb h1 .hl{background:linear-gradient(120deg,#6aa6ff,#34D399);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .onb p{font-size:15px;opacity:.8;font-weight:500;line-height:1.5;margin-bottom:26px;}
+  .dotsind{display:flex;gap:7px;justify-content:center;margin-top:18px;}
+  .dotsind i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.3);}
+  .dotsind i.on{width:22px;border-radius:99px;background:#fff;}
+
+  /* team select */
+  .tcard{border-radius:22px;padding:16px 18px;color:#fff;display:flex;align-items:center;gap:14px;margin-bottom:12px;position:relative;overflow:hidden;box-shadow:0 10px 24px rgba(16,24,40,.12);}
+  .tcard .em{width:46px;height:46px;border-radius:14px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:22px;flex:0 0 auto;}
+  .tcard h4{font-size:18px;font-weight:800;letter-spacing:-.3px;}
+  .tcard span{font-size:12px;opacity:.92;font-weight:600;}
+  .tcard .ctrl{margin-left:auto;text-align:right;}
+  .tcard .ctrl b{font-size:20px;font-weight:800;}
+  .tcard .ctrl small{font-size:10px;opacity:.9;display:block;text-transform:uppercase;letter-spacing:.4px;}
+  .tcard.sel{outline:3px solid #fff;outline-offset:-3px;}
+  .weakbadge{position:absolute;top:0;right:0;background:rgba(0,0,0,.22);font-size:10px;font-weight:800;padding:4px 10px;border-bottom-left-radius:12px;text-transform:uppercase;letter-spacing:.5px;}
+  .glow{position:absolute;right:-30px;top:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.16);}
+
+  /* run active HUD */
+  .run-top{position:absolute;top:58px;left:16px;right:16px;z-index:30;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-radius:24px;padding:16px 18px;box-shadow:0 12px 30px rgba(16,24,40,.14);}
+  .run-time{font-size:46px;font-weight:800;letter-spacing:-2px;text-align:center;line-height:1;}
+  .run-time small{font-size:13px;color:var(--ink2);font-weight:700;letter-spacing:0;}
+  .run-grid{display:flex;margin-top:14px;border-top:1px solid #EEF0F4;padding-top:12px;}
+  .run-grid .g{flex:1;text-align:center;border-right:1px solid #EEF0F4;}
+  .run-grid .g:last-child{border:none;}
+  .run-grid .g b{font-size:20px;font-weight:800;display:block;letter-spacing:-.5px;}
+  .run-grid .g b .u{font-size:12px;color:var(--ink2);}
+  .run-grid .g span{font-size:10px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.4px;}
+  .run-live{position:absolute;top:182px;left:50%;transform:translateX(-50%);z-index:30;background:var(--blue);color:#fff;font-size:11px;font-weight:800;padding:5px 14px;border-radius:999px;display:flex;align-items:center;gap:6px;box-shadow:0 6px 16px rgba(59,130,246,.4);}
+  .run-live .rec{width:8px;height:8px;border-radius:50%;background:#fff;}
+  .run-ctrl{position:absolute;bottom:46px;left:0;right:0;z-index:35;display:flex;justify-content:center;align-items:center;gap:26px;}
+  .run-ctrl .rb{width:64px;height:64px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 24px rgba(16,24,40,.18);}
+  .run-ctrl .stop{width:88px;height:88px;border-radius:50%;background:linear-gradient(160deg,var(--red),#e23a4a);box-shadow:0 14px 30px rgba(255,77,94,.5);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;}
+
+  /* challenge detail */
+  .chero{border-radius:24px;padding:20px;color:#fff;position:relative;overflow:hidden;background:linear-gradient(135deg,#3B82F6,#7c3aed);box-shadow:0 16px 34px rgba(59,130,246,.35);}
+  .chero .tag{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;opacity:.9;}
+  .chero h3{font-size:24px;font-weight:800;letter-spacing:-.5px;margin:7px 0 4px;}
+  .chero p{font-size:13px;opacity:.92;font-weight:500;line-height:1.45;}
+  .chero .cd{display:flex;gap:8px;margin-top:16px;}
+  .chero .cd .u{background:rgba(255,255,255,.18);border-radius:12px;padding:8px 0;flex:1;text-align:center;}
+  .chero .cd .u b{font-size:20px;font-weight:800;display:block;}
+  .chero .cd .u span{font-size:9px;opacity:.85;text-transform:uppercase;letter-spacing:.5px;}
+  .trow{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .trow .nm{font-size:13px;font-weight:800;width:78px;}
+  .trow .track{flex:1;height:12px;border-radius:999px;background:#EEF0F4;overflow:hidden;}
+  .trow .track i{display:block;height:100%;border-radius:999px;}
+  .trow .pc{font-size:12px;font-weight:800;width:38px;text-align:right;}
+  .prizebox{background:#FFF8E6;border:1.5px solid #FFE29A;border-radius:18px;padding:14px;display:flex;align-items:center;gap:12px;margin-top:6px;}
+  .prizebox .pe{width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,var(--gold),var(--gold-h));display:flex;align-items:center;justify-content:center;font-size:22px;}
+  .prizebox b{font-size:15px;font-weight:800;display:block;}
+  .prizebox span{font-size:12px;color:#9a7b2e;font-weight:700;}
+  .partbadge{display:flex;align-items:center;gap:8px;background:#EAFBF2;border-radius:14px;padding:11px 14px;font-size:13px;font-weight:800;color:#1a9d63;margin-top:12px;}
+
+  /* rewards */
+  .challenge{border-radius:22px;padding:18px;color:#fff;position:relative;overflow:hidden;background:linear-gradient(135deg,#3B82F6,#7c3aed);box-shadow:0 14px 30px rgba(59,130,246,.35);margin-bottom:18px;}
+  .challenge .tag{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;opacity:.9;}
+  .challenge h3{font-size:21px;font-weight:800;letter-spacing:-.4px;margin:6px 0 3px;}
+  .challenge p{font-size:12.5px;opacity:.92;font-weight:500;line-height:1.4;}
+  .challenge .bar{height:8px;border-radius:999px;background:rgba(255,255,255,.28);margin-top:14px;overflow:hidden;}
+  .challenge .bar i{display:block;height:100%;width:38%;border-radius:999px;background:#fff;}
+  .challenge .meta{display:flex;justify-content:space-between;font-size:11px;font-weight:700;margin-top:8px;opacity:.95;}
+  .challenge .gl{position:absolute;right:-30px;top:-30px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.18);}
+  .prize{background:#fff;border-radius:22px;padding:16px;display:flex;gap:14px;box-shadow:0 8px 22px rgba(16,24,40,.08);align-items:center;}
+  .qr{width:84px;height:84px;border-radius:14px;background:#16181D;padding:9px;flex:0 0 auto;}
+  .qr svg{width:100%;height:100%;display:block;}
+  .prize .pinfo b{font-size:16px;font-weight:800;display:block;letter-spacing:-.3px;}
+  .prize .pinfo .where{font-size:12px;color:var(--ink2);font-weight:600;margin-top:3px;display:flex;align-items:center;gap:5px;}
+  .prize .pinfo .exp{margin-top:9px;display:inline-block;font-size:11px;font-weight:800;color:var(--gold-h);background:#FFF6DD;padding:4px 9px;border-radius:999px;}
+  .won-banner{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:var(--green);margin:2px 4px 12px;}
+
+  /* qr full */
+  .qrfull{position:absolute;inset:0;background:linear-gradient(180deg,#3B82F6,#2f6fe0);}
+  .qrfull .sheet{position:absolute;left:0;right:0;bottom:0;top:120px;background:#fff;border-radius:34px 34px 0 0;padding:26px 24px;}
+  .qrfull .qrbig{width:200px;height:200px;margin:6px auto 0;border-radius:22px;background:#16181D;padding:16px;box-shadow:0 16px 36px rgba(16,24,40,.2);}
+  .qrfull .qrbig svg{width:100%;height:100%;}
+  .qrfull h2{text-align:center;font-size:22px;font-weight:800;margin-top:18px;letter-spacing:-.4px;}
+  .qrfull .csub{text-align:center;font-size:13px;color:var(--ink2);font-weight:600;margin-top:3px;}
+  .stepline{display:flex;gap:12px;align-items:flex-start;margin-top:14px;}
+  .stepline .n{width:26px;height:26px;border-radius:50%;background:#EAF1FF;color:var(--blue);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+  .stepline p{font-size:13px;font-weight:600;color:#3a3f4a;line-height:1.35;}
+  .qrhead{position:absolute;top:70px;left:0;right:0;text-align:center;color:#fff;z-index:5;}
+  .qrhead .em{font-size:30px;}
+  .qrhead b{display:block;font-size:15px;font-weight:800;opacity:.95;letter-spacing:.5px;margin-top:2px;}
+
+  /* plus paywall */
+  .plus{position:absolute;inset:0;background:radial-gradient(120% 80% at 50% 0%,#23304a 0%,#0E1116 60%);color:#fff;padding:84px 26px 40px;}
+  .plus .badge{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,var(--gold),var(--gold-h));color:#5a3d00;font-weight:800;font-size:12px;padding:6px 14px;border-radius:999px;letter-spacing:.5px;}
+  .plus h1{font-size:32px;font-weight:800;letter-spacing:-1px;margin:18px 0 6px;}
+  .plus .lead{font-size:14px;opacity:.75;font-weight:500;margin-bottom:22px;line-height:1.45;}
+  .feat{display:flex;align-items:center;gap:13px;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.08);}
+  .feat .ck{width:26px;height:26px;border-radius:50%;background:rgba(52,211,153,.18);display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+  .feat b{font-size:15px;font-weight:700;}
+  .feat span{font-size:12px;opacity:.6;display:block;font-weight:500;}
+  .price{display:flex;align-items:baseline;gap:6px;justify-content:center;margin:22px 0 4px;}
+  .price b{font-size:38px;font-weight:800;letter-spacing:-1px;}
+  .price span{font-size:14px;opacity:.7;}
+
+  /* drop alert */
+  .dropbg{position:absolute;inset:0;background:radial-gradient(120% 80% at 50% 22%,#5a4410 0%,#1a1606 60%,#0E1116 100%);overflow:hidden;color:#fff;}
+  .dropbg .rays{position:absolute;left:50%;top:240px;transform:translate(-50%,-50%);width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(255,200,40,.35),transparent 62%);}
+  .bigpin{position:absolute;top:150px;left:50%;transform:translateX(-50%);z-index:5;}
+  .bigpin .b{width:96px;height:96px;border-radius:50% 50% 50% 8px;transform:rotate(45deg);background:linear-gradient(135deg,var(--gold),var(--gold-h));box-shadow:0 18px 40px rgba(255,160,0,.6),0 0 0 6px rgba(255,255,255,.15);}
+  .bigpin .ic{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);}
+  .drop-c{position:absolute;left:26px;right:26px;top:300px;text-align:center;z-index:5;}
+  .drop-c .k{font-size:11px;font-weight:800;letter-spacing:2px;color:var(--gold);text-transform:uppercase;}
+  .drop-c h1{font-size:30px;font-weight:800;letter-spacing:-.8px;margin:8px 0;line-height:1.1;}
+  .drop-c p{font-size:14px;opacity:.8;font-weight:500;line-height:1.45;}
+  .winrow{display:flex;gap:10px;margin:22px 0;}
+  .winrow .w{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:13px 6px;}
+  .winrow .w b{font-size:20px;font-weight:800;display:block;color:var(--gold);}
+  .winrow .w span{font-size:10px;opacity:.75;text-transform:uppercase;letter-spacing:.4px;}
+  .drop-cta{position:absolute;left:26px;right:26px;bottom:54px;z-index:5;}
+
+  /* story / end */
+  .story{position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 18%,#1b3a6b 0%,#0E1116 70%);overflow:hidden;}
+  .story .swave{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,.5),rgba(59,130,246,.15) 45%,transparent 70%);}
+  .story-h{position:absolute;top:74px;left:0;right:0;text-align:center;color:#fff;z-index:5;}
+  .story-h .em{font-size:34px;}
+  .story-h b{font-size:26px;font-weight:800;display:block;margin-top:4px;letter-spacing:-.5px;}
+  .story-stats{position:absolute;left:24px;right:24px;bottom:188px;z-index:5;display:flex;gap:10px;}
+  .ss{flex:1;background:rgba(255,255,255,.10);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.16);border-radius:18px;padding:14px 8px;text-align:center;color:#fff;}
+  .ss b{font-size:23px;font-weight:800;display:block;letter-spacing:-1px;}
+  .ss span{font-size:10px;font-weight:700;opacity:.8;text-transform:uppercase;letter-spacing:.4px;}
+  .ss.blue b{color:#9ec3ff;}
+  .share-btn{position:absolute;left:24px;right:24px;bottom:120px;z-index:5;height:58px;border-radius:18px;background:linear-gradient(135deg,#E1306C,#F77737,#FCAF45);display:flex;align-items:center;justify-content:center;gap:10px;color:#fff;font-weight:800;font-size:16px;box-shadow:0 14px 30px rgba(225,48,108,.45);}
+  .close-btn{position:absolute;bottom:64px;left:0;right:0;text-align:center;color:rgba(255,255,255,.6);font-weight:700;font-size:14px;z-index:5;}
+  .story-wm{position:absolute;bottom:172px;left:0;right:0;text-align:center;color:rgba(255,255,255,.45);font-weight:800;font-size:12px;letter-spacing:2px;z-index:5;}
+  .city-mini{position:absolute;top:118px;left:50%;transform:translateX(-50%);z-index:5;width:230px;height:150px;}
+
+  /* profil */
+  .phead{display:flex;align-items:center;gap:14px;margin:4px 0 18px;}
+  .phead .pav{width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,var(--blue),#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;font-weight:800;}
+  .phead .pn b{font-size:22px;font-weight:800;letter-spacing:-.4px;}
+  .teamtag{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:var(--blue);background:#EAF1FF;padding:4px 11px;border-radius:999px;margin-top:5px;}
+  .stats3{display:flex;gap:11px;margin-bottom:18px;}
+  .stat{flex:1;background:#fff;border-radius:18px;padding:14px 12px;text-align:center;box-shadow:0 4px 14px rgba(16,24,40,.05);}
+  .stat b{font-size:24px;font-weight:800;letter-spacing:-1px;display:block;}
+  .stat span{font-size:11px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.4px;}
+  .runrow{display:flex;align-items:center;gap:13px;background:#fff;border-radius:18px;padding:11px;margin-bottom:9px;box-shadow:0 4px 14px rgba(16,24,40,.05);}
+  .runrow .thumb{width:62px;height:62px;border-radius:13px;position:relative;overflow:hidden;flex:0 0 auto;background:#0E1116;}
+  .runrow .thumb .play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+  .runrow .ri b{font-size:14px;font-weight:800;}
+  .runrow .ri span{font-size:12px;color:var(--ink2);font-weight:600;display:block;margin-top:2px;}
+  .runrow .ri .gain{color:var(--blue);font-weight:800;}
+  .plus-cta{margin-top:6px;background:linear-gradient(135deg,#16181D,#2a2d35);color:#fff;border-radius:18px;padding:15px 18px;display:flex;align-items:center;gap:12px;}
+  .plus-cta b{font-size:15px;font-weight:800;}
+  .plus-cta span{font-size:11px;opacity:.7;display:block;font-weight:600;}
+  .plus-cta .arrow{margin-left:auto;}
+  .lbrow{display:flex;align-items:center;gap:12px;background:#fff;border-radius:18px;padding:12px 14px;margin-bottom:9px;box-shadow:0 4px 14px rgba(16,24,40,.05);}
+  .lbrow .rk{font-size:15px;font-weight:800;color:var(--ink2);width:20px;}
+  .lbrow .av{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;}
+  .lbrow .nm{font-weight:800;font-size:15px;}
+  .lbrow .nm small{display:block;font-weight:600;font-size:11px;color:var(--ink2);}
+  .lbrow .val{margin-left:auto;font-weight:800;font-size:15px;}
+  .lbrow .val small{font-weight:600;color:var(--ink2);font-size:11px;}
+  .donut-wrap{display:flex;flex-direction:column;align-items:center;margin:6px 0 18px;}
+  .donut{width:180px;height:180px;border-radius:50%;background:conic-gradient(var(--blue) 0 42%,var(--red) 42% 70%,var(--yellow) 70% 88%,var(--green) 88% 100%);display:flex;align-items:center;justify-content:center;box-shadow:0 16px 36px rgba(16,24,40,.14);}
+  .donut .hole{width:112px;height:112px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .donut .hole b{font-size:28px;font-weight:800;color:var(--blue);letter-spacing:-1px;}
+  .donut .hole span{font-size:10px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.6px;}
+  .pills{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:14px;}
+  .pill{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;background:#fff;padding:6px 12px;border-radius:999px;box-shadow:0 3px 10px rgba(16,24,40,.06);}
+  .pill i{width:10px;height:10px;border-radius:50%;}
+</style>
+</head>
+<body>
+
+<!-- 01 ONBOARDING -->
+<div class="cap">01 · Onboarding</div>
+<div class="phone" id="s-onb">
+  <div class="onb">
+    <svg id="onb-map" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%;"></svg>
+    <div class="grad"></div>
+  </div>
+  <div class="notch"></div>
+  <div class="status w"><span>9:41</span><div class="dots">__SIG_W__</div></div>
+  <div class="brand"><span class="dia"></span>BORNES</div>
+  <div class="ob-c">
+    <h1>Cours pour <span class="hl">ton quartier.</span></h1>
+    <p>Chaque sortie colore les rues de ta ville à la couleur de ton équipe. Conquiers, défends, et gagne de vrais lots.</p>
+    <div class="cta">Commencer →</div>
+    <div class="dotsind"><i class="on"></i><i></i><i></i></div>
+  </div>
+</div>
+
+<!-- 02 CHOIX D'EQUIPE -->
+<div class="cap">02 · Choix d'équipe</div>
+<div class="phone" id="s-team">
+  <div class="notch"></div>
+  <div class="status"><span>9:41</span><div class="dots">__SIG__</div></div>
+  <div class="content nt" style="top:54px;padding-top:20px;">
+    <div class="h-title">Choisis ton équipe</div>
+    <div class="h-sub">À Belleville · ton choix est définitif pour la saison</div>
+
+    <div class="tcard sel" style="background:linear-gradient(135deg,#3B82F6,#6aa6ff);">
+      <div class="glow"></div>
+      <div class="em">🌊</div>
+      <div><h4>Les Vagues</h4><span>Bleu · tu fais déjà partie de la vague</span></div>
+      <div class="ctrl"><b>42%</b><small>contrôle</small></div>
+    </div>
+    <div class="tcard" style="background:linear-gradient(135deg,#FF4D5E,#ff7a86);">
+      <div class="em">🔥</div>
+      <div><h4>Les Braises</h4><span>Rouge</span></div>
+      <div class="ctrl"><b>28%</b><small>contrôle</small></div>
+    </div>
+    <div class="tcard" style="background:linear-gradient(135deg,#34D399,#5fe0b0);">
+      <div class="weakbadge">+50 bonus · la + faible</div>
+      <div class="em">🌱</div>
+      <div><h4>Les Pousses</h4><span>Vert · rejoins-les pour rééquilibrer</span></div>
+      <div class="ctrl"><b>12%</b><small>contrôle</small></div>
+    </div>
+    <div class="tcard" style="background:linear-gradient(135deg,#FFC93C,#ffd96b);">
+      <div class="em">☀️</div>
+      <div><h4>Les Soleils</h4><span>Jaune</span></div>
+      <div class="ctrl"><b>18%</b><small>contrôle</small></div>
+    </div>
+
+    <div class="cta" style="margin-top:18px;">Rejoindre Les Vagues</div>
+  </div>
+</div>
+
+<!-- 03 MAP -->
+<div class="cap">03 · Carte (accueil)</div>
+<div class="phone" id="s-map">
+  <div class="notch"></div>
+  <div class="status"><span>9:41</span><div class="dots">__SIG__</div></div>
+  <div class="mapwrap"><svg id="map-svg" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg></div>
+  <div class="map-pin" style="left:300px;top:248px;"><div class="halo"></div><div class="body"></div><div class="ic">__SHOE__</div></div>
+  <div class="map-pin team" style="left:122px;top:236px;"><div class="body"></div><div class="dotc" style="background:#FF4D5E"></div></div>
+  <div class="me-dot" style="left:330px;top:336px;"></div>
+  <div class="topbar"><div class="pin">__PIN__</div><div><div class="q-name">Belleville</div><div class="q-sub">Conquête par rue</div></div><div class="pct"><b>42%</b><span>Les Vagues</span></div></div>
+  <div class="legend"><div class="lg"><i style="background:#3B82F6"></i>Toi</div><div class="lg"><i style="background:#FF4D5E"></i>Braises</div><div class="lg"><i style="background:#FFC93C"></i>Soleils</div><div class="lg"><i style="background:#34D399"></i>Pousses</div></div>
+  <div class="drop-chip" style="right:24px;top:300px;"><div class="gicon">__STAR__</div><div class="dt">Drop · Parc<br><small>Paire Asics ✦ 19–21h</small></div></div>
+  <div class="startbtn"><b>GO</b><span>START</span></div>
+  <div class="tabs"><div class="tab active">__I_MAP__<span>Map</span></div><div class="tab">__I_RANK__<span>Classement</span></div><div class="tab">__I_GIFT__<span>Récompenses</span></div><div class="tab">__I_USER__<span>Profil</span></div></div>
+</div>
+
+<!-- 04 RUN ACTIF -->
+<div class="cap">04 · Run actif (live)</div>
+<div class="phone" id="s-run">
+  <div class="notch"></div>
+  <div class="status"><span>9:41</span><div class="dots">__SIG__</div></div>
+  <div class="mapwrap"><svg id="run-svg" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg></div>
+  <div class="me-dot" style="left:262px;top:432px;"></div>
+  <div class="run-top">
+    <div class="run-time">00:32:14 <small></small></div>
+    <div class="run-grid">
+      <div class="g"><b>5,42<span class="u"> km</span></b><span>Distance</span></div>
+      <div class="g"><b>5:56<span class="u"> /km</span></b><span>Allure</span></div>
+      <div class="g"><b style="color:#3B82F6">+12</b><span>Rues prises</span></div>
+    </div>
+  </div>
+  <div class="run-live"><span class="rec"></span>EN COURS · Belleville passe au bleu</div>
+  <div class="run-ctrl">
+    <div class="rb">__PAUSE__</div>
+    <div class="stop">STOP</div>
+    <div class="rb">__LOCK__</div>
+  </div>
+</div>
+
+<!-- 05 FIN DE RUN -->
+<div class="cap">05 · Fin de run (Story 9:16)</div>
+<div class="phone" id="s-end">
+  <div class="story">
+    <div class="swave"></div><div class="notch"></div>
+    <div class="story-h"><div class="em">🎉</div><b>Run terminé&nbsp;!</b></div>
+    <svg class="city-mini" viewBox="0 0 230 150" id="end-svg"></svg>
+    <div class="story-stats"><div class="ss blue"><b>+12</b><span>Rues</span></div><div class="ss"><b>5,4<small style="font-size:12px">km</small></b><span>Distance</span></div><div class="ss blue"><b>+2%</b><span>Belleville</span></div></div>
+    <div class="story-wm">◆ BORNES</div>
+    <div class="share-btn">__IG__ Partager en Story</div>
+    <div class="close-btn">Fermer</div>
+  </div>
+</div>
+
+<!-- 06 CLASSEMENT -->
+<div class="cap">06 · Classement</div>
+<div class="phone" id="s-rank">
+  <div class="notch"></div>
+  <div class="status"><span>9:41</span><div class="dots">__SIG__</div></div>
+  <div class="content">
+    <div class="h-title">Contrôle de Paris 20ᵉ</div>
+    <div class="h-sub">Juin · mise à jour il y a 3 min</div>
+    <div class="donut-wrap"><div class="donut"><div class="hole"><b>42%</b><span>Les Vagues</span></div></div>
+      <div class="pills"><div class="pill"><i style="background:#3B82F6"></i>Vagues 42%</div><div class="pill"><i style="background:#FF4D5E"></i>Braises 28%</div><div class="pill"><i style="background:#FFC93C"></i>Soleils 18%</div><div class="pill"><i style="background:#34D399"></i>Pousses 12%</div></div>
+    </div>
+    <div class="sec">Leaderboard du quartier</div>
+    <div class="lbrow"><div class="rk">1</div><div class="av" style="background:#3B82F6">L</div><div class="nm">Léa M.<small>Les Vagues</small></div><div class="val">128<small> rues</small></div></div>
+    <div class="lbrow"><div class="rk">2</div><div class="av" style="background:#FF4D5E">M</div><div class="nm">Marco D.<small>Les Braises</small></div><div class="val">119<small> rues</small></div></div>
+    <div class="lbrow"><div class="rk">3</div><div class="av" style="background:#FFC93C">S</div><div class="nm">Sofia R.<small>Les Soleils</small></div><div class="val">97<small> rues</small></div></div>
+    <div class="lbrow" style="background:#EAF1FF;box-shadow:0 0 0 1.5px #3B82F6 inset"><div class="rk">7</div><div class="av" style="background:#3B82F6">T</div><div class="nm">Toi<small>Les Vagues</small></div><div class="val">61<small> rues</small></div></div>
+  </div>
+  <div class="tabs"><div class="tab">__I_MAP__<span>Map</span></div><div class="tab active">__I_RANK__<span>Classement</span></div><div class="tab">__I_GIFT__<span>Récompenses</span></div><div class="tab">__I_USER__<span>Profil</span></div></div>
+</div>
+
+<!-- 07 DÉFI DÉTAIL -->
+<div class="cap">07 · Défi du mois (détail)</div>
+<div class="phone" id="s-challenge">
+  <div class="notch"></div>
+  <div class="status"><span>9:41</span><div class="dots">__SIG__</div></div>
+  <div class="backbtn">__BACK__</div>
+  <div class="content nt" style="top:54px;padding-top:60px;">
+    <div class="chero">
+      <div class="tag">Défi du mois · sponsorisé par Distance</div>
+      <h3>Belleville × Distance</h3>
+      <p>L'équipe qui possède le plus de rues du quartier au 30 juin remporte 5 dossards des 20 km de Paris.</p>
+      <div class="cd"><div class="u"><b>09</b><span>Jours</span></div><div class="u"><b>14</b><span>Heures</span></div><div class="u"><b>23</b><span>Min</span></div></div>
+    </div>
+    <div class="sec">Qui mène le quartier ?</div>
+    <div class="trow"><div class="nm">🔵 Vagues</div><div class="track"><i style="width:38%;background:#3B82F6"></i></div><div class="pc">38%</div></div>
+    <div class="trow"><div class="nm">🔴 Braises</div><div class="track"><i style="width:31%;background:#FF4D5E"></i></div><div class="pc">31%</div></div>
+    <div class="trow"><div class="nm">🟡 Soleils</div><div class="track"><i style="width:19%;background:#FFC93C"></i></div><div class="pc">19%</div></div>
+    <div class="trow"><div class="nm">🟢 Pousses</div><div class="track"><i style="width:12%;background:#34D399"></i></div><div class="pc">12%</div></div>
+    <div class="prizebox"><div class="pe">🎟️</div><div><b>2 dossards · 20 km de Paris</b><span>Tirés au sort dans l'équipe gagnante</span></div></div>
+    <div class="partbadge">__CHECK__ Tu es qualifié·e — 6 rues prises dans la zone</div>
+    <div class="cta" style="margin-top:14px;">Aller défendre le quartier</div>
+  </div>
+</div>
+
+<!-- 08 RÉCOMPENSES -->
+<div class="cap">08 · Récompenses (coffre-fort)</div>
+<div class="phone" id="s-rewards">
+  <div class="notch"></div>
+  <div class="status"><span>9:41</span><div class="dots">__SIG__</div></div>
+  <div class="content">
+    <div class="h-title">Récompenses</div>
+    <div class="h-sub">Le coffre-fort de tes lots</div>
+    <div class="challenge"><div class="gl"></div><div class="tag">Défi du mois · sponsorisé</div><h3>Belleville × Distance</h3><p>L'équipe en tête au 30 juin remporte 5 dossards des 20 km de Paris.</p><div class="bar"><i></i></div><div class="meta"><span>🔵 Les Vagues mènent · 38%</span><span>plus que 9 jours</span></div></div>
+    <div class="won-banner">__CHECK_G__ Lot gagné — à retirer en boutique</div>
+    <div class="prize"><div class="qr"><svg id="qr1" viewBox="0 0 100 100"></svg></div><div class="pinfo"><b>Paire Asics Novablast</b><div class="where">__PIN_G__ Distance Running · Paris 11ᵉ</div><span class="exp">⏳ Expire dans 12 jours</span></div></div>
+  </div>
+  <div class="tabs"><div class="tab">__I_MAP__<span>Map</span></div><div class="tab">__I_RANK__<span>Classement</span></div><div class="tab active">__I_GIFT__<span>Récompenses</span></div><div class="tab">__I_USER__<span>Profil</span></div></div>
+</div>
+
+<!-- 09 LOT / QR -->
+<div class="cap">09 · Lot gagné (QR à scanner)</div>
+<div class="phone" id="s-qr">
+  <div class="qrfull">
+    <div class="notch"></div>
+    <div class="qrhead"><div class="em">🎁</div><b>TON LOT T'ATTEND</b></div>
+    <div class="sheet">
+      <div class="qrbig"><svg id="qr2" viewBox="0 0 100 100"></svg></div>
+      <h2>Paire Asics Novablast</h2>
+      <div class="csub">Présente ce QR code en boutique pour le retirer</div>
+      <div class="stepline"><div class="n">1</div><p>Rends-toi chez <b>Distance Running</b>, 12 rue Oberkampf, Paris 11ᵉ.</p></div>
+      <div class="stepline"><div class="n">2</div><p>Fais scanner ce QR code en caisse.</p></div>
+      <div class="stepline"><div class="n">3</div><p>Repars avec ta paire 🎉 — valable <b>12 jours</b>.</p></div>
+      <div class="cta gold" style="margin-top:18px;">__NAVI__ Itinéraire vers la boutique</div>
+    </div>
+  </div>
+</div>
+
+<!-- 10 PROFIL -->
+<div class="cap">10 · Profil</div>
+<div class="phone" id="s-profile">
+  <div class="notch"></div>
+  <div class="status"><span>9:41</span><div class="dots">__SIG__</div></div>
+  <div class="content">
+    <div class="phead"><div class="pav">L</div><div class="pn"><b>Léa</b><br><span class="teamtag"><i style="width:9px;height:9px;border-radius:50%;background:#3B82F6;display:inline-block"></i> Les Vagues</span></div></div>
+    <div class="stats3"><div class="stat"><b>312</b><span>Rues</span></div><div class="stat"><b>47<small style="font-size:13px"> km</small></b><span>Distance</span></div><div class="stat"><b>8</b><span>Quartiers</span></div></div>
+    <div class="sec">Historique · 3 derniers mois</div>
+    <div class="runrow"><div class="thumb"><div class="play">__PLAY__</div></div><div class="ri"><b>Run du 2 juin</b><span><span class="gain">+12 rues</span> · 5,4 km · Belleville</span></div></div>
+    <div class="runrow"><div class="thumb"><div class="play">__PLAY__</div></div><div class="ri"><b>Run du 31 mai</b><span><span class="gain">+8 rues</span> · 3,9 km · Ménilmontant</span></div></div>
+    <div class="runrow"><div class="thumb"><div class="play">__PLAY__</div></div><div class="ri"><b>Run du 28 mai</b><span><span class="gain">+15 rues</span> · 6,8 km · Belleville</span></div></div>
+    <div class="plus-cta"><div><b>Passer à Bornes+</b><span>Historique illimité · heatmap · stats avancées</span></div><div class="arrow">__CHEV__</div></div>
+  </div>
+  <div class="tabs"><div class="tab">__I_MAP__<span>Map</span></div><div class="tab">__I_RANK__<span>Classement</span></div><div class="tab">__I_GIFT__<span>Récompenses</span></div><div class="tab active">__I_USER__<span>Profil</span></div></div>
+</div>
+
+<!-- 11 BORNES+ -->
+<div class="cap">11 · Bornes+ (premium)</div>
+<div class="phone" id="s-plus">
+  <div class="plus">
+    <div class="notch"></div>
+    <div class="badge">◆ BORNES+</div>
+    <h1>Passe au niveau<br>supérieur.</h1>
+    <div class="lead">Le jeu reste 100% gratuit. Bornes+ débloque tes stats de conquête.</div>
+    <div class="feat"><div class="ck">__CK__</div><div><b>Historique illimité</b><span>Tous tes runs, pour toujours</span></div></div>
+    <div class="feat"><div class="ck">__CK__</div><div><b>Heatmap personnelle</b><span>Toutes les rues que tu as conquises</span></div></div>
+    <div class="feat"><div class="ck">__CK__</div><div><b>Statistiques avancées</b><span>Allure, dénivelé, progression</span></div></div>
+    <div class="feat"><div class="ck">__CK__</div><div><b>Replays vidéo HD</b><span>Tes plus belles conquêtes</span></div></div>
+    <div class="price"><b>4,99€</b><span>/ mois · sans engagement</span></div>
+    <div class="cta gold" style="margin-top:14px;">Essayer 7 jours gratuits</div>
+  </div>
+</div>
+
+<!-- 12 DROP ALERT -->
+<div class="cap">12 · Drop ! (notification active)</div>
+<div class="phone" id="s-drop">
+  <div class="dropbg">
+    <div class="rays"></div><div class="notch"></div>
+    <div class="bigpin"><div class="b"></div><div class="ic">__SHOE_BIG__</div></div>
+    <div class="drop-c">
+      <div class="k">✦ Drop en cours ✦</div>
+      <h1>Une paire d'Asics<br>au Parc de Belleville</h1>
+      <p>Passe dans la zone en run actif avant 21h pour entrer dans le tirage au sort.</p>
+      <div class="winrow"><div class="w"><b>01:42:08</b><span>Temps restant</span></div><div class="w"><b>23</b><span>Déjà qualifiés</span></div></div>
+    </div>
+    <div class="drop-cta"><div class="cta gold">Lancer mon run vers le Drop →</div></div>
+  </div>
+</div>
+
+<script>
+const I={
+  sig:(c)=>`<svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="7" width="3" height="5" rx="1" fill="${c}"/><rect x="5" y="4" width="3" height="8" rx="1" fill="${c}"/><rect x="10" y="2" width="3" height="10" rx="1" fill="${c}"/><rect x="15" y="0" width="3" height="12" rx="1" fill="${c}"/></svg><svg width="24" height="12" viewBox="0 0 24 12" style="margin-left:6px"><rect x="1" y="1" width="20" height="10" rx="3" fill="none" stroke="${c}" stroke-width="1.3"/><rect x="3" y="3" width="13" height="6" rx="1.5" fill="${c}"/><rect x="22" y="4" width="1.5" height="4" rx="1" fill="${c}"/></svg>`,
+  map:'<svg viewBox="0 0 24 24" fill="none"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 4v14M15 6v14" stroke="currentColor" stroke-width="2"/></svg>',
+  rank:'<svg viewBox="0 0 24 24" fill="none"><path d="M5 21V11M12 21V4M19 21v-7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+  gift:'<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="8" width="18" height="13" rx="2" stroke="currentColor" stroke-width="2"/><path d="M3 12h18M12 8v13" stroke="currentColor" stroke-width="2"/><path d="M12 8S10 3 7.5 4.5 9 8 12 8zM12 8s2-5 4.5-3.5S15 8 12 8z" stroke="currentColor" stroke-width="2"/></svg>',
+  user:'<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  pin:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 21s7-5.7 7-11a7 7 0 1 0-14 0c0 5.3 7 11 7 11z" fill="#fff"/><circle cx="12" cy="10" r="2.6" fill="#3B82F6"/></svg>',
+  pinG:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 21s7-5.7 7-11a7 7 0 1 0-14 0c0 5.3 7 11 7 11z" stroke="#6B7280" stroke-width="2"/></svg>',
+  shoe:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M2 15.5l5.4-1 2.4-3.9 2 1 1.6-1 1 2 5.6 1c1.2.2 2 .9 2 2V19H2z" fill="#fff"/></svg>',
+  shoeBig:'<svg width="42" height="42" viewBox="0 0 24 24" fill="none"><path d="M2 15.5l5.4-1 2.4-3.9 2 1 1.6-1 1 2 5.6 1c1.2.2 2 .9 2 2V19H2z" fill="#fff"/></svg>',
+  star:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 2l2 6h6l-5 4 2 7-7-4-7 4 2-7-5-4h6z" fill="#fff"/></svg>',
+  play:'<svg width="20" height="20" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="#fff"/></svg>',
+  ig:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="5" stroke="#fff" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="#fff" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.4" fill="#fff"/></svg>',
+  back:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="#16181D" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  chev:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  check:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#1a9d63" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  checkG:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#34D399" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  ck:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#34D399" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  pause:'<svg width="24" height="24" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1.5" fill="#16181D"/><rect x="14" y="5" width="4" height="14" rx="1.5" fill="#16181D"/></svg>',
+  lock:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="#16181D" stroke-width="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="#16181D" stroke-width="2"/></svg>',
+  navi:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 11l18-8-8 18-2-8-8-2z" fill="#5a3d00"/></svg>'
+};
+let html=document.body.innerHTML;
+const rep={'__SIG__':I.sig('#16181D'),'__SIG_W__':I.sig('#fff'),'__I_MAP__':I.map,'__I_RANK__':I.rank,'__I_GIFT__':I.gift,'__I_USER__':I.user,
+  '__PIN__':I.pin,'__PIN_G__':I.pinG,'__SHOE__':I.shoe,'__SHOE_BIG__':I.shoeBig,'__STAR__':I.star,'__PLAY__':I.play,'__IG__':I.ig,'__BACK__':I.back,
+  '__CHEV__':I.chev,'__CHECK__':I.check,'__CHECK_G__':I.checkG,'__CK__':I.ck,'__PAUSE__':I.pause,'__LOCK__':I.lock,'__NAVI__':I.navi};
+for(const k in rep) html=html.split(k).join(rep[k]);
+document.body.innerHTML=html;
+
+/* seeded rng */
+function makeRng(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296;};}
+const TEAM={blue:['#3B82F6','#9DC2FF'],red:['#FF4D5E','#FF9AA3'],yellow:['#FFC93C','#FFDE82'],green:['#34D399','#86E0BB']};
+
+/* street-conquest map (light or dark) */
+function buildStreetMap(id,dark){
+  const s=document.getElementById(id); if(!s)return;
+  const rnd=makeRng(424242);
+  const C= dark ? {land:'#0E1116',block:'#161A21',blockEdge:'#1c2129',roadCase:'#0a0d12',road:'#2b313b',
+    water:'#13202e',waterEdge:'#1b2f44',park:'#13201a',parkEdge:'#1a2c20',label:'#7e8794',metro:'#3a86ff'}
+  : {land:'#EFF1F4',block:'#F8F9FB',blockEdge:'#E6E9EF',roadCase:'#E1E4EA',road:'#FFFFFF',
+    water:'#CFE2F0',waterEdge:'#BCD9EE',park:'#DEEBD8',parkEdge:'#CFE3C8',label:'#9aa1ad',metro:'#3B82F6'};
+  let h=`<defs><filter id="halo_${id}" x="-20%" y="-20%" width="140%" height="140%"><feMorphology operator="dilate" radius="1.6" in="SourceAlpha"/><feFlood flood-color="${dark?'#0E1116':'#fff'}"/><feComposite in2="SourceAlpha" operator="in" result="ha"/><feMerge><feMergeNode in="ha"/><feMergeNode in="ha"/></feMerge></filter><filter id="glow_${id}" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3"/></filter></defs>`;
+  h+=`<rect width="390" height="844" fill="${C.land}"/>`;
+  for(let gy=-1;gy<13;gy++)for(let gx=-1;gx<7;gx++){if(rnd()<0.08)continue;const x=gx*62+rnd()*8+6,y=gy*64+rnd()*8,w=46+rnd()*14,ht=48+rnd()*12;h+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${ht.toFixed(1)}" rx="6" fill="${C.block}" stroke="${C.blockEdge}" stroke-width="1"/>`;}
+  h+=`<path d="M14 96 q54 -34 104 -6 q40 26 24 78 q-18 56 -86 50 q-66 -8 -64 -64 q2 -38 22 -58z" fill="${C.park}" stroke="${C.parkEdge}" stroke-width="1.5"/>`;
+  h+=`<path d="M-30 712 C 90 678, 210 740, 330 690 S 470 654, 470 712 L470 760 C 350 760, 230 800, 110 762 S -30 770, -30 760 z" fill="${C.water}" stroke="${C.waterEdge}" stroke-width="1.5"/>`;
+  const COLS=8,ROWS=15,GX=52,GY=58;
+  const node=(i,j)=>({x:i*GX+((j%2)?14:0)+(rnd()*10-5)+2,y:j*GY+(rnd()*8-4)+10});
+  const N=[];for(let j=0;j<ROWS;j++){N[j]=[];for(let i=0;i<COLS;i++)N[j][i]=node(i,j);}
+  const clusters=[{cx:250,cy:470,r:150,team:'blue'},{cx:120,cy:250,r:96,team:'red'},{cx:305,cy:660,r:84,team:'yellow'},{cx:60,cy:600,r:74,team:'green'}];
+  const teamAt=(x,y)=>{let b=null,bp=0;for(const c of clusters){const d=Math.hypot(x-c.cx,y-c.cy);if(d>c.r)continue;const p=1-d/c.r;if(p>bp){bp=p;b=c;}}return b?{team:b.team,p:bp}:null;};
+  const segs=[];for(let j=0;j<ROWS;j++)for(let i=0;i<COLS;i++){if(i<COLS-1&&rnd()>0.12)segs.push([N[j][i],N[j][i+1]]);if(j<ROWS-1&&rnd()>0.12)segs.push([N[j][i],N[j+1][i]]);}
+  let neut='',paint='';
+  for(const [a,b] of segs){const mx=(a.x+b.x)/2,my=(a.y+b.y)/2;const t=teamAt(mx,my);const cap=t&&rnd()<(0.35+t.p*0.6);
+    if(cap){const v=TEAM[t.team][0];paint+=`<line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" stroke="${v}" stroke-opacity=".5" stroke-width="9" stroke-linecap="round" filter="url(#glow_${id})"/><line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" stroke="${v}" stroke-width="5" stroke-linecap="round"/>`;}
+    else{neut+=`<line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" stroke="${C.roadCase}" stroke-width="5" stroke-linecap="round"/><line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" stroke="${C.road}" stroke-width="3" stroke-linecap="round"/>`;}}
+  h+=neut+paint;
+  const ROUTE='M 168 560 C 196 510, 238 482, 262 432 S 300 372, 330 344';
+  h+=`<path d="${ROUTE}" fill="none" stroke="#1d4ed8" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="${ROUTE}" fill="none" stroke="#fff" stroke-width="1.5" stroke-opacity=".75" stroke-dasharray="1 7" stroke-linecap="round"/>`;
+  const lab=(x,y,t,r,sz)=>`<text x="${x}" y="${y}" font-family="Inter,Arial,sans-serif" font-size="${sz||10.5}" font-weight="600" fill="${C.label}" text-anchor="middle" transform="rotate(${r} ${x} ${y})" filter="url(#halo_${id})">${t}</text>`;
+  h+=lab(96,150,'Parc de Belleville',-6,11)+lab(150,735,'Canal Saint-Martin',-9,10.5)+lab(300,250,'Rue de Belleville',58,10);
+  const metro=(x,y)=>`<circle cx="${x}" cy="${y}" r="8.5" fill="${C.metro}"/><text x="${x}" y="${y+3.4}" font-size="10" font-weight="800" fill="#fff" text-anchor="middle" font-family="Arial">M</text>`;
+  h+=metro(206,312)+metro(322,196);
+  s.innerHTML=h;
+}
+buildStreetMap('map-svg',false);
+buildStreetMap('run-svg',false);
+buildStreetMap('onb-map',true);
+
+/* end-of-run mini wave */
+(function(){const s=document.getElementById('end-svg');if(!s)return;
+  const rnd=makeRng(7);const TEAMc=['#3B82F6','#9DC2FF'];let h='';
+  for(let i=0;i<26;i++){const x=20+rnd()*190,y=20+rnd()*110;const on=rnd()<.6;
+    h+=`<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="3" fill="${on?TEAMc[0]:'#2a3340'}" opacity="${on?0.9:0.5}"/>`;}
+  h+=`<path d="M 40 120 C 70 95, 105 80, 150 66" fill="none" stroke="#6aa6ff" stroke-width="3" stroke-linecap="round"/>`;
+  s.innerHTML=h;
+})();
+
+/* QR */
+function qr(id){const s=document.getElementById(id);if(!s)return;const N=21,cell=100/N;let h=`<rect width="100" height="100" fill="#fff" rx="4"/>`;
+  function finder(ox,oy){h+=`<rect x="${ox*cell}" y="${oy*cell}" width="${7*cell}" height="${7*cell}" fill="#16181D" rx="${cell}"/><rect x="${(ox+1)*cell}" y="${(oy+1)*cell}" width="${5*cell}" height="${5*cell}" fill="#fff" rx="${cell/1.4}"/><rect x="${(ox+2)*cell}" y="${(oy+2)*cell}" width="${3*cell}" height="${3*cell}" fill="#16181D" rx="${cell/2}"/>`;}
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){const inF=(x<7&&y<7)||(x>=N-7&&y<7)||(x<7&&y>=N-7);if(inF)continue;if((x*7+y*13+(x*y)%5)%3===0)h+=`<rect x="${x*cell+.3}" y="${y*cell+.3}" width="${cell-.6}" height="${cell-.6}" fill="#16181D" rx="${cell/3}"/>`;}
+  finder(0,0);finder(N-7,0);finder(0,N-7);s.innerHTML=h;}
+qr('qr1');qr('qr2');
+</script>
+</body>
+</html>
