@@ -11,6 +11,7 @@
 - **Scoring (arrière-plan) :** la trace est agrégée en cellules ; une zone appartient à l'équipe au **score dominant**, % de contrôle par couverture.
 - **Conflit :** pour reprendre une zone tenue, il faut y **repasser** (zone « contestée » en pointillés bicolores). Pas d'effacement brutal.
 - **Décroissance lente :** une zone non revisitée **pâlit après 14 jours**, redevient **neutre après 30 jours**.
+- **Affichage à deux niveaux ([ADR-003](decisions/ADR-003-affichage-territoire.md)) :** de près tu peins des **rues** (veines), de loin tu vois un **plateau d'hexagones** (agrégation des cellules de score). Le **fog of war** devient une stat perso (« X % du quartier découvert »), pas une couche de map.
 
 > 💡 **Différenciant :** la décroissance douce **valorise le coureur occasionnel** (effort = surface peinte, peu importe le niveau) et crée un rendez-vous régulier (rétention J14/J30).
 

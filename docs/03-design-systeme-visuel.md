@@ -55,6 +55,7 @@ Ce sont les couleurs **signature** de la marque. Deux variantes par équipe : un
 C'est l'objet le plus important de toute l'app.
 
 - **Base :** style **Mapbox customisé**, monochrome désaturé (gris-bleu clair / sombre profond), routes fines, peu de POI, labels discrets. Le fond s'efface pour laisser les couleurs d'équipes briller.
+- **Territoire à deux niveaux de zoom ([ADR-003](decisions/ADR-003-affichage-territoire.md)) :** zoom rue = **veines** ; dézoom ville = **hexagones doux** (fill 14–48 % d'opacité selon la force de contrôle, contour team-coloré) + barre « Contrôle de la ville » ; hexagones **contestés** = contour pointillé bicolore. Transition en fondu entre les deux couches (~z14).
 - **Trail Paint ([ADR-002](decisions/ADR-002-trail-paint.md)) :** le coureur est un **curseur = flèche directionnelle** (sens de course) à halo lumineux ; il laisse une **traînée comète** (cœur `#6aa6ff` + halo `#3B82F6` flou + tête **blanc chaud** + pointillés clairs). Le **territoire d'équipe** s'affiche en **veines** team-colorées douces et floutées (heatmap, opacité selon ancienneté). Style **façon Strava**, magnifique en sombre, ultra screenshotable. Zone « contestée » = pointillés bicolores.
 - **Hiérarchie visuelle des états :**
   - *Neutre* — gris très clair, quasi transparent.

@@ -49,6 +49,7 @@ partners     (id, name, shop_geom, contact)
 4. **Scoring asynchrone** (worker) : agrégation de la trace en cellules **H3 (~25 m)** → upsert `territory_cells` (score par équipe, `last_seen`). Zone = équipe au **score dominant**.
 5. **Privacy Zone 200 m** : points dans la zone domicile/bureau comptés pour les stats mais **ni stockés ni affichés** publiquement.
 6. Recalcul des `team_scores` (couverture) → push temps réel.
+7. **Affichage ([ADR-003](decisions/ADR-003-affichage-territoire.md))** : au zoom rue, couche « veines » (polylignes) ; au dézoom (< ~z14), couche **hexagones** rendue directement depuis `territory_cells` (H3 → GeoJSON, fill-opacity = score). Aucune table supplémentaire.
 
 ### Décroissance (job planifié)
 - Cron quotidien : `street_state` (et `zone_state`) avec `last_seen_at` > 14 j → `decay_state = pâlissant` ; > 30 j → `team_id = null` (neutre).
