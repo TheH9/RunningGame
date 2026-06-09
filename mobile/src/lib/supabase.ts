@@ -1,0 +1,44 @@
+// Client Supabase — fonctionne en mode "offline/démo" si les variables
+// EXPO_PUBLIC_SUPABASE_URL / EXPO_PUBLIC_SUPABASE_ANON_KEY sont absentes :
+// l'app reste utilisable (tracking local), la synchro est simplement coupée.
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+
+const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
+const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+
+export const supabase: SupabaseClient | null =
+  url && anonKey
+    ? createClient(url, anonKey, {
+        auth: { storage: AsyncStorage, autoRefreshToken: true, persistSession: true },
+      })
+    : null;
+
+export const isOnline = () => supabase !== null;
+
+/** Upload par batch de la trace simplifiée (ADR-002 §1). No-op hors ligne. */
+export async function uploadRunPoints(
+  runId: string,
+  points: { lat: number; lon: number; t: number; accuracy?: number }[],
+) {
+  if (!supabase || points.length === 0) return;
+  await supabase.from('run_points').insert(
+    points.map((p) => ({
+      run_id: runId,
+      geom: `POINT(${p.lon} ${p.lat})`,
+      recorded_at: new Date(p.t).toISOString(),
+      accuracy_m: p.accuracy ?? null,
+    })),
+  );
+}
+
+export async function finishRun(runId: string, distanceM: number, paintedM: number) {
+  if (!supabase) return;
+  await supabase
+    .from('runs')
+    .update({ status: 'finished', ended_at: new Date().toISOString(), distance_m: distanceM, painted_m: paintedM })
+    .eq('id', runId);
+  // déclenche le scoring async — l'UX n'attend pas le résultat
+  supabase.functions.invoke('score-run', { body: { run_id: runId } }).catch(() => {});
+}
