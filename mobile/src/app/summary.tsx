@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import { Celebration } from '@/components/ui/Celebration';
 import { Confetti } from '@/components/ui/Confetti';
 import { ShareCard } from '@/components/ShareCard';
 import { Glass, Micro, Squish, Ticker } from '@/components/ui';
@@ -27,7 +28,6 @@ export default function Summary() {
 
   useEffect(() => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-    return () => useGameStore.getState().clearCelebration();
   }, []);
 
   if (!summary) {
@@ -62,12 +62,6 @@ export default function Summary() {
     <View style={styles.root}>
       <Confetti run={big} />
       <ScrollView contentContainerStyle={styles.scroll}>
-        {celebration?.kind === 'levelup' && (
-          <Animated.View entering={FadeInDown.springify().damping(14)} style={styles.levelup}>
-            <Text style={styles.levelupText}>🆙 {celebration.label}</Text>
-          </Animated.View>
-        )}
-
         <View ref={cardRef} collapsable={false} style={styles.cardWrap}>
           <ShareCard
             points={summary.points}
@@ -101,6 +95,8 @@ export default function Summary() {
           <Text style={styles.backText}>Retour à la carte</Text>
         </Squish>
       </ScrollView>
+      {/* célébration plein écran (level-up / badge) par-dessus tout */}
+      <Celebration />
     </View>
   );
 }

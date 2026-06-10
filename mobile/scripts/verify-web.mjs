@@ -120,6 +120,12 @@ try {
   await page.waitForTimeout(2500);
   await shot('11-summary');
   log('summary (story animée)');
+  if ((await page.getByText('BADGE DÉBLOQUÉ').count()) || (await page.getByText('NIVEAU SUPÉRIEUR').count())) {
+    await shot('11b-celebration');
+    log('célébration (badge/level-up)');
+    await page.mouse.click(195, 300);
+    await page.waitForTimeout(600);
+  }
   await tapText('Retour à la carte');
   await page.waitForTimeout(1500);
   await shot('12-map-apres-run');

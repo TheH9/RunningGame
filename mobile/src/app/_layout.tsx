@@ -61,6 +61,7 @@ export default function RootLayout() {
         <Stack.Screen name="season-recap" options={{ gestureEnabled: false, animation: 'fade' }} />
         <Stack.Screen name="feed" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
         <Stack.Screen name="reward-qr" options={{ presentation: 'transparentModal', animation: 'fade' }} />
+        <Stack.Screen name="badge" options={{ presentation: 'transparentModal', animation: 'fade' }} />
         <Stack.Screen name="settings" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
       </Stack>
     </GestureHandlerRootView>

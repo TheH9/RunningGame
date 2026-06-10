@@ -149,6 +149,7 @@ export default function MapScreen() {
           colors={['#D4FF6B', '#B8FF2E', '#8FD400']}
           glowColor={VIOLET}
           textColor="#0A0B0F"
+          pulse
           onPress={() => startRun(false)}
           onLongPress={() => {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});

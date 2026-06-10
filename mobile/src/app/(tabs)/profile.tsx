@@ -60,10 +60,10 @@ export default function Profile() {
       <View style={styles.badges}>
         {badges.slice(0, 8).map((b, i) => (
           <Pop key={b.id} delay={i * 60} style={styles.badgeWrap}>
-            <View style={[styles.badge, !b.unlocked && styles.badgeLock, b.id === 'champion' && b.unlocked && styles.badgeGold]}>
+            <Squish style={[styles.badge, !b.unlocked && styles.badgeLock, b.id === 'champion' && b.unlocked && styles.badgeGold]} onPress={() => router.push({ pathname: '/badge', params: { id: b.id } })}>
               <Text style={{ fontSize: 26 }}>{b.unlocked ? b.emoji : '🔒'}</Text>
               <Text style={styles.badgeLabel}>{b.label}</Text>
-            </View>
+            </Squish>
           </Pop>
         ))}
       </View>

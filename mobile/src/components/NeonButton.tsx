@@ -1,8 +1,9 @@
 // Bouton GO/STOP néon — gradient, relief, anneaux concentriques, press élastique.
 
 import { LinearGradient } from 'expo-linear-gradient';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import { font, glow } from '../theme/tokens';
 import { Squish } from './ui';
 
@@ -13,6 +14,7 @@ type Props = {
   glowColor: string;
   size?: number;
   rings?: boolean;
+  pulse?: boolean;
   textColor?: string;
   onPress?: () => void;
   onLongPress?: () => void;
@@ -21,11 +23,22 @@ type Props = {
 };
 
 export function NeonButton({
-  label, sub, colors, glowColor, size = 108, rings = true, textColor = '#FFFFFF', onPress, onLongPress, delayLongPress, haptic,
+  label, sub, colors, glowColor, size = 108, rings = true, pulse = false, textColor = '#FFFFFF', onPress, onLongPress, delayLongPress, haptic,
 }: Props) {
+  const p = useSharedValue(0);
+  useEffect(() => {
+    if (pulse) p.value = withRepeat(withTiming(1, { duration: 1600, easing: Easing.inOut(Easing.quad) }), -1, true);
+  }, [pulse, p]);
+  const pulseStyle = useAnimatedStyle(() => ({ transform: [{ scale: 1 + p.value * 0.16 }], opacity: 0.4 - p.value * 0.3 }));
+
   return (
     <Squish onPress={onPress} onLongPress={onLongPress} delayLongPress={delayLongPress} haptic={haptic}>
       <View style={{ width: size + 52, height: size + 52, alignItems: 'center', justifyContent: 'center' }}>
+        {pulse && (
+          <Animated.View
+            style={[{ position: 'absolute', width: size + 18, height: size + 18, borderRadius: (size + 18) / 2, borderWidth: 2, borderColor: glowColor }, pulseStyle]}
+          />
+        )}
         {rings && (
           <>
             <View style={[styles.ring, { width: size + 28, height: size + 28, borderRadius: (size + 28) / 2, borderColor: glowColor, opacity: 0.35 }]} />
