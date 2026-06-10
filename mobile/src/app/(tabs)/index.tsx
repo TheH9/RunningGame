@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MapCanvas } from '@/components/MapCanvas';
 import { CITY_CONTROL } from '@/lib/mockData';
 import { useAppStore } from '@/store/useAppStore';
+import { useRunStore } from '@/store/useRunStore';
 import { light, TEAMS } from '@/theme/tokens';
 
 export default function MapScreen() {
@@ -44,9 +45,18 @@ export default function MapScreen() {
         <Pressable
           style={[styles.go, { backgroundColor: TEAMS[team].color }]}
           onPress={() => {
+            if (useRunStore.getState().status === 'running') return;
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
             router.push('/run');
-          }}>
+          }}
+          onLongPress={() => {
+            // mode démo caché : appui long → run simulé (replay)
+            if (useRunStore.getState().status === 'running') return;
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+            useRunStore.getState().start({ replay: true });
+            router.push('/run');
+          }}
+          delayLongPress={1500}>
           <Text style={styles.goText}>GO</Text>
           <Text style={styles.goSub}>START</Text>
         </Pressable>

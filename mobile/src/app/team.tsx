@@ -2,7 +2,8 @@
 
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { confirm } from '@/lib/confirm';
 import { useAppStore } from '@/store/useAppStore';
 import { light, TEAMS, type TeamSlug } from '@/theme/tokens';
 
@@ -10,21 +11,16 @@ export default function TeamSelect() {
   const [selected, setSelected] = useState<TeamSlug | null>(null);
   const chooseTeam = useAppStore((s) => s.chooseTeam);
 
-  const confirm = () => {
+  const onConfirm = () => {
     if (!selected) return;
-    Alert.alert(
+    confirm(
       `Rejoindre ${TEAMS[selected].name} ?`,
       'Ton choix est définitif pour toute la saison.',
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Je m’engage',
-          onPress: () => {
-            chooseTeam(selected);
-            router.replace('/(tabs)');
-          },
-        },
-      ],
+      'Je m’engage',
+      () => {
+        chooseTeam(selected);
+        router.replace('/(tabs)');
+      },
     );
   };
 
@@ -54,7 +50,7 @@ export default function TeamSelect() {
         })}
       </ScrollView>
       <View style={styles.footer}>
-        <Pressable style={[styles.cta, !selected && { opacity: 0.4 }]} disabled={!selected} onPress={confirm}>
+        <Pressable style={[styles.cta, !selected && { opacity: 0.4 }]} disabled={!selected} onPress={onConfirm}>
           <Text style={styles.ctaText}>{selected ? `Rejoindre ${TEAMS[selected].name}` : 'Sélectionne une équipe'}</Text>
         </Pressable>
       </View>

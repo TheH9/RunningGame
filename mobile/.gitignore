@@ -45,3 +45,4 @@ example
 # secrets (jamais commités)
 .env
 .env.local
+.verify/

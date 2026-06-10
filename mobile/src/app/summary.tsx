@@ -28,6 +28,21 @@ export default function Summary() {
     return null;
   }
 
+  if (summary.tooShort) {
+    return (
+      <View style={[styles.root, { alignItems: 'center', justifyContent: 'center', padding: 32 }]}>
+        <Text style={{ fontSize: 52, marginBottom: 14 }}>🐣</Text>
+        <Text style={styles.title}>Trop court pour peindre</Text>
+        <Text style={[styles.sub, { textAlign: 'center' }]}>
+          Il faut au moins 100 m pour laisser une trace sur la carte. La prochaine sera la bonne !
+        </Text>
+        <Pressable style={[styles.back, { alignSelf: 'stretch', marginTop: 10 }]} onPress={() => router.replace('/(tabs)')}>
+          <Text style={styles.backText}>Retour à la carte</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
   const paintedKm = formatKm(summary.paintedM);
   const distanceKm = formatKm(summary.distanceM);
   const duration = formatDuration(summary.elapsedMs);
