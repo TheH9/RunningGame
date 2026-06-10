@@ -1,46 +1,67 @@
 # Bornes — app mobile (Expo)
 
-MVP « Trail Paint » : cours, peins ta trace, conquiers ta ville.
-Décisions produit : [ADR-002](../docs/decisions/ADR-002-trail-paint.md) (mécanique) · [ADR-003](../docs/decisions/ADR-003-affichage-territoire.md) (affichage).
+**App complète jouable en mode démo** (multijoueur simulé, persisté localement) :
+cours, peins ta trace, conquiers ta ville, défie tes amis — la carte est remise
+à zéro à chaque saison (6 semaines).
+Décisions produit : [ADR-002](../docs/decisions/ADR-002-trail-paint.md) · [ADR-003](../docs/decisions/ADR-003-affichage-territoire.md).
 
 ## Lancer
 
 ```bash
-cd mobile
-npm install
-npx expo start        # scanner le QR avec Expo Go
+cd mobile && npm install && npx expo start   # scanner le QR avec Expo Go
 ```
 
-Sans configuration, l'app tourne en **mode démo hors-ligne** (tracking GPS réel,
-territoire et classements mockés). Pour brancher le backend :
+- **Vrai run** : bouton GO (GPS réel, foreground).
+- **Run démo** : appui long 1,5 s sur GO → replay simulé qui traverse des zones
+  adverses et le drop (idéal pour montrer le jeu sans courir).
+- **Web** : `npx expo start --web` (le replay est le mode par défaut).
+- **Fin de saison forcée** (web) : ajouter `?debugSeasonEnd=1` à l'URL.
+
+## Mode démo vs production
+
+Sans variables d'env, l'app tourne sur `DemoBackend` : 10 rivaux (bots) qui
+courent en live et peignent la carte, duels, drop hebdo, feed, rattrapage
+accéléré du temps manqué. Tout passe par l'interface `GameBackend`
+(`src/backend/`) — poser les clés bascule sur `SupabaseBackend` sans toucher
+aux écrans :
 
 ```bash
-# .env (ou variables d'environnement)
-EXPO_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
-EXPO_PUBLIC_SUPABASE_ANON_KEY=...
+EXPO_PUBLIC_SUPABASE_URL=...        # + appliquer ../supabase/migrations
+EXPO_PUBLIC_SUPABASE_ANON_KEY=...   # + déployer l'edge function score-run
 ```
 
-Backend : appliquer `../supabase/migrations/0001_init.sql` (extensions `postgis` + `h3`)
-et déployer l'edge function `score-run`.
-
-## Structure
+## Architecture
 
 ```
-src/app/            # routes expo-router
-  onboarding.tsx    # promesse + pseudo (sombre)
-  team.tsx          # choix d'équipe (définitif saison)
-  (tabs)/           # Map · Classement · Récompenses · Profil
-  run.tsx           # run actif — curseur flèche + traînée comète (sombre)
-  summary.tsx       # fin de run — stats + zones touchées
-src/components/MapCanvas.tsx  # rendu carte SVG (placeholder Mapbox, même langage visuel)
-src/store/          # zustand : app (persisté) + moteur de run (GPS)
-src/lib/            # geo (haversine, Douglas-Peucker), territory (H3 rés. 11), supabase
-src/theme/tokens.ts # design tokens (docs/03)
+src/app/                  # routes expo-router
+  onboarding → team → (tabs: Map · Classement · Défis · Récompenses · Profil)
+  run (sombre, curseur GPS fixe + comète) · summary (story 9:16 partageable)
+  season-recap · feed · reward-qr · settings
+src/backend/              # GameBackend (interface) · DemoBackend · SupabaseBackend
+  botEngine (rivaux live) · demoSeed (monde initial)
+src/components/map/       # MapView (caméra GPU, pinch LOD veines↔hex, tap
+  inspection → StreetCard) · CityBase (fake-3D) · TerritoryVeins/Hexes · Bots
+src/store/                # app · run (GPS/replay, segments, anti-triche,
+  snapshot) · territory (cellules H3 multi-équipes) · season · social · events
+src/lib/                  # world (ville géoréférencée, graphe d'intersections)
+  geo · territory (règles de conflit) · runDirector (événements live)
 ```
 
-## Prochains lots (docs/08)
+## Vérification
 
-- **Carte vivante** : remplacer `MapCanvas` par `@rnmapbox/maps` (dev build) — veines au zoom rue, hexagones H3 au dézoom, temps réel Supabase.
-- **Tracking background** : Transistor Background Geolocation (dev build).
-- **Moment viral** : animation 9:16 partageable de fin de run.
-- **Lots & conformité** : auth Supabase, QR codes, Privacy Zone effective, anti-triche.
+```bash
+npx tsc --noEmit
+npx expo export --platform web
+node scripts/verify-web.mjs   # parcours complet automatisé + screenshots .verify/
+```
+
+## Règles du jeu (implémentées)
+
+- **Conflit** : scores coexistants par cellule H3 (~25 m) et par équipe ;
+  propriétaire = équipe dominante ; écart < 30 % → « contesté » (pointillés
+  bicolores) ; on reprend en repassant. Décroissance 14 j (pâlit) / 30 j (neutre).
+- **Saisons** : 42 jours, rollover automatique (même après absence), récap
+  podium + hall of fame, carte vierge + léger re-seed.
+- **Anti-triche** : >25 km/h soutenu = peinture suspendue ; >40 km/h = run
+  non soumis. Perte GPS = auto-pause + segments (pas de trait fantôme).
+- **Privacy Zone** : la trace publique saute la zone (réglages).
