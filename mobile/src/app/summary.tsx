@@ -4,7 +4,6 @@ import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Celebration } from '@/components/ui/Celebration';
 import { Confetti } from '@/components/ui/Confetti';
 import { ShareCard } from '@/components/ShareCard';
@@ -104,8 +103,6 @@ export default function Summary() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: c.bg },
   scroll: { padding: 20, paddingTop: 54, paddingBottom: 50 },
-  levelup: { alignSelf: 'center', backgroundColor: VIOLET, borderRadius: 999, paddingHorizontal: 20, paddingVertical: 8, marginBottom: 16 },
-  levelupText: { color: '#0A0B0F', fontFamily: font.black, fontSize: 16 },
   cardWrap: { borderRadius: 24, overflow: 'hidden', marginBottom: 22 },
   title: { color: c.text, fontFamily: font.black, fontSize: 30, letterSpacing: -1 },
   sub: { color: c.textMuted, fontFamily: font.bold, fontSize: 14.5, lineHeight: 21, marginTop: 8, marginBottom: 18 },

@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
   permTitle: { color: c.text, fontFamily: font.black, fontSize: 24, textAlign: 'center', letterSpacing: -0.5 },
   permText: { color: c.textMuted, fontSize: 14.5, lineHeight: 21, textAlign: 'center', marginTop: 10, marginBottom: 28, fontFamily: font.bold },
   permCta: { backgroundColor: VIOLET, borderRadius: 18, paddingVertical: 15, paddingHorizontal: 36, marginBottom: 12 },
-  permCtaText: { color: '#FFFFFF', fontSize: 15, fontFamily: font.extrabold },
+  permCtaText: { color: '#0A0B0F', fontSize: 15, fontFamily: font.extrabold },
   permAlt: { backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 18, paddingVertical: 14, paddingHorizontal: 30, marginBottom: 12 },
   permAltText: { color: '#FFFFFF', fontSize: 14, fontFamily: font.bold },
 });
