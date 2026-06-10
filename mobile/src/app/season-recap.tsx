@@ -6,7 +6,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { Confetti } from '@/components/ui/Confetti';
 import { useSeasonStore } from '@/store/useSeasonStore';
-import { dark, TEAMS } from '@/theme/tokens';
+import { c, font, TEAMS } from '@/theme/tokens';
 
 export default function SeasonRecap() {
   const recap = useSeasonStore((s) => s.pendingRecap);
@@ -92,25 +92,25 @@ export default function SeasonRecap() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: dark.bg },
+  root: { flex: 1, backgroundColor: c.bg },
   scroll: { padding: 24, paddingTop: 84, paddingBottom: 50 },
-  kicker: { color: '#6AA6FF', fontSize: 12, fontWeight: '800', letterSpacing: 3, marginBottom: 10 },
-  title: { color: '#FFFFFF', fontSize: 34, fontWeight: '800', letterSpacing: -1, lineHeight: 40, marginBottom: 24 },
+  kicker: { color: c.violet2, fontSize: 12, fontFamily: font.black, letterSpacing: 3, marginBottom: 10 },
+  title: { color: '#FFFFFF', fontSize: 34, fontFamily: font.black, letterSpacing: -1, lineHeight: 40, marginBottom: 24 },
   card: { backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 22, padding: 18, marginBottom: 16 },
-  cardTitle: { fontSize: 11, fontWeight: '800', color: dark.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 14 },
+  cardTitle: { fontSize: 11, fontFamily: font.extrabold, color: c.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 14 },
   podiumRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
   podiumRank: { fontSize: 16, width: 28 },
-  podiumName: { color: '#FFFFFF', fontSize: 13, fontWeight: '700', width: 92 },
+  podiumName: { color: '#FFFFFF', fontSize: 13, fontFamily: font.bold, width: 92 },
   podiumTrack: { flex: 1, height: 10, borderRadius: 6, backgroundColor: 'rgba(255,255,255,0.08)', overflow: 'hidden' },
   podiumFill: { height: '100%', borderRadius: 6 },
-  podiumPct: { color: dark.textMuted, fontSize: 12, fontWeight: '800', width: 42, textAlign: 'right' },
-  champion: { color: '#FFFFFF', fontSize: 19, fontWeight: '800' },
-  championSub: { color: dark.textMuted, fontSize: 13, fontWeight: '600', marginTop: 4 },
+  podiumPct: { color: c.textMuted, fontSize: 12, fontFamily: font.extrabold, width: 42, textAlign: 'right' },
+  champion: { color: '#FFFFFF', fontSize: 19, fontFamily: font.extrabold },
+  championSub: { color: c.textMuted, fontSize: 13, fontFamily: font.bold, marginTop: 4 },
   meRow: { flexDirection: 'row' },
   meStat: { flex: 1, alignItems: 'center' },
-  meValue: { color: '#FFFFFF', fontSize: 20, fontWeight: '800', letterSpacing: -0.5 },
-  meLabel: { color: dark.textMuted, fontSize: 10.5, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.4, marginTop: 3 },
+  meValue: { color: '#FFFFFF', fontSize: 20, fontFamily: font.black, letterSpacing: -0.5 },
+  meLabel: { color: c.textMuted, fontSize: 10.5, fontFamily: font.extrabold, textTransform: 'uppercase', letterSpacing: 0.4, marginTop: 3 },
   fresh: { color: '#C7CDD6', fontSize: 14, lineHeight: 21, textAlign: 'center', marginVertical: 18 },
-  cta: { backgroundColor: '#3B82F6', borderRadius: 18, paddingVertical: 17, alignItems: 'center' },
-  ctaText: { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
+  cta: { backgroundColor: c.violet, borderRadius: 18, paddingVertical: 17, alignItems: 'center' },
+  ctaText: { color: '#FFFFFF', fontSize: 16, fontFamily: font.extrabold },
 });

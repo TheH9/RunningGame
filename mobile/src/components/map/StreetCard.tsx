@@ -1,18 +1,15 @@
-// StreetCard — tap sur une rue/zone conquise : qui la tient, depuis quand,
-// avec quelle force. CTA « Reprendre cette rue » → lance un run.
+// StreetCard — tap sur une rue/zone : qui la tient, depuis quand, force.
+// Dark glass néon, CTA reprendre/renforcer.
 
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
-import type { InspectInfo } from './MapView';
+import { Squish } from '../ui';
 import { useAppStore } from '../../store/useAppStore';
-import { TEAMS } from '../../theme/tokens';
+import { c, font, glow, TEAMS } from '../../theme/tokens';
+import type { InspectInfo } from './MapView';
 
-type Props = {
-  info: InspectInfo;
-  onClose: () => void;
-  onChallenge: () => void;
-};
+type Props = { info: InspectInfo; onClose: () => void; onChallenge: () => void };
 
 function holdLabel(ms: number): string {
   const days = Math.floor(ms / (24 * 3600 * 1000));
@@ -33,10 +30,11 @@ export function StreetCard({ info, onClose, onChallenge }: Props) {
 
   return (
     <Animated.View entering={FadeInDown.springify().damping(18)} exiting={FadeOutDown} style={styles.wrap}>
-      <View style={styles.card}>
+      <View style={[styles.card, glow(t.glow, 26, 0.3)]}>
+        <View style={styles.glassHi} pointerEvents="none" />
         <View style={styles.header}>
           <View style={[styles.badge, { backgroundColor: t.color }]}>
-            <Text style={styles.badgeEmoji}>{t.emoji}</Text>
+            <Text style={{ fontSize: 22 }}>{t.emoji}</Text>
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.street}>{info.streetName}</Text>
@@ -44,9 +42,9 @@ export function StreetCard({ info, onClose, onChallenge }: Props) {
               {isMine ? 'À ton équipe' : `Tenue par ${pseudo}`} · <Text style={{ color: t.color }}>{t.name}</Text>
             </Text>
           </View>
-          <Pressable onPress={onClose} hitSlop={12}>
+          <Squish onPress={onClose}>
             <Text style={styles.close}>✕</Text>
-          </Pressable>
+          </Squish>
         </View>
 
         <View style={styles.statsRow}>
@@ -59,48 +57,34 @@ export function StreetCard({ info, onClose, onChallenge }: Props) {
               <View style={[styles.gaugeFill, { width: `${Math.max(8, strengthPct)}%`, backgroundColor: t.color }]} />
             </View>
             <Text style={styles.statLabel}>
-              Contrôle {strengthPct} %{info.cell.contested ? ' · CONTESTÉE ⚔️' : ''}
-              {info.cell.fading ? ' · pâlit' : ''}
+              Contrôle {strengthPct}%{info.cell.contested ? ' · CONTESTÉE ⚔️' : ''}{info.cell.fading ? ' · pâlit' : ''}
             </Text>
           </View>
         </View>
 
-        <Pressable
-          style={[styles.cta, { backgroundColor: isMine ? 'rgba(31,41,55,0.08)' : TEAMS[myTeam].color }]}
-          onPress={onChallenge}>
-          <Text style={[styles.ctaText, isMine && { color: '#1C1E24' }]}>
-            {isMine ? '💪 Renforcer cette rue' : '⚔️ Reprendre cette rue'}
-          </Text>
-        </Pressable>
+        <Squish style={[styles.cta, { backgroundColor: isMine ? 'rgba(255,255,255,0.08)' : TEAMS[myTeam].color }]} onPress={onChallenge}>
+          <Text style={styles.ctaText}>{isMine ? '💪 Renforcer cette rue' : '⚔️ Reprendre cette rue'}</Text>
+        </Squish>
       </View>
     </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { position: 'absolute', left: 14, right: 14, bottom: 118 },
-  card: {
-    backgroundColor: 'rgba(255,255,255,0.97)',
-    borderRadius: 24,
-    padding: 16,
-    shadowColor: '#1F2937',
-    shadowOpacity: 0.22,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 12 },
-    elevation: 12,
-  },
+  wrap: { position: 'absolute', left: 14, right: 14, bottom: 150 },
+  card: { backgroundColor: 'rgba(18,20,28,0.96)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', borderRadius: 24, padding: 16, overflow: 'hidden' },
+  glassHi: { position: 'absolute', top: 0, left: 0, right: 0, height: 1, backgroundColor: 'rgba(255,255,255,0.18)' },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   badge: { width: 44, height: 44, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  badgeEmoji: { fontSize: 22 },
-  street: { fontSize: 17, fontWeight: '800', color: '#1C1E24', letterSpacing: -0.3 },
-  owner: { fontSize: 12.5, fontWeight: '700', color: '#8A8FA0', marginTop: 2 },
-  close: { fontSize: 16, color: '#8A8FA0', fontWeight: '700', padding: 4 },
+  street: { fontSize: 17, fontFamily: font.extrabold, color: c.text, letterSpacing: -0.3 },
+  owner: { fontSize: 12.5, fontFamily: font.bold, color: c.textMuted, marginTop: 2 },
+  close: { fontSize: 16, color: c.textMuted, fontFamily: font.bold, padding: 4 },
   statsRow: { flexDirection: 'row', gap: 14, marginTop: 14, marginBottom: 14 },
   stat: { flex: 1 },
-  statValue: { fontSize: 13.5, fontWeight: '800', color: '#1C1E24' },
-  statLabel: { fontSize: 10, fontWeight: '700', color: '#8A8FA0', textTransform: 'uppercase', letterSpacing: 0.4, marginTop: 4 },
-  gauge: { height: 8, borderRadius: 5, backgroundColor: 'rgba(31,41,55,0.08)', overflow: 'hidden' },
+  statValue: { fontSize: 13.5, fontFamily: font.extrabold, color: c.text },
+  statLabel: { fontSize: 10, fontFamily: font.extrabold, color: c.textMuted, textTransform: 'uppercase', letterSpacing: 0.4, marginTop: 4 },
+  gauge: { height: 8, borderRadius: 5, backgroundColor: 'rgba(255,255,255,0.1)', overflow: 'hidden' },
   gaugeFill: { height: '100%', borderRadius: 5 },
   cta: { borderRadius: 16, paddingVertical: 13, alignItems: 'center' },
-  ctaText: { color: '#FFFFFF', fontSize: 14.5, fontWeight: '800' },
+  ctaText: { color: '#FFFFFF', fontSize: 14.5, fontFamily: font.extrabold },
 });
