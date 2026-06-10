@@ -58,6 +58,33 @@ export function formatKm(m: number): string {
   return (m / 1000).toFixed(2).replace('.', ',');
 }
 
+/**
+ * Privacy Zone : retire des segments publics les points dans la zone.
+ * La trace publique « saute » la zone (nouveaux segments), comme côté serveur
+ * (run_points.is_private). L'utilisateur voit tout, le public non.
+ */
+export function applyPrivacy(
+  segments: GeoPoint[][],
+  zone: { center: { lat: number; lon: number }; radiusM: number } | null,
+): GeoPoint[][] {
+  if (!zone) return segments;
+  const c: GeoPoint = { lat: zone.center.lat, lon: zone.center.lon, t: 0 };
+  const out: GeoPoint[][] = [];
+  for (const seg of segments) {
+    let current: GeoPoint[] = [];
+    for (const p of seg) {
+      if (haversine(p, c) <= zone.radiusM) {
+        if (current.length >= 2) out.push(current);
+        current = [];
+      } else {
+        current.push(p);
+      }
+    }
+    if (current.length >= 2) out.push(current);
+  }
+  return out;
+}
+
 // min/km
 export function formatPace(distanceM: number, elapsedMs: number): string {
   if (distanceM < 20) return '–:––';

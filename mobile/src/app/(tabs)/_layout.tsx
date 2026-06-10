@@ -18,6 +18,7 @@ export default function TabsLayout() {
       }}>
       <Tabs.Screen name="index" options={{ title: 'Map', tabBarIcon: ({ color }) => <Icon glyph="🗺" color={color} /> }} />
       <Tabs.Screen name="leaderboard" options={{ title: 'Classement', tabBarIcon: ({ color }) => <Icon glyph="🏆" color={color} /> }} />
+      <Tabs.Screen name="friends" options={{ title: 'Défis', tabBarIcon: ({ color }) => <Icon glyph="⚔️" color={color} /> }} />
       <Tabs.Screen name="rewards" options={{ title: 'Récompenses', tabBarIcon: ({ color }) => <Icon glyph="🎁" color={color} /> }} />
       <Tabs.Screen name="profile" options={{ title: 'Profil', tabBarIcon: ({ color }) => <Icon glyph="👤" color={color} /> }} />
     </Tabs>

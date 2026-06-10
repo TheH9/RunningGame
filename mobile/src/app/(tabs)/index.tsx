@@ -2,15 +2,20 @@
 
 import * as Haptics from 'expo-haptics';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getBackend } from '@/backend/GameBackend';
 import type { TeamScore } from '@/backend/types';
 import { MapView, type InspectInfo } from '@/components/map/MapView';
 import { StreetCard } from '@/components/map/StreetCard';
+import { SeasonChip } from '@/components/SeasonChip';
+import { TutorialOverlay } from '@/components/TutorialOverlay';
+import { confirm } from '@/lib/confirm';
+import { clearRunSnapshot, readRunSnapshot } from '@/store/useRunStore';
 import { useAppStore } from '@/store/useAppStore';
 import { useRunStore } from '@/store/useRunStore';
+import { useSocialStore } from '@/store/useSocialStore';
 import { light, TEAMS } from '@/theme/tokens';
 
 export default function MapScreen() {
@@ -33,6 +38,36 @@ export default function MapScreen() {
 
   const myShare = control.find((c) => c.team === team)?.percent ?? 0;
   const [inspect, setInspect] = useState<InspectInfo | null>(null);
+  const unread = useSocialStore((s) => s.unread);
+
+  useFocusEffect(
+    useCallback(() => {
+      useSocialStore.getState().hydrate().catch(() => {});
+    }, []),
+  );
+
+  // récupération d'un run interrompu (app tuée pendant la course)
+  useEffect(() => {
+    (async () => {
+      const snap = await readRunSnapshot();
+      if (!snap || snap.distanceM < 100) {
+        if (snap) clearRunSnapshot();
+        return;
+      }
+      confirm(
+        'Course interrompue 🏃',
+        `Une course de ${(snap.distanceM / 1000).toFixed(1).replace('.', ',')} km n'a pas été terminée. Sauvegarder la distance dans tes stats ?`,
+        'Sauvegarder',
+        () => {
+          const cells: string[] = [];
+          useAppStore.getState().recordRun(snap.distanceM, snap.distanceM, cells, 0);
+          clearRunSnapshot();
+        },
+      );
+      // dans tous les cas on nettoie au prochain démarrage
+      setTimeout(() => clearRunSnapshot(), 60000);
+    })();
+  }, []);
 
   return (
     <View style={styles.root}>
@@ -43,7 +78,7 @@ export default function MapScreen() {
       <View style={[styles.hud, { top: insets.top + 8 }]}>
         <View>
           <Text style={styles.city}>Asnières</Text>
-          <Text style={styles.hudSub}>Saison 1 · Trail Paint</Text>
+          <SeasonChip />
         </View>
         <View style={{ alignItems: 'flex-end' }}>
           <Text style={[styles.share, { color: TEAMS[team].color }]}>{myShare} %</Text>
@@ -62,6 +97,15 @@ export default function MapScreen() {
         ))}
       </View>
 
+      <Pressable style={[styles.bell, { top: insets.top + 86 }]} onPress={() => router.push('/feed')}>
+        <Text style={{ fontSize: 17 }}>🔔</Text>
+        {unread > 0 && (
+          <View style={styles.bellBadge}>
+            <Text style={styles.bellBadgeText}>{unread > 9 ? '9+' : unread}</Text>
+          </View>
+        )}
+      </Pressable>
+
       {inspect && (
         <StreetCard
           info={inspect}
@@ -73,6 +117,8 @@ export default function MapScreen() {
           }}
         />
       )}
+
+      <TutorialOverlay />
 
       <View style={styles.goWrap}>
         <Pressable
@@ -130,6 +176,34 @@ const styles = StyleSheet.create({
     gap: 7,
   },
   legendRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },
+  bell: {
+    position: 'absolute',
+    right: 16,
+    width: 44,
+    height: 44,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.94)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#1F2937',
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 5,
+  },
+  bellBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: '#FF4D5E',
+    borderRadius: 9,
+    minWidth: 18,
+    height: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  bellBadgeText: { color: '#FFFFFF', fontSize: 10, fontWeight: '800' },
   legendDot: { width: 9, height: 9, borderRadius: 3 },
   legendText: { fontSize: 11.5, fontWeight: '700', color: '#3A3F4C' },
   goWrap: { position: 'absolute', bottom: 28, left: 0, right: 0, alignItems: 'center' },

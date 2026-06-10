@@ -1,15 +1,18 @@
 // Profil (maquette 10) — stats perso + « % découvert » (fog-of-war perso, ADR-003).
 
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { router } from 'expo-router';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { discoveryPercent } from '@/lib/territory';
 import { useAppStore } from '@/store/useAppStore';
+import { useSeasonStore } from '@/store/useSeasonStore';
 import { light, TEAMS } from '@/theme/tokens';
 
 // ~nb de cellules H3 rés. 11 couvrant Asnières (estimation, affinée serveur)
 const CITY_CELLS = 12000;
 
 export default function Profile() {
-  const { pseudo, team, totalRuns, totalDistanceM, totalPaintedM, discoveredCells } = useAppStore();
+  const { pseudo, team, totalRuns, totalDistanceM, totalPaintedM, discoveredCells, bestRun } = useAppStore();
+  const hallOfFame = useSeasonStore((s) => s.hallOfFame);
   const t = team ? TEAMS[team] : null;
   const discovered = discoveryPercent(new Set(discoveredCells), CITY_CELLS);
 
@@ -40,13 +43,32 @@ export default function Profile() {
         </View>
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Privacy Zone</Text>
-        <Text style={styles.cardText}>
-          Définis une zone de 200 m autour de chez toi : tes passages y comptent pour tes stats mais ne sont jamais
-          affichés sur la carte publique. (Réglage disponible avec la création de compte.)
-        </Text>
-      </View>
+      {bestRun && (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>🏅 Record</Text>
+          <Text style={styles.cardText}>
+            Meilleure allure : {Math.floor(bestRun.paceMinKm)}:{String(Math.round((bestRun.paceMinKm % 1) * 60)).padStart(2, '0')} /km
+            sur {(bestRun.distanceM / 1000).toFixed(1).replace('.', ',')} km
+          </Text>
+        </View>
+      )}
+
+      {hallOfFame.length > 0 && (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>🏛 Hall of Fame</Text>
+          {hallOfFame.map((r) => (
+            <Text key={r.season.number} style={[styles.cardText, { marginBottom: 6 }]}>
+              Saison {r.season.number} — {TEAMS[r.podium[0]?.team ?? 'vagues'].emoji}{' '}
+              {TEAMS[r.podium[0]?.team ?? 'vagues'].name} ({r.podium[0]?.percent ?? 0} %) · toi :{' '}
+              {r.me.paintedKm.toFixed(1).replace('.', ',')} km, #{r.me.rank}
+            </Text>
+          ))}
+        </View>
+      )}
+
+      <Pressable style={styles.settings} onPress={() => router.push('/settings')}>
+        <Text style={styles.settingsText}>⚙️ Réglages · Privacy Zone · Reset démo</Text>
+      </Pressable>
     </ScrollView>
   );
 }
@@ -62,7 +84,9 @@ const styles = StyleSheet.create({
   stat: { flexBasis: '47%', flexGrow: 1, backgroundColor: light.surface, borderRadius: 20, padding: 16 },
   statValue: { fontSize: 22, fontWeight: '800', color: light.text, letterSpacing: -0.5 },
   statLabel: { fontSize: 10.5, fontWeight: '700', color: light.textMuted, textTransform: 'uppercase', letterSpacing: 0.4, marginTop: 3 },
-  card: { backgroundColor: light.surface, borderRadius: 22, padding: 18 },
+  card: { backgroundColor: light.surface, borderRadius: 22, padding: 18, marginBottom: 14 },
+  settings: { backgroundColor: 'rgba(31,41,55,0.06)', borderRadius: 18, paddingVertical: 15, alignItems: 'center' },
+  settingsText: { fontSize: 13.5, fontWeight: '800', color: '#3A3F4C' },
   cardTitle: { fontSize: 11, fontWeight: '800', color: light.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
   cardText: { fontSize: 13.5, lineHeight: 20, color: light.textMuted, fontWeight: '600' },
 });

@@ -10,9 +10,13 @@ import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getBackend } from '@/backend/GameBackend';
 import { MapView } from '@/components/map/MapView';
+import { LiveToastStack } from '@/components/run/LiveToastStack';
+import { ZoneCounter } from '@/components/run/ZoneCounter';
+import { startRunDirector } from '@/lib/runDirector';
 import { formatDuration, formatKm, formatPace } from '@/lib/geo';
 import { useAppStore } from '@/store/useAppStore';
 import { useRunStore } from '@/store/useRunStore';
+import { useSeasonStore } from '@/store/useSeasonStore';
 import { useTerritoryStore } from '@/store/useTerritoryStore';
 import { dark, TEAMS } from '@/theme/tokens';
 
@@ -42,6 +46,9 @@ export default function RunScreen() {
     if (useRunStore.getState().status === 'idle' && !useRunStore.getState().permissionDenied) {
       useRunStore.getState().start();
     }
+    const stopDirector = startRunDirector(team);
+    return stopDirector;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onStop = () => {
@@ -66,8 +73,9 @@ export default function RunScreen() {
           paintedM: summary.paintedM,
           elapsedMs: summary.elapsedMs,
           startedAt: summary.startedAt,
-          seasonNumber: 1,
+          seasonNumber: useSeasonStore.getState().current?.number ?? 1,
         })
+        .then(() => useSeasonStore.getState().checkRollover())
         .catch(() => {});
     }
     router.replace('/summary');
@@ -142,6 +150,13 @@ export default function RunScreen() {
       <View style={[styles.live, { top: insets.top + 148, backgroundColor: statusColor }]}>
         <View style={styles.rec} />
         <Text style={styles.liveText}>{statusLabel}</Text>
+      </View>
+
+      <View style={{ position: 'absolute', left: 0, right: 0, top: insets.top + 186 }} pointerEvents="none">
+        <LiveToastStack />
+      </View>
+      <View style={{ position: 'absolute', right: 0, top: insets.top + 186 }} pointerEvents="none">
+        <ZoneCounter />
       </View>
 
       <View style={[styles.controls, { bottom: insets.bottom + 30 }]}>

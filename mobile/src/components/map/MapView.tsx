@@ -11,7 +11,8 @@ import Animated, {
   Easing, interpolate, runOnJS, useAnimatedStyle, useSharedValue, withRepeat, withTiming,
 } from 'react-native-reanimated';
 import Svg, { Circle, G, Path } from 'react-native-svg';
-import type { PaintedTrail } from '../../backend/types';
+import { getBackend } from '../../backend/GameBackend';
+import type { Drop, PaintedTrail } from '../../backend/types';
 import type { GeoPoint } from '../../lib/geo';
 import { H3_RES, type CellView } from '../../lib/territory';
 import { DEFAULT_ANCHOR, getWorld, type LatLon } from '../../lib/world';
@@ -67,6 +68,18 @@ export function MapView({
   );
 
   const [size, setSize] = useState({ w: 390, h: 844 });
+  const [drop, setDrop] = useState<Drop | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    getBackend()
+      .getActiveDrop()
+      .then((d) => alive && setDrop(d))
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
   const cx = size.w / 2;
   const cy = size.h / 2;
 
@@ -232,6 +245,7 @@ export function MapView({
               <Svg width={CANVAS} height={CANVAS} viewBox={vb}>
                 <TerritoryVeins anchor={anchor} trails={trails} version={version} dark={dark} />
                 <BotsLayer anchor={anchor} bots={bots} showNames={!follow} dark={dark} />
+                {drop && <DropMarker anchor={anchor} drop={drop} />}
                 <MyTrail anchor={anchor} trail={trail} dark={dark} />
                 {/* point « moi » statique quand on ne court pas */}
                 {!follow && trail.length === 0 && (
@@ -260,6 +274,19 @@ export function MapView({
         </Animated.View>
       )}
     </View>
+  );
+}
+
+function DropMarker({ anchor, drop }: { anchor: LatLon; drop: Drop }) {
+  const proj = projectionFor(anchor);
+  const c = proj.toXY(drop.center);
+  const r = drop.radiusM / 2.2;
+  return (
+    <G>
+      <Circle cx={c.x} cy={c.y} r={r} fill="#F5B82E" fillOpacity={0.13} stroke="#F5B82E" strokeWidth={2} strokeDasharray="6 5" />
+      <Circle cx={c.x} cy={c.y} r={13} fill="#F5B82E" opacity={0.95} />
+      <Circle cx={c.x} cy={c.y} r={13} fill="none" stroke="#FFFFFF" strokeWidth={2.2} />
+    </G>
   );
 }
 

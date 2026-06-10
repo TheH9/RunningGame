@@ -6,7 +6,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import { create } from 'zustand';
-import { haversine, simplify, trackDistance, type GeoPoint } from '../lib/geo';
+import { applyPrivacy, haversine, simplify, trackDistance, type GeoPoint } from '../lib/geo';
 import { GpsSource, ReplaySource, type LocationSource } from '../lib/locationSource';
 import { trackToCells } from '../lib/territory';
 import { getWorld, makeRng } from '../lib/world';
@@ -188,9 +188,18 @@ export const useRunStore = create<RunState>((set, get) => ({
     timer = null;
     AsyncStorage.removeItem(SNAPSHOT_KEY).catch(() => {});
     const s = get();
-    const simplifiedSegs = s.segments.filter((seg) => seg.length >= 2).map((seg) => simplify(seg, 5));
+    let simplifiedSegs = s.segments.filter((seg) => seg.length >= 2).map((seg) => simplify(seg, 5));
+    // Privacy Zone : la trace publique saute la zone (ADR-002 §5)
+    const zone = useAppStore.getState().privacyZone;
+    const privateM = (() => {
+      if (!zone) return 0;
+      const before = simplifiedSegs.reduce((a, seg) => a + trackDistance(seg), 0);
+      simplifiedSegs = applyPrivacy(simplifiedSegs, zone);
+      const after = simplifiedSegs.reduce((a, seg) => a + trackDistance(seg), 0);
+      return Math.max(0, before - after);
+    })();
     const flat = allPoints(simplifiedSegs);
-    const paintedM = Math.max(0, s.distanceM - s.flaggedM);
+    const paintedM = Math.max(0, s.distanceM - s.flaggedM - privateM);
     const summary: RunSummary = {
       distanceM: s.distanceM,
       paintedM,

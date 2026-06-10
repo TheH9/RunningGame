@@ -1,13 +1,17 @@
-// Vérification bout-en-bout sur l'export web : joue le parcours complet
-// (onboarding → équipe → map → run replay → summary) et capture des screenshots.
+// Vérification bout-en-bout sur l'export web : joue TOUT le parcours
+// (onboarding → équipe → tutoriel → map → run replay avec événements →
+// summary → onglets → rollover de saison forcé) et capture des screenshots.
 // Usage : npx expo export --platform web && node scripts/verify-web.mjs
-// Prérequis : PLAYWRIGHT_BROWSERS_PATH + NODE_PATH (Chromium déjà installé).
 
 import { createServer } from 'node:http';
 import { readFile, mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { extname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
+
+const require_ = createRequire('/opt/node22/lib/node_modules/');
+const { chromium } = require_('playwright');
 
 const root = resolve(fileURLToPath(import.meta.url), '../../dist');
 const outDir = resolve(fileURLToPath(import.meta.url), '../../.verify');
@@ -28,7 +32,7 @@ const server = createServer(async (req, res) => {
   const url = (req.url ?? '/').split('?')[0];
   let file = join(root, url === '/' ? 'index.html' : url);
   if (!existsSync(file)) file = join(root, url.replace(/^\//, '') + '.html');
-  if (!existsSync(file)) file = join(root, 'index.html'); // SPA fallback
+  if (!existsSync(file)) file = join(root, 'index.html');
   try {
     const data = await readFile(file);
     res.writeHead(200, { 'content-type': MIME[extname(file)] ?? 'application/octet-stream' });
@@ -38,11 +42,6 @@ const server = createServer(async (req, res) => {
   }
 });
 
-// playwright vit dans les modules globaux (NODE_PATH ignoré en ESM)
-import { createRequire } from 'node:module';
-const require_ = createRequire('/opt/node22/lib/node_modules/');
-const { chromium } = require_('playwright');
-
 await new Promise((r) => server.listen(PORT, r));
 await mkdir(outDir, { recursive: true });
 
@@ -50,44 +49,115 @@ const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
 const shot = (name) => page.screenshot({ path: join(outDir, name + '.png') });
 const log = (m) => console.log('  •', m);
+const tapText = async (text, exact = false) => {
+  await page.getByText(text, { exact }).first().click();
+  await page.waitForTimeout(600);
+};
 
-page.on('dialog', (d) => d.accept()); // window.confirm (choix d'équipe…)
+page.on('dialog', (d) => d.accept());
 
 try {
   await page.goto(`http://localhost:${PORT}/`, { waitUntil: 'networkidle' });
-  await page.waitForTimeout(1500);
+  await page.waitForTimeout(1800);
   await shot('01-onboarding');
   log('onboarding');
 
-  // pseudo + continuer
-  const input = page.locator('input').first();
-  if (await input.count()) {
-    await input.fill('Testeur');
-    await page.getByText('Choisir mon équipe', { exact: false }).click();
-    await page.waitForTimeout(800);
-    await shot('02-team');
-    log('choix équipe');
-    await page.getByText('Les Vagues', { exact: false }).first().click();
-    await page.waitForTimeout(300);
-    await page.getByText('Rejoindre Les Vagues', { exact: false }).click();
-    await page.waitForTimeout(1500);
-  }
-  await shot('03-map');
-  log('map');
+  await page.locator('input').first().fill('Testeur');
+  await tapText('Choisir mon équipe');
+  await shot('02-team');
+  await tapText('Les Vagues');
+  await tapText('Rejoindre Les Vagues');
+  await page.waitForTimeout(1500);
+  log('équipe choisie');
 
-  // GO → sur web le replay est le mode par défaut
+  // tutoriel 3 étapes
+  if (await page.getByText('La ville est le plateau').count()) {
+    await shot('03-tutoriel');
+    await tapText('Suivant →');
+    await tapText('Suivant →');
+    await tapText('C’est parti 🔥');
+    log('tutoriel passé');
+  }
+  await page.waitForTimeout(1500);
+  await shot('04-map');
+  log('map (territoire + bots live)');
+
+  // onglets
+  await tapText('Classement');
+  await shot('05-classement');
+  await tapText('Coureurs');
+  await shot('05b-classement-coureurs');
+  await tapText('Défis');
+  await page.waitForTimeout(800);
+  await shot('06-defis');
+  log('défis (duels + amis)');
+  // lancer un duel
+  const defier = page.getByText('Défier', { exact: true }).first();
+  if (await defier.count()) {
+    await defier.click();
+    await page.waitForTimeout(800);
+    await shot('06b-duel-lance');
+    log('duel lancé');
+  }
+  await tapText('Récompenses');
+  await page.waitForTimeout(600);
+  await shot('07-recompenses');
+  await tapText('Profil');
+  await shot('08-profil');
+
+  // run replay
+  await tapText('Map');
+  await page.waitForTimeout(400);
   await page.getByText('GO', { exact: true }).click();
-  await page.waitForTimeout(4000);
-  await shot('04-run-debut');
+  await page.waitForTimeout(5000);
+  await shot('09-run-debut');
   log('run démarré (replay)');
-  await page.waitForTimeout(50000);
-  await shot('05-run-50s');
-  log('run +50 s — la trace doit être visible (> 100 m)');
+  await page.waitForTimeout(55000);
+  await shot('10-run-1min');
+  log('run +1 min — trace, toasts, compteur de zones');
 
   await page.getByText('STOP', { exact: true }).click();
   await page.waitForTimeout(2500);
-  await shot('06-summary');
-  log('summary');
+  await shot('11-summary');
+  log('summary (story animée)');
+  await tapText('Retour à la carte');
+  await page.waitForTimeout(1500);
+  await shot('12-map-apres-run');
+  log('map après run — ma trace intégrée au territoire');
+
+  // feed (clic par coordonnées — la cloche est en haut à droite)
+  try {
+    await page.mouse.click(390 - 16 - 22, 86 + 22);
+    await page.waitForTimeout(1000);
+    if (await page.getByText('Activité').count()) {
+      await shot('13-feed');
+      log('feed d’activité');
+      await page.mouse.click(390 - 24, 76);
+      await page.waitForTimeout(600);
+    }
+  } catch {
+    log('⚠️ feed non testé');
+  }
+
+  // rollover de saison forcé
+  await page.goto(`http://localhost:${PORT}/?debugSeasonEnd=1`, { waitUntil: 'networkidle' });
+  await page.waitForTimeout(3500);
+  if (await page.getByText('TERMINÉE').count()) {
+    await shot('14-season-recap');
+    log('récap de saison (rollover forcé)');
+    // clic DOM direct (l'animation reanimated fait échouer le check de visibilité)
+    await page.evaluate(() => {
+      const els = [...document.querySelectorAll('div')];
+      const cta = els.find((e) => e.textContent?.startsWith('Conquérir la Saison') && e.children.length === 0);
+      cta?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    await page.waitForTimeout(2000);
+    await shot('15-map-saison-2');
+    log('saison suivante — carte remise à zéro');
+  } else {
+    await shot('14-rollover-absent');
+    log('⚠️ récap de saison non affiché');
+  }
 
   console.log('\n✅ Vérification terminée — screenshots dans mobile/.verify/');
 } catch (e) {
