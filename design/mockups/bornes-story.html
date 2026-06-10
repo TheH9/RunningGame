@@ -1,0 +1,49 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;}
+body{background:#c9ccd6;font-family:'Inter','Helvetica Neue',Arial,sans-serif;padding:40px;display:flex;gap:30px;}
+.cap{font-weight:800;color:#23262e;font-size:14px;margin-bottom:8px;}
+.card{width:340px;aspect-ratio:9/16;border-radius:26px;overflow:hidden;position:relative;background:#0E1116;box-shadow:0 30px 70px rgba(16,24,40,.4);}
+.card svg{position:absolute;inset:0;width:100%;height:100%;}
+.hd{position:absolute;top:22px;left:22px;right:22px;display:flex;justify-content:space-between;align-items:center;}
+.logo{color:#6AA6FF;font-size:15px;font-weight:800;letter-spacing:5px;}
+.team{color:#fff;font-size:14px;font-weight:800;}
+.bot{position:absolute;left:22px;right:22px;bottom:26px;}
+.big{color:#fff;font-size:40px;font-weight:800;letter-spacing:-1.5px;}
+.big small{font-size:18px;color:#9AA3B2;font-weight:800;letter-spacing:0;}
+.tag{color:#C7CDD6;font-size:14px;line-height:20px;margin:8px 0 18px;}
+.row{display:flex;gap:22px;}
+.sv{color:#fff;font-size:18px;font-weight:800;}
+.sl{color:#8A93A2;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-top:2px;}
+</style></head><body>
+<div>
+  <div class="cap">Story de fin de run · 9:16 (partage Instagram/WhatsApp)</div>
+  <div class="card">
+    <svg id="s" viewBox="0 0 360 640"></svg>
+    <div class="hd"><span class="logo">BORNES</span><span class="team">🌊 Les Vagues</span></div>
+    <div class="bot">
+      <div class="big">5,42 <small>km peints</small></div>
+      <div class="tag">Maya a repeint un bout d’Asnières aux couleurs les vagues.</div>
+      <div class="row">
+        <div><div class="sv">5,42 km</div><div class="sl">Distance</div></div>
+        <div><div class="sv">32:14</div><div class="sl">Durée</div></div>
+        <div><div class="sv">5:56/km</div><div class="sl">Allure</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function smooth(p){let d=`M ${p[0].x} ${p[0].y}`;for(let i=0;i<p.length-1;i++){const p0=p[i-1]||p[i],p1=p[i],p2=p[i+1],p3=p[i+2]||p2;d+=` C ${(p1.x+(p2.x-p0.x)/6).toFixed(1)} ${(p1.y+(p2.y-p0.y)/6).toFixed(1)} ${(p2.x-(p3.x-p1.x)/6).toFixed(1)} ${(p2.y-(p3.y-p1.y)/6).toFixed(1)} ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;}return d;}
+// trace exemple (squiggle façon vrai run) cadrée au centre
+const pts=[[120,360],[150,330],[140,295],[175,275],[210,290],[225,255],[200,225],[225,200],[265,210],[255,250],[290,260],[300,300],[270,320],[245,300]].map(([x,y])=>({x,y}));
+const d=smooth(pts);const head=pts[pts.length-1];
+const s=document.getElementById('s');
+s.innerHTML=`
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0E1116"/><stop offset="1" stop-color="#141B26"/></linearGradient></defs>
+  <rect width="360" height="640" fill="url(#bg)"/>
+  <circle cx="180" cy="320" r="210" fill="#3B82F6" opacity="0.10"/>
+  <path d="${d}" stroke="#3B82F6" stroke-opacity="0.45" stroke-width="14" fill="none" stroke-linecap="round"/>
+  <path d="${d}" stroke="#6AA6FF" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M 245 270 C 250 255, 250 248, 245 240" stroke="#fff" stroke-width="5" stroke-opacity=".9" fill="none" stroke-linecap="round"/>
+  <circle cx="${pts[0].x}" cy="${pts[0].y}" r="5" fill="#0E1116" stroke="#6AA6FF" stroke-width="2.5"/>
+  <g transform="translate(${head.x} ${head.y})"><circle r="24" fill="#3B82F6" opacity="0.25"/><circle r="9" fill="#fff"/><circle r="6" fill="#3B82F6"/></g>`;
+</script></body></html>

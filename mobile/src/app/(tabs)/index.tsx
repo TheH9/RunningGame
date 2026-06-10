@@ -1,5 +1,6 @@
 // Map — l'écran principal (maquette 03) : territoire en veines + bouton GO.
 
+import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -40,7 +41,12 @@ export default function MapScreen() {
       </View>
 
       <View style={styles.goWrap}>
-        <Pressable style={[styles.go, { backgroundColor: TEAMS[team].color }]} onPress={() => router.push('/run')}>
+        <Pressable
+          style={[styles.go, { backgroundColor: TEAMS[team].color }]}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
+            router.push('/run');
+          }}>
           <Text style={styles.goText}>GO</Text>
           <Text style={styles.goSub}>START</Text>
         </Pressable>

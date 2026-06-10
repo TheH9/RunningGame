@@ -1,6 +1,7 @@
 // Run actif — sombre immersif (maquette 04 / style final validé) :
 // curseur flèche + traînée comète, HUD chrono/distance/allure/peint.
 
+import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -23,6 +24,7 @@ export default function RunScreen() {
   }, []);
 
   const onStop = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
     const summary = stop();
     recordRun(summary.distanceM, summary.paintedM, summary.cells);
     router.replace('/summary');
@@ -69,7 +71,12 @@ export default function RunScreen() {
       </View>
 
       <View style={[styles.controls, { bottom: insets.bottom + 30 }]}>
-        <Pressable style={styles.round} onPress={status === 'paused' ? resume : pause}>
+        <Pressable
+          style={styles.round}
+          onPress={() => {
+            Haptics.selectionAsync().catch(() => {});
+            status === 'paused' ? resume() : pause();
+          }}>
           <Text style={styles.roundText}>{status === 'paused' ? '▶' : '❚❚'}</Text>
         </Pressable>
         <Pressable style={styles.stop} onPress={onStop}>
