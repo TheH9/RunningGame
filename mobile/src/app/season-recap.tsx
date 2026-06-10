@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { useEffect } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import { Confetti } from '@/components/ui/Confetti';
 import { useSeasonStore } from '@/store/useSeasonStore';
 import { dark, TEAMS } from '@/theme/tokens';
 
@@ -22,6 +23,7 @@ export default function SeasonRecap() {
 
   return (
     <View style={styles.root}>
+      <Confetti run count={32} />
       <ScrollView contentContainerStyle={styles.scroll}>
         <Animated.View entering={FadeInUp.delay(100)}>
           <Text style={styles.kicker}>SAISON {recap.season.number} TERMINÉE</Text>

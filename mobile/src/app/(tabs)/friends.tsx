@@ -1,13 +1,13 @@
-// Défis — duels 7 jours entre amis (« qui peint le plus »), liste des
-// rivaux du quartier, invitation par partage.
+// Défis — duels 7 jours entre amis, rivaux du quartier, invitation.
 
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Platform, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import { Platform, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import type { Duel, Rival } from '@/backend/types';
+import { Glass, Micro, Squish } from '@/components/ui';
 import { useAppStore } from '@/store/useAppStore';
 import { useSocialStore } from '@/store/useSocialStore';
-import { light, TEAMS } from '@/theme/tokens';
+import { c, font, TEAMS } from '@/theme/tokens';
 
 function DuelCard({ duel, rival }: { duel: Duel; rival: Rival }) {
   const myTeam = useAppStore((s) => s.team) ?? 'vagues';
@@ -19,25 +19,19 @@ function DuelCard({ duel, rival }: { duel: Duel; rival: Rival }) {
   return (
     <View style={styles.duelCard}>
       <View style={styles.duelHeader}>
-        <Text style={styles.duelTitle}>
-          ⚔️ Toi vs {rival.emoji} {rival.pseudo}
-        </Text>
-        <Text style={[styles.duelStatus, duel.status !== 'active' && (duel.status === 'won' ? styles.won : styles.lost)]}>
+        <Text style={styles.duelTitle}>⚔️ Toi vs {rival.emoji} {rival.pseudo}</Text>
+        <Text style={[styles.duelStatus, duel.status === 'won' && { color: c.green }, duel.status === 'lost' && { color: c.red }]}>
           {duel.status === 'active' ? `J-${daysLeft}` : duel.status === 'won' ? 'GAGNÉ 🏆' : 'PERDU'}
         </Text>
       </View>
       <View style={styles.duelTrack}>
-        <View style={[styles.duelMe, { width: `${Math.max(4, Math.min(96, myPct))}%`, backgroundColor: TEAMS[myTeam].color }]} />
-        <View style={[styles.duelRival, { backgroundColor: TEAMS[rival.team].color }]} />
+        <View style={{ width: `${Math.max(4, Math.min(96, myPct))}%`, backgroundColor: TEAMS[myTeam].color }} />
+        <View style={{ flex: 1, backgroundColor: TEAMS[rival.team].color }} />
       </View>
       <View style={styles.duelNumbers}>
         <Text style={[styles.duelKm, { color: TEAMS[myTeam].color }]}>{(duel.myPaintedM / 1000).toFixed(1).replace('.', ',')} km</Text>
         <Text style={styles.duelHint}>
-          {duel.status === 'active'
-            ? leading
-              ? 'Tu mènes — ne lâche rien !'
-              : `${((duel.rivalPaintedM - duel.myPaintedM) / 1000).toFixed(1).replace('.', ',')} km de retard`
-            : 'Duel terminé'}
+          {duel.status === 'active' ? (leading ? 'Tu mènes — ne lâche rien !' : `${((duel.rivalPaintedM - duel.myPaintedM) / 1000).toFixed(1).replace('.', ',')} km de retard`) : 'Duel terminé'}
         </Text>
         <Text style={[styles.duelKm, { color: TEAMS[rival.team].color }]}>{(duel.rivalPaintedM / 1000).toFixed(1).replace('.', ',')} km</Text>
       </View>
@@ -60,12 +54,11 @@ export default function Friends() {
 
   const friends = rivals.filter((r) => r.isFriend);
   const others = rivals.filter((r) => !r.isFriend);
-  const activeDuelRivals = new Set(duels.filter((d) => d.status === 'active').map((d) => d.rivalId));
+  const activeDuels = new Set(duels.filter((d) => d.status === 'active').map((d) => d.rivalId));
 
   const invite = async () => {
-    const msg = 'Rejoins-moi sur Bornes — on peint la ville en courant. Je te défie sur 7 jours ! https://bornes.app/invite/demo';
     if (Platform.OS === 'web') return;
-    Share.share({ message: msg }).catch(() => {});
+    Share.share({ message: 'Rejoins-moi sur Bornes — on peint la ville en courant. Je te défie ! https://bornes.app/invite/demo' }).catch(() => {});
   };
 
   const onChallenge = async (r: Rival) => {
@@ -82,86 +75,72 @@ export default function Friends() {
       <Text style={styles.emoji}>{r.emoji}</Text>
       <View style={{ flex: 1 }}>
         <Text style={styles.pseudo}>
-          {r.pseudo} <Text style={{ color: TEAMS[r.team].color }}>·</Text>{' '}
-          <Text style={[styles.teamName, { color: TEAMS[r.team].color }]}>{TEAMS[r.team].name.replace('Les ', '')}</Text>
+          {r.pseudo} <Text style={[styles.teamName, { color: TEAMS[r.team].color }]}>· {TEAMS[r.team].name.replace('Les ', '')}</Text>
         </Text>
-        <Text style={styles.meta}>
-          {(r.weekPaintedM / 1000).toFixed(1).replace('.', ',')} km cette semaine{r.title ? ` · ${r.title}` : ''}
-        </Text>
+        <Text style={styles.meta}>{(r.weekPaintedM / 1000).toFixed(1).replace('.', ',')} km cette semaine{r.title ? ` · ${r.title}` : ''}</Text>
       </View>
-      {activeDuelRivals.has(r.id) ? (
-        <View style={styles.inDuel}>
-          <Text style={styles.inDuelText}>⚔️ en duel</Text>
-        </View>
+      {activeDuels.has(r.id) ? (
+        <View style={styles.inDuel}><Text style={styles.inDuelText}>⚔️ en duel</Text></View>
       ) : (
-        <Pressable style={[styles.challengeBtn, busy === r.id && { opacity: 0.5 }]} disabled={busy === r.id} onPress={() => onChallenge(r)}>
+        <Squish style={[styles.challengeBtn, busy === r.id && { opacity: 0.5 }]} disabled={busy === r.id} onPress={() => onChallenge(r)}>
           <Text style={styles.challengeText}>Défier</Text>
-        </Pressable>
+        </Squish>
       )}
     </View>
   );
 
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.scroll}>
-      <Text style={styles.title}>Défis</Text>
+      <Text style={styles.title}>DÉFIS</Text>
       <Text style={styles.sub}>7 jours · celui qui peint le plus gagne</Text>
 
-      {duels.length > 0 && (
-        <View style={{ marginBottom: 8 }}>
-          {duels.slice(0, 4).map((d) => {
-            const rival = rivals.find((r) => r.id === d.rivalId);
-            return rival ? <DuelCard key={d.id} duel={d} rival={rival} /> : null;
-          })}
-        </View>
-      )}
+      {duels.slice(0, 4).map((d) => {
+        const rival = rivals.find((r) => r.id === d.rivalId);
+        return rival ? <DuelCard key={d.id} duel={d} rival={rival} /> : null;
+      })}
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Mes amis</Text>
+      <Glass style={styles.card}>
+        <Micro style={{ marginBottom: 10 }}>Mes amis</Micro>
         {friends.map(renderRival)}
         {friends.length === 0 && <Text style={styles.empty}>Invite tes amis pour les défier !</Text>}
-      </View>
+      </Glass>
 
-      <Pressable style={styles.invite} onPress={invite}>
+      <Squish style={styles.invite} onPress={invite}>
         <Text style={styles.inviteText}>📨 Inviter un ami sur Bornes</Text>
-      </Pressable>
+      </Squish>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Coureurs du quartier</Text>
+      <Glass style={styles.card}>
+        <Micro style={{ marginBottom: 10 }}>Coureurs du quartier</Micro>
         {others.map(renderRival)}
-      </View>
+      </Glass>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: light.bg },
-  scroll: { padding: 20, paddingTop: 76, paddingBottom: 40 },
-  title: { fontSize: 32, fontWeight: '800', color: light.text, letterSpacing: -1 },
-  sub: { fontSize: 13, color: light.textMuted, fontWeight: '600', marginTop: 4, marginBottom: 18 },
-  duelCard: { backgroundColor: '#1C1E24', borderRadius: 20, padding: 16, marginBottom: 12 },
+  root: { flex: 1, backgroundColor: c.bg },
+  scroll: { padding: 18, paddingTop: 70, paddingBottom: 110 },
+  title: { fontFamily: font.black, fontSize: 34, color: c.text, letterSpacing: -1 },
+  sub: { fontSize: 13, color: c.textMuted, fontFamily: font.bold, marginTop: 4, marginBottom: 16 },
+  duelCard: { backgroundColor: 'rgba(124,92,255,0.10)', borderWidth: 1, borderColor: 'rgba(124,92,255,0.3)', borderRadius: 20, padding: 16, marginBottom: 12 },
   duelHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  duelTitle: { color: '#FFFFFF', fontSize: 15, fontWeight: '800' },
-  duelStatus: { color: '#9AA3B2', fontSize: 12, fontWeight: '800' },
-  won: { color: '#7CFC9B' },
-  lost: { color: '#FF9AA3' },
+  duelTitle: { color: c.text, fontSize: 15, fontFamily: font.extrabold },
+  duelStatus: { color: c.textMuted, fontSize: 12, fontFamily: font.black },
   duelTrack: { flexDirection: 'row', height: 12, borderRadius: 7, overflow: 'hidden', backgroundColor: 'rgba(255,255,255,0.1)' },
-  duelMe: { height: '100%' },
-  duelRival: { flex: 1, height: '100%' },
   duelNumbers: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 },
-  duelKm: { fontSize: 13, fontWeight: '800' },
-  duelHint: { color: '#9AA3B2', fontSize: 11, fontWeight: '700' },
-  card: { backgroundColor: light.surface, borderRadius: 22, padding: 18, marginBottom: 14 },
-  cardTitle: { fontSize: 11, fontWeight: '800', color: light.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 },
+  duelKm: { fontSize: 13, fontFamily: font.extrabold },
+  duelHint: { color: c.textMuted, fontSize: 11, fontFamily: font.bold },
+  card: { padding: 16, marginBottom: 14 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 11, paddingVertical: 9 },
   emoji: { fontSize: 24 },
-  pseudo: { fontSize: 15, fontWeight: '800', color: light.text },
-  teamName: { fontSize: 12.5, fontWeight: '700' },
-  meta: { fontSize: 11.5, fontWeight: '600', color: light.textMuted, marginTop: 2 },
-  challengeBtn: { backgroundColor: '#1C1E24', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 8 },
-  challengeText: { color: '#FFFFFF', fontSize: 12.5, fontWeight: '800' },
-  inDuel: { backgroundColor: 'rgba(31,41,55,0.07)', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8 },
-  inDuelText: { color: light.textMuted, fontSize: 12, fontWeight: '700' },
-  invite: { backgroundColor: '#3B82F6', borderRadius: 18, paddingVertical: 15, alignItems: 'center', marginBottom: 14 },
-  inviteText: { color: '#FFFFFF', fontSize: 14.5, fontWeight: '800' },
-  empty: { fontSize: 13, color: light.textMuted, fontWeight: '600', paddingVertical: 6 },
+  pseudo: { fontSize: 15, fontFamily: font.extrabold, color: c.text },
+  teamName: { fontSize: 12.5, fontFamily: font.bold },
+  meta: { fontSize: 11.5, fontFamily: font.bold, color: c.textMuted, marginTop: 2 },
+  challengeBtn: { backgroundColor: c.violet, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 8 },
+  challengeText: { color: '#FFFFFF', fontSize: 12.5, fontFamily: font.extrabold },
+  inDuel: { backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8 },
+  inDuelText: { color: c.textMuted, fontSize: 12, fontFamily: font.bold },
+  invite: { backgroundColor: c.violet, borderRadius: 18, paddingVertical: 15, alignItems: 'center', marginBottom: 14 },
+  inviteText: { color: '#FFFFFF', fontSize: 14.5, fontFamily: font.extrabold },
+  empty: { fontSize: 13, color: c.textMuted, fontFamily: font.bold, paddingVertical: 6 },
 });

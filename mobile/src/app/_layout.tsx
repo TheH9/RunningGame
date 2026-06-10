@@ -1,16 +1,21 @@
+import {
+  Archivo_700Bold, Archivo_800ExtraBold, Archivo_900Black, useFonts,
+} from '@expo-google-fonts/archivo';
 import { router, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { AppState } from 'react-native';
+import { AppState, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { getBackend } from '@/backend/GameBackend';
 import { useAppStore } from '@/store/useAppStore';
 import { useSeasonStore } from '@/store/useSeasonStore';
 import { useTerritoryStore } from '@/store/useTerritoryStore';
+import { c } from '@/theme/tokens';
 
 export default function RootLayout() {
   const pseudo = useAppStore((s) => s.pseudo);
   const team = useAppStore((s) => s.team);
+  const [fontsLoaded] = useFonts({ Archivo_700Bold, Archivo_800ExtraBold, Archivo_900Black });
 
   useEffect(() => {
     let alive = true;
@@ -41,10 +46,12 @@ export default function RootLayout() {
     };
   }, []);
 
+  if (!fontsLoaded) return <View style={{ flex: 1, backgroundColor: c.bg }} />;
+
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <StatusBar style="auto" />
-      <Stack screenOptions={{ headerShown: false }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: c.bg }}>
+      <StatusBar style="light" />
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: c.bg } }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="team" />

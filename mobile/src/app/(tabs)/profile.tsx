@@ -1,92 +1,148 @@
-// Profil (maquette 10) — stats perso + « % découvert » (fog-of-war perso, ADR-003).
+// Profil — carte de joueur : header gradient, titre, XP, badges, rangs.
 
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Bar, Glass, Micro, Pop, Squish, Ticker } from '@/components/ui';
 import { discoveryPercent } from '@/lib/territory';
+import { levelFromXp, useGameStore } from '@/store/useGameStore';
 import { useAppStore } from '@/store/useAppStore';
 import { useSeasonStore } from '@/store/useSeasonStore';
-import { light, TEAMS } from '@/theme/tokens';
+import { c, font, TEAMS } from '@/theme/tokens';
 
-// ~nb de cellules H3 rés. 11 couvrant Asnières (estimation, affinée serveur)
 const CITY_CELLS = 12000;
 
 export default function Profile() {
   const { pseudo, team, totalRuns, totalDistanceM, totalPaintedM, discoveredCells, bestRun } = useAppStore();
+  const xp = useGameStore((s) => s.xp);
+  const streak = useGameStore((s) => s.streak);
+  const badges = useGameStore((s) => s.getBadges)();
   const hallOfFame = useSeasonStore((s) => s.hallOfFame);
-  const t = team ? TEAMS[team] : null;
+  const lvl = levelFromXp(xp);
+  const t = team ? TEAMS[team] : TEAMS.vagues;
   const discovered = discoveryPercent(new Set(discoveredCells), CITY_CELLS);
+  const unlocked = badges.filter((b) => b.unlocked).length;
 
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.scroll}>
-      <View style={[styles.header, t && { backgroundColor: t.color }]}>
-        <Text style={styles.avatar}>{t?.emoji ?? '🏃'}</Text>
-        <Text style={styles.pseudo}>{pseudo ?? 'Coureur'}</Text>
-        <Text style={styles.team}>{t ? `${t.name} · Asnières` : 'Sans équipe'}</Text>
-      </View>
-
-      <View style={styles.grid}>
-        <View style={styles.stat}>
-          <Text style={styles.statValue}>{totalRuns}</Text>
-          <Text style={styles.statLabel}>Runs</Text>
+      {/* Header carte de joueur */}
+      <LinearGradient colors={[t.color, '#7C5CFF', '#FF3CA0']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.head}>
+        <View style={styles.headRing} pointerEvents="none" />
+        <View style={styles.titleBadge}>
+          <Text style={{ fontSize: 13 }}>👑</Text>
+          <Text style={styles.titleBadgeText}>NIV {lvl.level}</Text>
         </View>
-        <View style={styles.stat}>
-          <Text style={styles.statValue}>{(totalDistanceM / 1000).toFixed(1).replace('.', ',')} km</Text>
-          <Text style={styles.statLabel}>Courus</Text>
+        <View style={styles.avatar}>
+          <Text style={{ fontSize: 30 }}>{t.emoji}</Text>
         </View>
-        <View style={styles.stat}>
-          <Text style={[styles.statValue, t && { color: t.color }]}>{(totalPaintedM / 1000).toFixed(1).replace('.', ',')} km</Text>
-          <Text style={styles.statLabel}>Peints</Text>
-        </View>
-        <View style={styles.stat}>
-          <Text style={styles.statValue}>{discovered} %</Text>
-          <Text style={styles.statLabel}>d’Asnières découvert</Text>
-        </View>
-      </View>
-
-      {bestRun && (
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>🏅 Record</Text>
-          <Text style={styles.cardText}>
-            Meilleure allure : {Math.floor(bestRun.paceMinKm)}:{String(Math.round((bestRun.paceMinKm % 1) * 60)).padStart(2, '0')} /km
-            sur {(bestRun.distanceM / 1000).toFixed(1).replace('.', ',')} km
+        <Text style={styles.pseudo}>{(pseudo ?? 'Coureur').toUpperCase()}</Text>
+        <View style={styles.tag}>
+          <Text style={styles.tagText}>
+            {t.emoji} {t.name} · 🔥 {streak} j
           </Text>
         </View>
-      )}
+        <View style={{ marginTop: 14 }}>
+          <Bar progress={lvl.progress} color="#FFFFFF" track="rgba(0,0,0,0.25)" height={8} glowOn={false} />
+          <Text style={styles.xpText}>
+            {lvl.into} / {lvl.span} XP · niveau {lvl.level + 1}
+          </Text>
+        </View>
+      </LinearGradient>
+
+      {/* Stats */}
+      <View style={styles.statsRow}>
+        <StatTile value={totalDistanceM / 1000} unit="km" label="Courus" />
+        <StatTile value={totalPaintedM / 1000} unit="km" label="Peints" accent />
+        <StatTile value={totalRuns} unit="" label="Runs" decimals={0} />
+      </View>
+
+      <Micro style={styles.sectit}>Badges · {unlocked}/{badges.length}</Micro>
+      <View style={styles.badges}>
+        {badges.slice(0, 8).map((b, i) => (
+          <Pop key={b.id} delay={i * 60} style={styles.badgeWrap}>
+            <View style={[styles.badge, !b.unlocked && styles.badgeLock, b.id === 'champion' && b.unlocked && styles.badgeGold]}>
+              <Text style={{ fontSize: 26 }}>{b.unlocked ? b.emoji : '🔒'}</Text>
+              <Text style={styles.badgeLabel}>{b.label}</Text>
+            </View>
+          </Pop>
+        ))}
+      </View>
+
+      <Micro style={styles.sectit}>Cette saison</Micro>
+      <View style={styles.statsRow}>
+        <MiniTile value={`${discovered}%`} label="Ville explorée" />
+        <MiniTile
+          value={bestRun ? `${Math.floor(bestRun.paceMinKm)}:${String(Math.round((bestRun.paceMinKm % 1) * 60)).padStart(2, '0')}` : '–'}
+          label="Record /km"
+        />
+        <MiniTile value={`${hallOfFame.length}`} label="Saisons jouées" />
+      </View>
 
       {hallOfFame.length > 0 && (
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>🏛 Hall of Fame</Text>
+        <Glass style={styles.hof}>
+          <Micro style={{ marginBottom: 10 }}>🏛 Hall of Fame</Micro>
           {hallOfFame.map((r) => (
-            <Text key={r.season.number} style={[styles.cardText, { marginBottom: 6 }]}>
-              Saison {r.season.number} — {TEAMS[r.podium[0]?.team ?? 'vagues'].emoji}{' '}
-              {TEAMS[r.podium[0]?.team ?? 'vagues'].name} ({r.podium[0]?.percent ?? 0} %) · toi :{' '}
-              {r.me.paintedKm.toFixed(1).replace('.', ',')} km, #{r.me.rank}
+            <Text key={r.season.number} style={styles.hofLine}>
+              S{r.season.number} — {TEAMS[r.podium[0]?.team ?? 'vagues'].emoji} {TEAMS[r.podium[0]?.team ?? 'vagues'].name} ·
+              toi #{r.me.rank}
             </Text>
           ))}
-        </View>
+        </Glass>
       )}
 
-      <Pressable style={styles.settings} onPress={() => router.push('/settings')}>
+      <Squish style={styles.settings} onPress={() => router.push('/settings')}>
         <Text style={styles.settingsText}>⚙️ Réglages · Privacy Zone · Reset démo</Text>
-      </Pressable>
+      </Squish>
     </ScrollView>
   );
 }
 
+function StatTile({ value, unit, label, accent, decimals = 1 }: { value: number; unit: string; label: string; accent?: boolean; decimals?: number }) {
+  return (
+    <Glass style={styles.stat}>
+      <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
+        <Ticker value={value} decimals={decimals} style={[styles.statValue, accent && { color: c.violet2 }]} />
+        <Text style={styles.statUnit}>{unit}</Text>
+      </View>
+      <Micro style={{ marginTop: 2 }}>{label}</Micro>
+    </Glass>
+  );
+}
+
+function MiniTile({ value, label }: { value: string; label: string }) {
+  return (
+    <Glass style={styles.stat}>
+      <Text style={styles.statValue}>{value}</Text>
+      <Micro style={{ marginTop: 2 }}>{label}</Micro>
+    </Glass>
+  );
+}
+
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: light.bg },
-  scroll: { padding: 20, paddingTop: 76, paddingBottom: 40 },
-  header: { backgroundColor: '#3B82F6', borderRadius: 26, padding: 26, alignItems: 'center', marginBottom: 16 },
-  avatar: { fontSize: 44 },
-  pseudo: { color: '#FFFFFF', fontSize: 26, fontWeight: '800', marginTop: 8, letterSpacing: -0.5 },
-  team: { color: 'rgba(255,255,255,0.85)', fontSize: 13, fontWeight: '700', marginTop: 3 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 16 },
-  stat: { flexBasis: '47%', flexGrow: 1, backgroundColor: light.surface, borderRadius: 20, padding: 16 },
-  statValue: { fontSize: 22, fontWeight: '800', color: light.text, letterSpacing: -0.5 },
-  statLabel: { fontSize: 10.5, fontWeight: '700', color: light.textMuted, textTransform: 'uppercase', letterSpacing: 0.4, marginTop: 3 },
-  card: { backgroundColor: light.surface, borderRadius: 22, padding: 18, marginBottom: 14 },
-  settings: { backgroundColor: 'rgba(31,41,55,0.06)', borderRadius: 18, paddingVertical: 15, alignItems: 'center' },
-  settingsText: { fontSize: 13.5, fontWeight: '800', color: '#3A3F4C' },
-  cardTitle: { fontSize: 11, fontWeight: '800', color: light.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
-  cardText: { fontSize: 13.5, lineHeight: 20, color: light.textMuted, fontWeight: '600' },
+  root: { flex: 1, backgroundColor: c.bg },
+  scroll: { padding: 18, paddingTop: 64, paddingBottom: 110 },
+  head: { borderRadius: 30, padding: 22, overflow: 'hidden' },
+  headRing: { position: 'absolute', right: -40, top: -40, width: 170, height: 170, borderRadius: 85, borderWidth: 24, borderColor: 'rgba(255,255,255,0.1)' },
+  titleBadge: { position: 'absolute', right: 18, top: 20, flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(0,0,0,0.3)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.25)', borderRadius: 14, paddingHorizontal: 11, paddingVertical: 6 },
+  titleBadgeText: { color: '#FFFFFF', fontFamily: font.black, fontSize: 11 },
+  avatar: { width: 60, height: 60, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.2)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)', alignItems: 'center', justifyContent: 'center' },
+  pseudo: { color: '#FFFFFF', fontFamily: font.black, fontSize: 26, marginTop: 12, letterSpacing: -0.5 },
+  tag: { alignSelf: 'flex-start', backgroundColor: 'rgba(0,0,0,0.25)', borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4, marginTop: 8 },
+  tagText: { color: '#FFFFFF', fontFamily: font.extrabold, fontSize: 11 },
+  xpText: { color: 'rgba(255,255,255,0.85)', fontFamily: font.bold, fontSize: 10.5, marginTop: 6 },
+  statsRow: { flexDirection: 'row', gap: 11, marginTop: 14 },
+  stat: { flex: 1, padding: 15 },
+  statValue: { color: c.text, fontFamily: font.black, fontSize: 24, letterSpacing: -1 },
+  statUnit: { color: c.textMuted, fontFamily: font.bold, fontSize: 12, marginLeft: 2 },
+  sectit: { letterSpacing: 1.5, marginTop: 22, marginBottom: 12, marginLeft: 4 },
+  badges: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  badgeWrap: { width: '22.5%' },
+  badge: { aspectRatio: 1, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center', gap: 4 },
+  badgeLock: { opacity: 0.4 },
+  badgeGold: { borderColor: 'rgba(255,210,60,0.5)', shadowColor: c.gold, shadowOpacity: 0.3, shadowRadius: 16 },
+  badgeLabel: { fontSize: 8, fontFamily: font.extrabold, color: c.textDim, textAlign: 'center', paddingHorizontal: 2 },
+  hof: { padding: 16, marginTop: 18 },
+  hofLine: { color: c.textDim, fontFamily: font.bold, fontSize: 12.5, marginBottom: 5 },
+  settings: { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 18, paddingVertical: 15, alignItems: 'center', marginTop: 18, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
+  settingsText: { fontFamily: font.extrabold, fontSize: 13, color: c.textDim },
 });

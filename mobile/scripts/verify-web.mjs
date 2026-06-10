@@ -83,7 +83,7 @@ try {
   log('map (territoire + bots live)');
 
   // onglets
-  await tapText('Classement');
+  await tapText('Ligue');
   await shot('05-classement');
   await tapText('Coureurs');
   await shot('05b-classement-coureurs');
@@ -99,14 +99,14 @@ try {
     await shot('06b-duel-lance');
     log('duel lancé');
   }
-  await tapText('Récompenses');
+  await tapText('Lots');
   await page.waitForTimeout(600);
   await shot('07-recompenses');
   await tapText('Profil');
   await shot('08-profil');
 
   // run replay
-  await tapText('Map');
+  await tapText('Carte');
   await page.waitForTimeout(400);
   await page.getByText('GO', { exact: true }).click();
   await page.waitForTimeout(5000);

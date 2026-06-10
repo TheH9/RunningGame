@@ -1,24 +1,27 @@
-// Run actif — sombre immersif : curseur flèche + traînée comète, HUD complet.
-// États gérés : permission refusée (écran dédié), auto-pause GPS, peinture
-// suspendue (vitesse), verrouillage. Les toasts live arrivent avec RunDirector.
+// Run actif — typo XXL, stats glass, toasts néon, curseur glow.
 
 import * as Haptics from 'expo-haptics';
 import { useKeepAwake } from 'expo-keep-awake';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Linking, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getBackend } from '@/backend/GameBackend';
 import { MapView } from '@/components/map/MapView';
+import { NeonButton } from '@/components/NeonButton';
 import { LiveToastStack } from '@/components/run/LiveToastStack';
 import { ZoneCounter } from '@/components/run/ZoneCounter';
-import { startRunDirector } from '@/lib/runDirector';
+import { Glass, Micro, Squish } from '@/components/ui';
 import { formatDuration, formatKm, formatPace } from '@/lib/geo';
+import { startRunDirector } from '@/lib/runDirector';
 import { useAppStore } from '@/store/useAppStore';
+import { useGameStore } from '@/store/useGameStore';
+import { useRunEventsStore } from '@/store/useRunEventsStore';
 import { useRunStore } from '@/store/useRunStore';
 import { useSeasonStore } from '@/store/useSeasonStore';
 import { useTerritoryStore } from '@/store/useTerritoryStore';
-import { dark, TEAMS } from '@/theme/tokens';
+import { c, font, TEAMS, VIOLET } from '@/theme/tokens';
 
 export default function RunScreen() {
   useKeepAwake();
@@ -35,7 +38,6 @@ export default function RunScreen() {
   const permissionDenied = useRunStore((s) => s.permissionDenied);
   const [locked, setLocked] = useState(false);
 
-  // trace à plat pour le rendu (reconstruite tous les 5 points — budget perf)
   const trail = useMemo(
     () => useRunStore.getState().segments.flat(),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -46,8 +48,8 @@ export default function RunScreen() {
     if (useRunStore.getState().status === 'idle' && !useRunStore.getState().permissionDenied) {
       useRunStore.getState().start();
     }
-    const stopDirector = startRunDirector(team);
-    return stopDirector;
+    const stop = startRunDirector(team);
+    return stop;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -57,22 +59,22 @@ export default function RunScreen() {
     const summary = useRunStore.getState().stop();
     if (!summary.tooShort && !summary.invalidated) {
       recordRun(summary.distanceM, summary.paintedM, summary.cells, summary.elapsedMs);
+      // couche de jeu : XP, niveau, streak, badges
+      useGameStore.getState().awardRun({
+        distanceM: summary.distanceM,
+        paintedM: summary.paintedM,
+        captures: useRunEventsStore.getState().zonesCaptured,
+        totalPaintedM: useAppStore.getState().totalPaintedM,
+        hour: new Date().getHours(),
+      });
       const pseudo = useAppStore.getState().pseudo ?? 'Moi';
-      // peinture optimiste immédiate + soumission backend (fire-and-forget)
       useTerritoryStore.getState().applyMyRun(team, pseudo, summary.cells, {
-        id: `me-${Date.now()}`,
-        team,
-        runnerPseudo: pseudo,
-        points: summary.points,
-        paintedAt: Date.now(),
+        id: `me-${Date.now()}`, team, runnerPseudo: pseudo, points: summary.points, paintedAt: Date.now(),
       });
       getBackend()
         .submitRun({
-          segments: summary.segments,
-          distanceM: summary.distanceM,
-          paintedM: summary.paintedM,
-          elapsedMs: summary.elapsedMs,
-          startedAt: summary.startedAt,
+          segments: summary.segments, distanceM: summary.distanceM, paintedM: summary.paintedM,
+          elapsedMs: summary.elapsedMs, startedAt: summary.startedAt,
           seasonNumber: useSeasonStore.getState().current?.number ?? 1,
         })
         .then(() => useSeasonStore.getState().checkRollover())
@@ -84,23 +86,20 @@ export default function RunScreen() {
   if (permissionDenied) {
     return (
       <View style={[styles.root, styles.center]}>
-        <Text style={styles.permEmoji}>📍</Text>
+        <Text style={{ fontSize: 56, marginBottom: 16 }}>📍</Text>
         <Text style={styles.permTitle}>Bornes a besoin de ta position</Text>
         <Text style={styles.permText}>
-          Sans GPS, impossible de peindre ta trace. Autorise la localisation dans les réglages, ou essaie le mode
-          démo pour voir le jeu en action.
+          Sans GPS, impossible de peindre ta trace. Autorise la localisation, ou essaie le mode démo.
         </Text>
-        <Pressable style={styles.permCta} onPress={() => Linking.openSettings()}>
+        <Squish style={styles.permCta} onPress={() => Linking.openSettings()}>
           <Text style={styles.permCtaText}>Ouvrir les réglages</Text>
-        </Pressable>
-        <Pressable
-          style={styles.permAlt}
-          onPress={() => useRunStore.getState().start({ replay: true })}>
+        </Squish>
+        <Squish style={styles.permAlt} onPress={() => useRunStore.getState().start({ replay: true })}>
           <Text style={styles.permAltText}>▶ Essayer en mode démo</Text>
-        </Pressable>
-        <Pressable style={styles.permBack} onPress={() => router.back()}>
-          <Text style={styles.permBackText}>Retour</Text>
-        </Pressable>
+        </Squish>
+        <Squish style={{ paddingVertical: 10 }} onPress={() => router.back()}>
+          <Text style={{ color: c.textMuted, fontFamily: font.bold, fontSize: 13.5 }}>Retour</Text>
+        </Squish>
       </View>
     );
   }
@@ -112,55 +111,39 @@ export default function RunScreen() {
       : status === 'paused'
         ? 'EN PAUSE'
         : `EN COURS · tu peins pour ${TEAMS[team].name}`;
-  const statusColor = autoPaused || tooFastNow ? '#F5B82E' : status === 'paused' ? '#8A93A2' : TEAMS[team].color;
+  const statusColor = autoPaused || tooFastNow ? c.gold : status === 'paused' ? c.textMuted : TEAMS[team].color;
 
   return (
     <View style={styles.root}>
       <View style={StyleSheet.absoluteFill}>
         <MapView dark team={team} trail={trail} follow interactive={false} initialScale={1.4} />
       </View>
+      <View style={styles.vignette} pointerEvents="none" />
 
-      <View style={[styles.hud, { top: insets.top + 8 }]}>
+      <Glass style={[styles.rtop, { top: insets.top + 6 }]}>
+        <Micro style={{ textAlign: 'center', letterSpacing: 4, marginBottom: 4 }}>TEMPS</Micro>
         <Text style={styles.time}>{formatDuration(elapsedMs)}</Text>
         <View style={styles.grid}>
-          <View style={styles.cell}>
-            <Text style={styles.value}>
-              {formatKm(distanceM)}
-              <Text style={styles.unit}> km</Text>
-            </Text>
-            <Text style={styles.label}>Distance</Text>
-          </View>
-          <View style={[styles.cell, styles.cellMid]}>
-            <Text style={styles.value}>
-              {formatPace(distanceM, elapsedMs)}
-              <Text style={styles.unit}> /km</Text>
-            </Text>
-            <Text style={styles.label}>Allure</Text>
-          </View>
-          <View style={styles.cell}>
-            <Text style={[styles.value, { color: dark.accent }]}>
-              +{formatKm(Math.max(0, distanceM - flaggedM))}
-              <Text style={styles.unit}> km</Text>
-            </Text>
-            <Text style={styles.label}>Peint</Text>
-          </View>
+          <Cell value={formatKm(distanceM)} unit=" km" label="Distance" />
+          <Cell value={formatPace(distanceM, elapsedMs)} unit="/km" label="Allure" />
+          <Cell value={`+${formatKm(Math.max(0, distanceM - flaggedM))}`} unit=" km" label="Peint" hot />
         </View>
-      </View>
+      </Glass>
 
-      <View style={[styles.live, { top: insets.top + 148, backgroundColor: statusColor }]}>
+      <View style={[styles.statusPill, { top: insets.top + 158, backgroundColor: statusColor }]}>
         <View style={styles.rec} />
-        <Text style={styles.liveText}>{statusLabel}</Text>
+        <Text style={styles.statusText}>{statusLabel}</Text>
       </View>
 
-      <View style={{ position: 'absolute', left: 0, right: 0, top: insets.top + 186 }} pointerEvents="none">
+      <View style={{ position: 'absolute', left: 0, right: 0, top: insets.top + 196 }} pointerEvents="none">
         <LiveToastStack />
       </View>
-      <View style={{ position: 'absolute', right: 0, top: insets.top + 186 }} pointerEvents="none">
+      <View style={{ position: 'absolute', right: 0, top: insets.top + 196 }} pointerEvents="none">
         <ZoneCounter />
       </View>
 
-      <View style={[styles.controls, { bottom: insets.bottom + 30 }]}>
-        <Pressable
+      <View style={[styles.controls, { bottom: insets.bottom + 36 }]}>
+        <Squish
           style={[styles.round, locked && styles.disabled]}
           onPress={() => {
             if (locked) return;
@@ -168,11 +151,17 @@ export default function RunScreen() {
             status === 'paused' ? useRunStore.getState().resume() : useRunStore.getState().pause();
           }}>
           <Text style={styles.roundText}>{status === 'paused' ? '▶' : '❚❚'}</Text>
-        </Pressable>
-        <Pressable style={[styles.stop, locked && styles.disabled]} onPress={onStop}>
-          <Text style={styles.stopText}>STOP</Text>
-        </Pressable>
-        <Pressable
+        </Squish>
+        <NeonButton
+          label="STOP"
+          size={92}
+          rings={false}
+          colors={['#FF6B78', '#E7263A', '#C81e32']}
+          glowColor={c.red}
+          onPress={onStop}
+          haptic={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {})}
+        />
+        <Squish
           style={[styles.round, locked && styles.lockedBtn]}
           onPress={() => {
             if (!locked) {
@@ -186,44 +175,48 @@ export default function RunScreen() {
           }}
           delayLongPress={800}>
           <Text style={styles.roundText}>{locked ? '🔓' : '🔒'}</Text>
-        </Pressable>
+        </Squish>
       </View>
-      {locked && (
-        <Text style={[styles.lockHint, { bottom: insets.bottom + 6 }]}>Appui long sur 🔓 pour déverrouiller</Text>
-      )}
+      {locked && <Text style={[styles.lockHint, { bottom: insets.bottom + 10 }]}>Appui long sur 🔓 pour déverrouiller</Text>}
+    </View>
+  );
+}
+
+function Cell({ value, unit, label, hot }: { value: string; unit: string; label: string; hot?: boolean }) {
+  return (
+    <View style={styles.cell}>
+      <Text style={[styles.cellValue, hot && { color: VIOLET }]}>
+        {value}
+        <Text style={styles.cellUnit}>{unit}</Text>
+      </Text>
+      <Micro style={{ marginTop: 3 }}>{label}</Micro>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: dark.bg },
+  root: { flex: 1, backgroundColor: c.bg },
+  vignette: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
   center: { alignItems: 'center', justifyContent: 'center', padding: 32 },
-  hud: { position: 'absolute', left: 16, right: 16, backgroundColor: dark.surface, borderRadius: 24, padding: 16 },
-  time: { color: '#FFFFFF', fontSize: 44, fontWeight: '800', letterSpacing: -2, textAlign: 'center', lineHeight: 48 },
-  grid: { flexDirection: 'row', marginTop: 13, borderTopWidth: 1, borderTopColor: dark.border, paddingTop: 12 },
-  cell: { flex: 1, alignItems: 'center' },
-  cellMid: { borderLeftWidth: 1, borderRightWidth: 1, borderColor: dark.border },
-  value: { color: '#FFFFFF', fontSize: 20, fontWeight: '800', letterSpacing: -0.5 },
-  unit: { fontSize: 12, color: dark.textMuted },
-  label: { fontSize: 10, fontWeight: '700', color: dark.textMuted, textTransform: 'uppercase', letterSpacing: 0.4, marginTop: 2 },
-  live: { position: 'absolute', alignSelf: 'center', flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 6, borderRadius: 999 },
+  rtop: { position: 'absolute', left: 14, right: 14, padding: 18, paddingTop: 18 },
+  time: { fontFamily: font.black, color: c.text, fontSize: 56, letterSpacing: -2, textAlign: 'center', lineHeight: 58 },
+  grid: { flexDirection: 'row', gap: 9, marginTop: 14 },
+  cell: { flex: 1, backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', borderRadius: 16, paddingVertical: 11, alignItems: 'center' },
+  cellValue: { fontFamily: font.black, color: c.text, fontSize: 22, letterSpacing: -0.5 },
+  cellUnit: { fontFamily: font.bold, color: c.textMuted, fontSize: 11 },
+  statusPill: { position: 'absolute', alignSelf: 'center', flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 6, borderRadius: 999 },
   rec: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#FFFFFF' },
-  liveText: { color: '#FFFFFF', fontSize: 11, fontWeight: '800' },
-  controls: { position: 'absolute', left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 26 },
-  round: { width: 60, height: 60, borderRadius: 30, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
-  roundText: { fontSize: 18, color: '#1C1E24', fontWeight: '800' },
-  lockedBtn: { backgroundColor: '#F5B82E' },
+  statusText: { color: '#0A0B0F', fontSize: 11, fontFamily: font.extrabold },
+  controls: { position: 'absolute', left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 18 },
+  round: { width: 62, height: 62, borderRadius: 31, backgroundColor: 'rgba(255,255,255,0.1)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)', alignItems: 'center', justifyContent: 'center' },
+  roundText: { fontSize: 19, color: '#FFFFFF', fontFamily: font.extrabold },
+  lockedBtn: { backgroundColor: c.gold },
   disabled: { opacity: 0.35 },
-  stop: { width: 88, height: 88, borderRadius: 44, backgroundColor: '#FF4D5E', alignItems: 'center', justifyContent: 'center', shadowColor: '#FF4D5E', shadowOpacity: 0.5, shadowRadius: 20, shadowOffset: { width: 0, height: 10 }, elevation: 10 },
-  stopText: { color: '#FFFFFF', fontSize: 15, fontWeight: '800' },
-  lockHint: { position: 'absolute', alignSelf: 'center', color: '#8A93A2', fontSize: 11, fontWeight: '700' },
-  permEmoji: { fontSize: 56, marginBottom: 16 },
-  permTitle: { color: '#FFFFFF', fontSize: 24, fontWeight: '800', textAlign: 'center', letterSpacing: -0.5 },
-  permText: { color: dark.textMuted, fontSize: 14.5, lineHeight: 21, textAlign: 'center', marginTop: 10, marginBottom: 28 },
-  permCta: { backgroundColor: '#3B82F6', borderRadius: 18, paddingVertical: 15, paddingHorizontal: 36, marginBottom: 12 },
-  permCtaText: { color: '#FFFFFF', fontSize: 15, fontWeight: '800' },
+  lockHint: { position: 'absolute', alignSelf: 'center', color: c.textMuted, fontSize: 11, fontFamily: font.bold },
+  permTitle: { color: c.text, fontFamily: font.black, fontSize: 24, textAlign: 'center', letterSpacing: -0.5 },
+  permText: { color: c.textMuted, fontSize: 14.5, lineHeight: 21, textAlign: 'center', marginTop: 10, marginBottom: 28, fontFamily: font.bold },
+  permCta: { backgroundColor: VIOLET, borderRadius: 18, paddingVertical: 15, paddingHorizontal: 36, marginBottom: 12 },
+  permCtaText: { color: '#FFFFFF', fontSize: 15, fontFamily: font.extrabold },
   permAlt: { backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 18, paddingVertical: 14, paddingHorizontal: 30, marginBottom: 12 },
-  permAltText: { color: '#FFFFFF', fontSize: 14, fontWeight: '700' },
-  permBack: { paddingVertical: 10 },
-  permBackText: { color: dark.textMuted, fontSize: 13.5, fontWeight: '700' },
+  permAltText: { color: '#FFFFFF', fontSize: 14, fontFamily: font.bold },
 });

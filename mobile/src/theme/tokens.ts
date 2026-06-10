@@ -1,54 +1,79 @@
-// Design tokens — source de vérité : docs/03-design-systeme-visuel.md
-// App en clair ; run actif en sombre immersif (décision maquettes).
+// Design system v2 — « JEU » : dark-first, néon, glass, typo XXL.
+// Violet électrique = couleur signature de Bornes. Équipes en néon.
 
 export const TEAMS = {
-  vagues: { slug: 'vagues', name: 'Les Vagues', color: '#3B82F6', soft: '#9DC2FF', emoji: '🌊' },
-  braises: { slug: 'braises', name: 'Les Braises', color: '#FF4D5E', soft: '#FF9AA3', emoji: '🔥' },
-  soleils: { slug: 'soleils', name: 'Les Soleils', color: '#F5B82E', soft: '#FFDE82', emoji: '☀️' },
-  pousses: { slug: 'pousses', name: 'Les Pousses', color: '#2EB789', soft: '#86E0BB', emoji: '🌱' },
+  vagues: { slug: 'vagues', name: 'Les Vagues', color: '#48B9FF', soft: '#A9DEFF', glow: 'rgba(72,185,255,0.55)', emoji: '🌊' },
+  braises: { slug: 'braises', name: 'Les Braises', color: '#FF4D6A', soft: '#FF9FB0', glow: 'rgba(255,77,106,0.55)', emoji: '🔥' },
+  soleils: { slug: 'soleils', name: 'Les Soleils', color: '#FFD23C', soft: '#FFE894', glow: 'rgba(255,210,60,0.5)', emoji: '☀️' },
+  pousses: { slug: 'pousses', name: 'Les Pousses', color: '#2EE6A6', soft: '#90F2D2', glow: 'rgba(46,230,166,0.5)', emoji: '🌱' },
 } as const;
 
 export type TeamSlug = keyof typeof TEAMS;
 
-export const light = {
-  bg: '#F3F0E9',
-  surface: '#FFFFFF',
-  text: '#1C1E24',
-  textMuted: '#8A8FA0',
-  border: 'rgba(31,41,55,0.08)',
-  shadow: 'rgba(31,41,55,0.16)',
-};
+// Couleur signature du jeu (énergie, XP, actions)
+export const VIOLET = '#7C5CFF';
+export const VIOLET_2 = '#9B7BFF';
+export const CYAN = '#48B9FF';
 
-export const dark = {
-  bg: '#0E1116',
-  surface: 'rgba(22,26,33,0.92)',
+// Palette sombre (toute l'app)
+export const c = {
+  bg: '#0A0B0F',
+  bg2: '#0E0F15',
+  surface: 'rgba(255,255,255,0.05)',
+  surfaceSolid: '#14161E',
+  surfaceHi: 'rgba(255,255,255,0.09)',
+  hairline: 'rgba(255,255,255,0.10)',
   text: '#FFFFFF',
-  textMuted: '#9AA3B2',
-  border: 'rgba(255,255,255,0.08)',
-  accent: '#6AA6FF',
+  textDim: '#AAB0BD',
+  textMuted: '#7A818F',
+  violet: VIOLET,
+  violet2: VIOLET_2,
+  cyan: CYAN,
+  gold: '#FFD23C',
+  green: '#2EE6A6',
+  red: '#FF4D6A',
 };
 
-export const map = {
-  // zoom rue (clair)
-  land: '#F3F0E9',
-  block: '#E9E5DC',
-  roadCase: '#D9D3C7',
-  road: '#FFFFFF',
-  water: '#BFE0F2',
-  park: '#CFE8C7',
-  // run actif (sombre)
-  darkLand: '#0E1116',
-  darkBlock: '#141821',
-  darkRoad: '#222932',
-  trailCore: '#6AA6FF',
-  trailHalo: '#3B82F6',
-  trailHot: '#FFFFFF',
-};
+// Verre dépoli — style commun des cartes/barres
+export const glass = {
+  backgroundColor: 'rgba(255,255,255,0.05)',
+  borderWidth: 1,
+  borderColor: 'rgba(255,255,255,0.10)',
+} as const;
 
-export const radius = { card: 22, chip: 999, button: 18 };
+export const radius = { sm: 14, md: 20, lg: 26, xl: 32, pill: 999 };
 
+// Police : Archivo (chargée au boot). fams() renvoie les noms réels.
 export const font = {
-  // Inter à charger en phase polish ; system en attendant
-  weightBold: '800' as const,
-  weightSemi: '700' as const,
+  black: 'Archivo_900Black',
+  extrabold: 'Archivo_800ExtraBold',
+  bold: 'Archivo_700Bold',
+};
+
+// glow coloré réutilisable (ombre portée teintée)
+export function glow(color: string, radius = 24, opacity = 0.6) {
+  return {
+    shadowColor: color,
+    shadowOpacity: opacity,
+    shadowRadius: radius,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 8,
+  };
+}
+
+// --- compat : anciens écrans importent encore `light`/`dark`/`map` ---
+export const dark = {
+  bg: c.bg,
+  surface: 'rgba(20,22,30,0.92)',
+  text: c.text,
+  textMuted: c.textMuted,
+  border: c.hairline,
+  accent: VIOLET_2,
+};
+export const light = dark; // l'app est dark-first désormais
+export const map = {
+  land: '#0A0B0F', block: '#11131A', roadCase: '#070A0E', road: '#1B1F29',
+  water: '#0F2133', park: '#10201A',
+  darkLand: '#0A0B0F', darkBlock: '#11131A', darkRoad: '#1B1F29',
+  trailCore: VIOLET_2, trailHalo: VIOLET, trailHot: '#FFFFFF',
 };

@@ -1,8 +1,9 @@
-// Compteur de zones du run — peintes / prises / contestées.
+// Compteur de zones du run — glass, peintes / prises / contestées.
 
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useRunEventsStore } from '../../store/useRunEventsStore';
+import { c, font } from '../../theme/tokens';
 
 export function ZoneCounter() {
   const painted = useRunEventsStore((s) => s.zonesPainted);
@@ -11,41 +12,34 @@ export function ZoneCounter() {
 
   return (
     <View style={styles.wrap} pointerEvents="none">
-      <View style={styles.item}>
-        <Text style={styles.value}>🎨 {painted}</Text>
-        <Text style={styles.label}>zones</Text>
-      </View>
-      {captured > 0 && (
-        <View style={styles.item}>
-          <Text style={[styles.value, { color: '#7CFC9B' }]}>💥 {captured}</Text>
-          <Text style={styles.label}>prises</Text>
-        </View>
-      )}
-      {contested > 0 && (
-        <View style={styles.item}>
-          <Text style={[styles.value, { color: '#FFD37C' }]}>⚔️ {contested}</Text>
-          <Text style={styles.label}>contestées</Text>
-        </View>
-      )}
+      <Chip value={`🎨 ${painted}`} label="zones" />
+      {captured > 0 && <Chip value={`💥 ${captured}`} label="prises" color={c.green} />}
+      {contested > 0 && <Chip value={`⚔️ ${contested}`} label="contestées" color={c.gold} />}
+    </View>
+  );
+}
+
+function Chip({ value, label, color = c.text }: { value: string; label: string; color?: string }) {
+  return (
+    <View style={styles.chip}>
+      <Text style={[styles.value, { color }]}>{value}</Text>
+      <Text style={styles.label}>{label}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: {
-    position: 'absolute',
-    right: 14,
-    flexDirection: 'column',
-    gap: 6,
-  },
-  item: {
-    backgroundColor: 'rgba(22,26,33,0.88)',
+  wrap: { position: 'absolute', right: 14, gap: 6 },
+  chip: {
+    backgroundColor: 'rgba(20,22,30,0.9)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
     borderRadius: 14,
     paddingHorizontal: 12,
     paddingVertical: 7,
     alignItems: 'center',
-    minWidth: 64,
+    minWidth: 66,
   },
-  value: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
-  label: { color: '#9AA3B2', fontSize: 9, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.4 },
+  value: { color: c.text, fontSize: 14, fontFamily: font.black },
+  label: { color: c.textMuted, fontSize: 8, fontFamily: font.extrabold, textTransform: 'uppercase', letterSpacing: 0.4 },
 });

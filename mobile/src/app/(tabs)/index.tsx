@@ -1,4 +1,5 @@
-// Map — l'écran principal (maquette 03) : territoire en veines + bouton GO.
+// Carte — l'écran principal, langage « jeu » : command HUD (niveau/XP/streak),
+// ruban de saison, standings néon, bouton GO néon, cloche d'activité.
 
 import * as Haptics from 'expo-haptics';
 import { router, useFocusEffect } from 'expo-router';
@@ -9,44 +10,42 @@ import { getBackend } from '@/backend/GameBackend';
 import type { TeamScore } from '@/backend/types';
 import { MapView, type InspectInfo } from '@/components/map/MapView';
 import { StreetCard } from '@/components/map/StreetCard';
-import { SeasonChip } from '@/components/SeasonChip';
+import { NeonButton } from '@/components/NeonButton';
+import { Glass, LevelRing, Bar, Streak, Micro } from '@/components/ui';
 import { TutorialOverlay } from '@/components/TutorialOverlay';
 import { confirm } from '@/lib/confirm';
-import { clearRunSnapshot, readRunSnapshot } from '@/store/useRunStore';
+import { levelFromXp, useGameStore } from '@/store/useGameStore';
 import { useAppStore } from '@/store/useAppStore';
-import { useRunStore } from '@/store/useRunStore';
+import { clearRunSnapshot, readRunSnapshot, useRunStore } from '@/store/useRunStore';
+import { useSeasonStore } from '@/store/useSeasonStore';
 import { useSocialStore } from '@/store/useSocialStore';
-import { light, TEAMS } from '@/theme/tokens';
+import { c, font, TEAMS, VIOLET } from '@/theme/tokens';
 
 export default function MapScreen() {
   const insets = useSafeAreaInsets();
+  const pseudo = useAppStore((s) => s.pseudo) ?? 'Coureur';
   const team = useAppStore((s) => s.team) ?? 'vagues';
+  const xp = useGameStore((s) => s.xp);
+  const streak = useGameStore((s) => s.streak);
+  const lvl = levelFromXp(xp);
   const [control, setControl] = useState<TeamScore[]>([]);
+  const [inspect, setInspect] = useState<InspectInfo | null>(null);
+  const unread = useSocialStore((s) => s.unread);
+  const season = useSeasonStore((s) => s.current);
+  const daysLeft = useSeasonStore((s) => s.daysLeft)();
+  const t = TEAMS[team];
 
   useFocusEffect(
     useCallback(() => {
       let alive = true;
-      getBackend()
-        .getLeaderboards()
-        .then((d) => alive && setControl(d.teams))
-        .catch(() => {});
+      getBackend().getLeaderboards().then((d) => alive && setControl(d.teams)).catch(() => {});
+      useSocialStore.getState().hydrate().catch(() => {});
       return () => {
         alive = false;
       };
     }, []),
   );
 
-  const myShare = control.find((c) => c.team === team)?.percent ?? 0;
-  const [inspect, setInspect] = useState<InspectInfo | null>(null);
-  const unread = useSocialStore((s) => s.unread);
-
-  useFocusEffect(
-    useCallback(() => {
-      useSocialStore.getState().hydrate().catch(() => {});
-    }, []),
-  );
-
-  // récupération d'un run interrompu (app tuée pendant la course)
   useEffect(() => {
     (async () => {
       const snap = await readRunSnapshot();
@@ -56,49 +55,72 @@ export default function MapScreen() {
       }
       confirm(
         'Course interrompue 🏃',
-        `Une course de ${(snap.distanceM / 1000).toFixed(1).replace('.', ',')} km n'a pas été terminée. Sauvegarder la distance dans tes stats ?`,
+        `Une course de ${(snap.distanceM / 1000).toFixed(1).replace('.', ',')} km n'a pas été terminée. Sauvegarder la distance ?`,
         'Sauvegarder',
         () => {
-          const cells: string[] = [];
-          useAppStore.getState().recordRun(snap.distanceM, snap.distanceM, cells, 0);
+          useAppStore.getState().recordRun(snap.distanceM, snap.distanceM, [], 0);
           clearRunSnapshot();
         },
       );
-      // dans tous les cas on nettoie au prochain démarrage
       setTimeout(() => clearRunSnapshot(), 60000);
     })();
   }, []);
 
+  const startRun = (replay: boolean) => {
+    if (useRunStore.getState().status === 'running') return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
+    if (replay) useRunStore.getState().start({ replay: true });
+    router.push('/run');
+  };
+
   return (
     <View style={styles.root}>
       <View style={StyleSheet.absoluteFill}>
-        <MapView team={team} onInspect={setInspect} />
+        <MapView dark team={team} onInspect={setInspect} />
       </View>
+      <View style={styles.vignette} pointerEvents="none" />
 
-      <View style={[styles.hud, { top: insets.top + 8 }]}>
-        <View>
-          <Text style={styles.city}>Asnières</Text>
-          <SeasonChip />
+      {/* Command HUD : niveau · XP · streak */}
+      <Glass style={[styles.topbar, { top: insets.top + 6 }]}>
+        <LevelRing level={lvl.level} progress={lvl.progress} />
+        <View style={{ flex: 1 }}>
+          <Text style={styles.name}>{pseudo}</Text>
+          <View style={{ marginTop: 6 }}>
+            <Bar progress={lvl.progress} color={VIOLET} height={7} />
+          </View>
+          <Micro style={{ marginTop: 4 }}>
+            {lvl.into} / {lvl.span} XP · niv. {lvl.level + 1}
+          </Micro>
         </View>
-        <View style={{ alignItems: 'flex-end' }}>
-          <Text style={[styles.share, { color: TEAMS[team].color }]}>{myShare} %</Text>
-          <Text style={styles.hudSub}>{TEAMS[team].name}</Text>
-        </View>
-      </View>
+        <Streak days={streak} />
+      </Glass>
 
-      <View style={[styles.legend, { top: insets.top + 86 }]}>
-        {control.map((c) => (
-          <View key={c.team} style={styles.legendRow}>
-            <View style={[styles.legendDot, { backgroundColor: TEAMS[c.team].color }]} />
-            <Text style={styles.legendText}>
-              {TEAMS[c.team].name.replace('Les ', '')} {c.percent} %
-            </Text>
+      {/* Ruban de saison */}
+      <Glass style={[styles.ribbon, { top: insets.top + 84 }]}>
+        <Text style={styles.ribbonText}>
+          SAISON <Text style={{ color: c.cyan }}>{season?.number ?? 1}</Text> · Asnières
+        </Text>
+        <Text style={[styles.ribbonDays, daysLeft <= 3 && { color: c.red }]}>⏳ J-{daysLeft}</Text>
+      </Glass>
+
+      {/* Standings néon */}
+      <Glass style={[styles.stand, { top: insets.top + 140 }]}>
+        {control.map((s) => (
+          <View key={s.team} style={styles.standRow}>
+            <View style={[styles.standDot, { backgroundColor: TEAMS[s.team].color, shadowColor: TEAMS[s.team].color }]} />
+            <Text style={styles.standPct}>{s.percent}%</Text>
+            <View style={styles.standTrack}>
+              <View style={{ width: `${s.percent}%`, height: '100%', borderRadius: 3, backgroundColor: TEAMS[s.team].color }} />
+            </View>
           </View>
         ))}
-      </View>
+      </Glass>
 
-      <Pressable style={[styles.bell, { top: insets.top + 86 }]} onPress={() => router.push('/feed')}>
-        <Text style={{ fontSize: 17 }}>🔔</Text>
+      {/* Cloche */}
+      <Pressable style={[styles.bell, { top: insets.top + 140 }]} onPress={() => router.push('/feed')}>
+        <Glass style={styles.bellInner}>
+          <Text style={{ fontSize: 17 }}>🔔</Text>
+        </Glass>
         {unread > 0 && (
           <View style={styles.bellBadge}>
             <Text style={styles.bellBadgeText}>{unread > 9 ? '9+' : unread}</Text>
@@ -112,113 +134,50 @@ export default function MapScreen() {
           onClose={() => setInspect(null)}
           onChallenge={() => {
             setInspect(null);
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
-            router.push('/run');
+            startRun(false);
           }}
         />
       )}
 
       <TutorialOverlay />
 
-      <View style={styles.goWrap}>
-        <Pressable
-          style={[styles.go, { backgroundColor: TEAMS[team].color }]}
-          onPress={() => {
-            if (useRunStore.getState().status === 'running') return;
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
-            router.push('/run');
-          }}
+      {/* GO néon */}
+      <View style={[styles.goWrap, { bottom: insets.bottom + 92 }]}>
+        <NeonButton
+          label="GO"
+          sub="START"
+          colors={['#9B7BFF', '#6A3CFF', '#5A2CF0']}
+          glowColor={VIOLET}
+          onPress={() => startRun(false)}
           onLongPress={() => {
-            // mode démo caché : appui long → run simulé (replay)
-            if (useRunStore.getState().status === 'running') return;
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-            useRunStore.getState().start({ replay: true });
-            router.push('/run');
+            startRun(true);
           }}
-          delayLongPress={1500}>
-          <Text style={styles.goText}>GO</Text>
-          <Text style={styles.goSub}>START</Text>
-        </Pressable>
+          delayLongPress={1500}
+        />
+        <Text style={styles.goHint}>appui long = démo</Text>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: light.bg },
-  hud: {
-    position: 'absolute',
-    left: 16,
-    right: 16,
-    backgroundColor: 'rgba(255,255,255,0.94)',
-    borderRadius: 22,
-    paddingHorizontal: 18,
-    paddingVertical: 13,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    shadowColor: '#1F2937',
-    shadowOpacity: 0.14,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 6,
-  },
-  city: { fontSize: 19, fontWeight: '800', color: light.text, letterSpacing: -0.3 },
-  hudSub: { fontSize: 10, fontWeight: '700', color: light.textMuted, textTransform: 'uppercase', letterSpacing: 0.4, marginTop: 2 },
-  share: { fontSize: 19, fontWeight: '800' },
-  legend: {
-    position: 'absolute',
-    left: 16,
-    backgroundColor: 'rgba(255,255,255,0.92)',
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    gap: 7,
-  },
-  legendRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },
-  bell: {
-    position: 'absolute',
-    right: 16,
-    width: 44,
-    height: 44,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.94)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#1F2937',
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 5,
-  },
-  bellBadge: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    backgroundColor: '#FF4D5E',
-    borderRadius: 9,
-    minWidth: 18,
-    height: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-  },
-  bellBadgeText: { color: '#FFFFFF', fontSize: 10, fontWeight: '800' },
-  legendDot: { width: 9, height: 9, borderRadius: 3 },
-  legendText: { fontSize: 11.5, fontWeight: '700', color: '#3A3F4C' },
-  goWrap: { position: 'absolute', bottom: 28, left: 0, right: 0, alignItems: 'center' },
-  go: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#3B82F6',
-    shadowOpacity: 0.5,
-    shadowRadius: 22,
-    shadowOffset: { width: 0, height: 12 },
-    elevation: 10,
-  },
-  goText: { color: '#FFFFFF', fontSize: 28, fontWeight: '800', letterSpacing: 1 },
-  goSub: { color: 'rgba(255,255,255,0.8)', fontSize: 10, fontWeight: '800', letterSpacing: 2, marginTop: -2 },
+  root: { flex: 1, backgroundColor: c.bg },
+  vignette: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
+  topbar: { position: 'absolute', left: 14, right: 14, flexDirection: 'row', alignItems: 'center', gap: 13, padding: 14 },
+  name: { color: c.text, fontFamily: font.extrabold, fontSize: 16, letterSpacing: -0.2 },
+  ribbon: { position: 'absolute', left: 14, right: 14, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 9, paddingHorizontal: 15 },
+  ribbonText: { color: c.text, fontFamily: font.extrabold, fontSize: 11, letterSpacing: 0.4 },
+  ribbonDays: { color: c.gold, fontFamily: font.extrabold, fontSize: 10, letterSpacing: 0.4 },
+  stand: { position: 'absolute', left: 14, padding: 11, gap: 8, width: 150 },
+  standRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  standDot: { width: 9, height: 9, borderRadius: 3, shadowRadius: 6, shadowOpacity: 0.9 },
+  standPct: { color: c.text, fontFamily: font.extrabold, fontSize: 11, width: 30 },
+  standTrack: { flex: 1, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.08)', overflow: 'hidden' },
+  bell: { position: 'absolute', right: 14, width: 44, height: 44 },
+  bellInner: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 16 },
+  bellBadge: { position: 'absolute', top: -4, right: -4, backgroundColor: c.red, borderRadius: 9, minWidth: 18, height: 18, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
+  bellBadgeText: { color: '#FFFFFF', fontSize: 10, fontFamily: font.extrabold },
+  goWrap: { position: 'absolute', left: 0, right: 0, alignItems: 'center' },
+  goHint: { color: c.textMuted, fontSize: 10, fontFamily: font.bold, marginTop: 2 },
 });
