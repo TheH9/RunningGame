@@ -41,3 +41,7 @@ example
 # generated native folders
 /ios
 /android
+
+# secrets (jamais commités)
+.env
+.env.local
