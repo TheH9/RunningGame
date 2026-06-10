@@ -1,0 +1,288 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800;900&family=Archivo+Expanded:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;}
+body{background:#16171c;font-family:'Archivo',system-ui,sans-serif;padding:46px;display:flex;gap:34px;align-items:flex-start;}
+.col{display:flex;flex-direction:column;align-items:center;gap:10px;}
+.cap{font-weight:800;color:#e7e9ee;font-size:14px;letter-spacing:.2px;}
+.cap b{color:#7c5cff;}
+/* phone */
+.phone{width:372px;height:806px;border-radius:50px;overflow:hidden;position:relative;
+  background:#0A0B0F;box-shadow:0 40px 90px rgba(0,0,0,.5),0 0 0 11px #1b1d24,0 0 0 13px #2c2f3a;color:#fff;}
+.grain{position:absolute;inset:0;opacity:.045;pointer-events:none;z-index:60;mix-blend-mode:overlay;}
+.notch{position:absolute;top:15px;left:50%;transform:translateX(-50%);width:118px;height:30px;background:#000;border-radius:20px;z-index:50;}
+.status{position:absolute;top:0;left:0;right:0;height:54px;display:flex;align-items:center;justify-content:space-between;padding:20px 30px 0;font-size:13px;font-weight:700;z-index:40;color:#fff;}
+
+/* ===== map ===== */
+.map{position:absolute;inset:0;}
+.vignette{position:absolute;inset:0;z-index:5;pointer-events:none;
+  background:radial-gradient(120% 80% at 50% 28%,transparent 40%,rgba(5,6,10,.55) 100%);}
+
+/* glass command bar */
+.glass{background:linear-gradient(165deg,rgba(255,255,255,.10),rgba(255,255,255,.03));
+  backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.10);
+  box-shadow:0 12px 40px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.18);}
+
+.topbar{position:absolute;top:60px;left:16px;right:16px;z-index:30;border-radius:24px;padding:14px 16px;display:flex;align-items:center;gap:13px;}
+.lvl{position:relative;width:50px;height:50px;flex-shrink:0;}
+.lvl svg{position:absolute;inset:0;transform:rotate(-90deg);}
+.lvl .n{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.lvl .n b{font-size:18px;font-weight:900;line-height:1;font-family:'Archivo Expanded';}
+.lvl .n span{font-size:7px;font-weight:800;letter-spacing:1px;color:#9aa0ad;}
+.who{flex:1;}
+.who .name{font-size:16px;font-weight:800;letter-spacing:-.2px;}
+.who .xp{height:7px;border-radius:4px;background:rgba(255,255,255,.1);margin-top:6px;overflow:hidden;position:relative;}
+.who .xp i{position:absolute;inset:0;width:64%;border-radius:4px;background:linear-gradient(90deg,#7c5cff,#48b9ff);box-shadow:0 0 12px rgba(124,92,255,.8);}
+.who .xpt{font-size:9px;font-weight:700;color:#9aa0ad;margin-top:4px;letter-spacing:.3px;}
+.streak{display:flex;flex-direction:column;align-items:center;gap:1px;padding:0 4px;}
+.streak b{font-size:20px;font-weight:900;font-family:'Archivo Expanded';line-height:1;}
+.streak span{font-size:8px;font-weight:800;color:#ff8a3c;letter-spacing:.5px;}
+
+/* season ribbon */
+.ribbon{position:absolute;top:128px;left:16px;right:16px;z-index:29;display:flex;justify-content:space-between;align-items:center;border-radius:16px;padding:9px 15px;}
+.ribbon .s{font-size:11px;font-weight:800;letter-spacing:.4px;}
+.ribbon .s b{color:#48b9ff;}
+.ribbon .d{font-size:10px;font-weight:800;color:#ffd23c;letter-spacing:.4px;}
+
+/* team standings floating */
+.stand{position:absolute;left:16px;top:184px;z-index:28;border-radius:18px;padding:11px 13px;display:flex;flex-direction:column;gap:9px;}
+.stand .row{display:flex;align-items:center;gap:8px;}
+.stand .bd{width:10px;height:10px;border-radius:4px;}
+.stand .pn{font-size:11px;font-weight:800;width:30px;}
+.stand .tr{width:54px;height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;}
+.stand .tr i{display:block;height:100%;border-radius:3px;}
+
+/* GO button */
+.gowrap{position:absolute;left:0;right:0;bottom:118px;z-index:30;display:flex;justify-content:center;}
+.go{position:relative;width:108px;height:108px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 38% 30%,#9b7bff,#6a3cff 60%,#5a2cf0);
+  box-shadow:0 0 0 2px rgba(255,255,255,.25),0 18px 40px rgba(106,60,255,.7),inset 0 2px 6px rgba(255,255,255,.5),inset 0 -8px 16px rgba(40,10,120,.6);}
+.go::before{content:'';position:absolute;inset:-14px;border-radius:50%;border:2px solid rgba(124,92,255,.35);}
+.go::after{content:'';position:absolute;inset:-26px;border-radius:50%;border:1.5px solid rgba(124,92,255,.18);}
+.go b{font-size:30px;font-weight:900;letter-spacing:1px;font-family:'Archivo Expanded';text-shadow:0 2px 8px rgba(0,0,0,.3);}
+.go span{font-size:9px;font-weight:800;letter-spacing:3px;color:rgba(255,255,255,.85);margin-top:-2px;}
+
+/* tab bar */
+.tabs{position:absolute;left:14px;right:14px;bottom:24px;height:64px;z-index:35;border-radius:24px;display:flex;align-items:center;justify-content:space-around;}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;color:#7a818f;font-size:9px;font-weight:800;letter-spacing:.3px;}
+.tab.on{color:#fff;}
+.tab .ic{font-size:18px;filter:grayscale(1) opacity(.7);}
+.tab.on .ic{filter:none;}
+.tab.on .ic{text-shadow:0 0 14px rgba(124,92,255,.9);}
+
+/* ===== run hud ===== */
+.rtop{position:absolute;top:58px;left:14px;right:14px;z-index:30;border-radius:28px;padding:20px 18px 16px;}
+.rtime{font-size:58px;font-weight:900;font-family:'Archivo Expanded';letter-spacing:-2px;text-align:center;line-height:.9;
+  background:linear-gradient(180deg,#fff,#c9d2ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.rtime small{display:block;font-size:10px;font-weight:800;letter-spacing:4px;color:#6c7governs;color:#7a818f;-webkit-text-fill-color:#7a818f;margin-bottom:8px;}
+.rgrid{display:flex;margin-top:16px;gap:10px;}
+.rg{flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:18px;padding:12px 6px;text-align:center;}
+.rg b{font-size:23px;font-weight:900;font-family:'Archivo Expanded';letter-spacing:-.5px;display:block;}
+.rg b .u{font-size:11px;color:#7a818f;font-family:'Archivo';}
+.rg.gl" span,.rg span{font-size:8.5px;font-weight:800;color:#7a818f;text-transform:uppercase;letter-spacing:.6px;margin-top:3px;display:block;}
+.rg.hot b{color:#7c5cff;}
+.toast{position:absolute;top:330px;left:50%;transform:translateX(-50%);z-index:31;border-radius:16px;padding:11px 16px;display:flex;align-items:center;gap:9px;white-space:nowrap;border-left:3px solid #2EE6A6;}
+.toast .e{font-size:16px;}
+.toast .t{font-size:12.5px;font-weight:800;}
+.zone{position:absolute;right:16px;top:330px;z-index:31;display:flex;flex-direction:column;gap:7px;}
+.zchip{border-radius:14px;padding:7px 11px;text-align:center;min-width:60px;}
+.zchip b{font-size:15px;font-weight:900;font-family:'Archivo Expanded';display:block;line-height:1;}
+.zchip span{font-size:8px;font-weight:800;color:#9aa0ad;text-transform:uppercase;letter-spacing:.4px;}
+.cursor{position:absolute;left:50%;top:54%;transform:translate(-50%,-50%);z-index:20;}
+.cursor .halo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:84px;height:84px;border-radius:50%;background:radial-gradient(circle,rgba(124,92,255,.5),transparent 68%);}
+.cursor .core{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-28deg);width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 38% 30%,#9b7bff,#6a3cff);box-shadow:0 0 0 4px #fff,0 0 22px rgba(124,92,255,1),0 8px 18px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;}
+.rctrl{position:absolute;left:0;right:0;bottom:48px;z-index:35;display:flex;justify-content:center;align-items:center;gap:24px;}
+.rb{width:62px;height:62px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px;}
+.rb.g{background:linear-gradient(165deg,rgba(255,255,255,.14),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(20px);}
+.stop{width:92px;height:92px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 40% 30%,#ff6b78,#e7263a);box-shadow:0 0 0 2px rgba(255,255,255,.25),0 16px 36px rgba(231,38,58,.6),inset 0 2px 6px rgba(255,255,255,.4),inset 0 -8px 14px rgba(120,10,30,.5);}
+.stop b{font-size:15px;font-weight:900;letter-spacing:1px;font-family:'Archivo Expanded';}
+
+/* ===== profile / game card ===== */
+.pwrap{position:absolute;inset:0;overflow:hidden;padding:64px 18px 90px;}
+.phead{position:relative;border-radius:30px;padding:24px 20px;overflow:hidden;
+  background:linear-gradient(150deg,#6a3cff,#a23cff 60%,#ff3ca0);box-shadow:0 20px 50px rgba(106,60,255,.5);}
+.phead .ring{position:absolute;right:-40px;top:-40px;width:170px;height:170px;border-radius:50%;border:24px solid rgba(255,255,255,.1);}
+.phead .av{width:60px;height:60px;border-radius:20px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:32px;border:1px solid rgba(255,255,255,.3);}
+.phead .nm{font-size:26px;font-weight:900;font-family:'Archivo Expanded';margin-top:12px;letter-spacing:-.5px;}
+.phead .tg{display:inline-flex;align-items:center;gap:5px;background:rgba(0,0,0,.25);border-radius:999px;padding:4px 11px;font-size:11px;font-weight:800;margin-top:8px;}
+.title-badge{position:absolute;right:18px;top:22px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.25);border-radius:14px;padding:7px 11px;text-align:center;}
+.title-badge b{font-size:12px;font-weight:900;display:block;}
+.title-badge span{font-size:8px;font-weight:700;color:rgba(255,255,255,.8);letter-spacing:.5px;}
+.pstats{display:flex;gap:11px;margin-top:14px;}
+.ps{flex:1;border-radius:20px;padding:15px 12px;background:linear-gradient(165deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.1);}
+.ps b{font-size:26px;font-weight:900;font-family:'Archivo Expanded';letter-spacing:-1px;display:block;}
+.ps .u{font-size:12px;color:#7a818f;}
+.ps span{font-size:9px;font-weight:800;color:#7a818f;text-transform:uppercase;letter-spacing:.5px;margin-top:3px;display:block;}
+.ps.accent b{background:linear-gradient(90deg,#7c5cff,#48b9ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.sectit{font-size:11px;font-weight:900;color:#7a818f;letter-spacing:1.5px;text-transform:uppercase;margin:22px 4px 12px;}
+.badges{display:flex;gap:11px;}
+.bg{flex:1;aspect-ratio:1;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  background:linear-gradient(165deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.08);}
+.bg.lock{opacity:.4;}
+.bg .be{font-size:30px;}
+.bg .bl{font-size:8.5px;font-weight:800;color:#aab0bd;letter-spacing:.3px;}
+.bg.gold{border-color:rgba(255,210,60,.4);box-shadow:0 0 24px rgba(255,210,60,.2),inset 0 1px 0 rgba(255,255,255,.1);}
+</style></head><body>
+
+<!-- defs grain -->
+<svg width="0" height="0"><filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2"/></filter></svg>
+
+<!-- ============ MAP ============ -->
+<div class="col">
+  <div class="cap">① CARTE — <b>command HUD</b> · niveau, XP, streak, GO néon</div>
+  <div class="phone">
+    <svg class="map" id="mapsvg" viewBox="0 0 372 806" preserveAspectRatio="xMidYMid slice"></svg>
+    <div class="vignette"></div>
+    <svg class="grain" width="372" height="806"><rect width="100%" height="100%" filter="url(#grain)"/></svg>
+
+    <div class="topbar glass">
+      <div class="lvl">
+        <svg viewBox="0 0 50 50"><circle cx="25" cy="25" r="22" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="4"/>
+          <circle cx="25" cy="25" r="22" fill="none" stroke="url(#lg)" stroke-width="4" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="49"/>
+          <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c5cff"/><stop offset="1" stop-color="#48b9ff"/></linearGradient></defs></svg>
+        <div class="n"><b>7</b><span>NIV</span></div>
+      </div>
+      <div class="who">
+        <div class="name">Maya</div>
+        <div class="xp"><i></i></div>
+        <div class="xpt">1 840 / 2 500 XP · niveau 8</div>
+      </div>
+      <div class="streak"><b>🔥12</b><span>JOURS</span></div>
+    </div>
+
+    <div class="ribbon glass">
+      <div class="s">SAISON <b>1</b> · Asnières</div>
+      <div class="d">⏳ J-12</div>
+    </div>
+
+    <div class="stand glass">
+      <div class="row"><span class="bd" style="background:#48b9ff;box-shadow:0 0 8px #48b9ff"></span><span class="pn">35%</span><span class="tr"><i style="width:100%;background:#48b9ff"></i></span></div>
+      <div class="row"><span class="bd" style="background:#ff4d6a;box-shadow:0 0 8px #ff4d6a"></span><span class="pn">30%</span><span class="tr"><i style="width:84%;background:#ff4d6a"></i></span></div>
+      <div class="row"><span class="bd" style="background:#2EE6A6;box-shadow:0 0 8px #2EE6A6"></span><span class="pn">22%</span><span class="tr"><i style="width:62%;background:#2EE6A6"></i></span></div>
+      <div class="row"><span class="bd" style="background:#ffd23c;box-shadow:0 0 8px #ffd23c"></span><span class="pn">13%</span><span class="tr"><i style="width:37%;background:#ffd23c"></i></span></div>
+    </div>
+
+    <div class="gowrap"><div class="go"><b>GO</b><span>START</span></div></div>
+
+    <div class="tabs glass">
+      <div class="tab on"><span class="ic">🗺️</span>Carte</div>
+      <div class="tab"><span class="ic">🏆</span>Ligue</div>
+      <div class="tab"><span class="ic">⚔️</span>Défis</div>
+      <div class="tab"><span class="ic">🎁</span>Lots</div>
+      <div class="tab"><span class="ic">👤</span>Profil</div>
+    </div>
+    <div class="notch"></div>
+    <div class="status"><span>9:41</span><span>● ▦ ▮</span></div>
+  </div>
+</div>
+
+<!-- ============ RUN ============ -->
+<div class="col">
+  <div class="cap">② RUN — <b>typo XXL</b> · stats glass, toasts néon, curseur glow</div>
+  <div class="phone">
+    <svg class="map" id="runsvg" viewBox="0 0 372 806" preserveAspectRatio="xMidYMid slice"></svg>
+    <div class="vignette"></div>
+    <svg class="grain" width="372" height="806"><rect width="100%" height="100%" filter="url(#grain)"/></svg>
+
+    <div class="rtop glass">
+      <div class="rtime"><small>TEMPS</small>32:14</div>
+      <div class="rgrid">
+        <div class="rg"><b>5,42<span class="u"> km</span></b><span>Distance</span></div>
+        <div class="rg"><b>5:56<span class="u">/km</span></b><span>Allure</span></div>
+        <div class="rg hot"><b>+1,9<span class="u"> km</span></b><span>Peint</span></div>
+      </div>
+    </div>
+
+    <div class="toast glass"><span class="e">💥</span><span class="t">Rue Gambetta reprise aux Braises&nbsp;!</span></div>
+    <div class="zone">
+      <div class="zchip glass"><b>🎨 23</b><span>zones</span></div>
+      <div class="zchip glass"><b style="color:#2EE6A6">💥 4</b><span>prises</span></div>
+    </div>
+
+    <div class="cursor"><div class="halo"></div><div class="core"><svg width="17" height="17" viewBox="0 0 24 24"><path d="M12 3l7 16-7-4-7 4z" fill="#fff"/></svg></div></div>
+
+    <div class="rctrl">
+      <div class="rb g">❚❚</div>
+      <div class="stop"><b>STOP</b></div>
+      <div class="rb g">🔒</div>
+    </div>
+    <div class="notch"></div>
+    <div class="status"><span>9:41</span><span>● ▦ ▮</span></div>
+  </div>
+</div>
+
+<!-- ============ PROFILE ============ -->
+<div class="col">
+  <div class="cap">③ PROFIL — <b>carte de joueur</b> · titres, badges, XP, gradient</div>
+  <div class="phone" style="background:#0A0B0F;">
+    <div class="pwrap">
+      <div class="phead">
+        <div class="ring"></div>
+        <div class="title-badge"><b>👑</b><span>BARONNE</span></div>
+        <div class="av">⚡</div>
+        <div class="nm">MAYA</div>
+        <div class="tg">🌊 Les Vagues · Niveau 7</div>
+      </div>
+
+      <div class="pstats">
+        <div class="ps"><b>48,2<span class="u">km</span></b><span>Courus</span></div>
+        <div class="ps accent"><b>31,4<span class="u">km</span></b><span>Peints</span></div>
+        <div class="ps"><b>🔥12</b><span>Streak</span></div>
+      </div>
+
+      <div class="sectit">Badges · 6/24</div>
+      <div class="badges">
+        <div class="bg gold"><span class="be">🏆</span><span class="bl">Champion</span></div>
+        <div class="bg"><span class="be">⚡</span><span class="bl">100 km</span></div>
+        <div class="bg"><span class="be">🌅</span><span class="bl">Lève-tôt</span></div>
+        <div class="bg lock"><span class="be">🔒</span><span class="bl">Marathon</span></div>
+      </div>
+
+      <div class="sectit">Cette saison</div>
+      <div class="pstats">
+        <div class="ps"><b>#3</b><span>Rang ville</span></div>
+        <div class="ps"><b>#1</b><span>Mes amis</span></div>
+        <div class="ps"><b>14</b><span>Rues tenues</span></div>
+      </div>
+    </div>
+    <svg class="grain" width="372" height="806"><rect width="100%" height="100%" filter="url(#grain)"/></svg>
+    <div class="notch"></div>
+    <div class="status"><span>9:41</span><span>● ▦ ▮</span></div>
+  </div>
+</div>
+
+<script>
+function rng(s){return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296;};}
+function smooth(p){if(p.length<2)return'';let d=`M ${p[0].x} ${p[0].y}`;for(let i=0;i<p.length-1;i++){const a=p[i-1]||p[i],b=p[i],c=p[i+1],e=p[i+2]||c;d+=` C ${(b.x+(c.x-a.x)/6).toFixed(1)} ${(b.y+(c.y-a.y)/6).toFixed(1)} ${(c.x-(e.x-b.x)/6).toFixed(1)} ${(c.y-(e.y-b.y)/6).toFixed(1)} ${c.x.toFixed(1)} ${c.y.toFixed(1)}`;}return d;}
+const TEAM={blue:'#48b9ff',red:'#ff4d6a',green:'#2EE6A6',yellow:'#ffd23c',purple:'#7c5cff'};
+function build(id,opts){
+  const s=document.getElementById(id);const r=rng(913);
+  let h=`<rect width="372" height="806" fill="#0A0B0F"/>`;
+  // blocks
+  for(let gy=-1;gy<16;gy++)for(let gx=-1;gx<8;gx++){if(r()<0.18)continue;const x=gx*54+r()*8+4,y=gy*52+r()*8,w=42+r()*12,ht=38+r()*12;h+=`<rect x="${x.toFixed(0)}" y="${y.toFixed(0)}" width="${w.toFixed(0)}" height="${ht.toFixed(0)}" rx="6" fill="#11131a"/>`;}
+  // streets
+  const streets=[];
+  for(let rr=-12;rr<=820;rr+=52){const a=6+r()*14,f=0.011+r()*0.012,p=r()*7;const pts=[];for(let x=-30;x<=400;x+=44)pts.push({x,y:rr+Math.sin(x*f+p)*a});streets.push(pts);}
+  for(let c=-12;c<=384;c+=50){const a=6+r()*14,f=0.011+r()*0.012,p=r()*7;const pts=[];for(let y=-30;y<=840;y+=44)pts.push({x:c+Math.sin(y*f+p)*a,y});streets.push(pts);}
+  let base='';for(const p of streets)base+=`<path d="${smooth(p)}" fill="none" stroke="#1b1f29" stroke-width="2.4" stroke-linecap="round"/>`;
+  h+=base;
+  // neon veins (territory)
+  const cl=[{x:250,y:430,r:180,t:'blue'},{x:96,y:230,r:120,t:'red'},{x:300,y:640,r:120,t:'yellow'},{x:70,y:600,r:110,t:'green'}];
+  const reg=(x,y)=>{let b=null,bc=0;for(const c of cl){const d=Math.hypot(x-c.x,y-c.y);if(d>c.r)continue;const k=1-d/c.r;if(k>bc){bc=k;b=c;}}return b?{t:b.t,k:bc}:null;};
+  let glow='',core='';
+  for(const pts of streets){const rs=pts.map(p=>reg(p.x,p.y));let i=0;while(i<pts.length){const g=rs[i];if(!g){i++;continue;}let j=i;while(j+1<pts.length&&rs[j+1]&&rs[j+1].t===g.t)j++;if(j-i>=1){const sub=pts.slice(i,j+1);let av=0;for(let k=i;k<=j;k++)av+=rs[k].k;av/=(j-i+1);if(r()<0.4+0.5*av){const col=TEAM[g.t],d=smooth(sub);glow+=`<path d="${d}" fill="none" stroke="${col}" stroke-opacity="${(0.12+0.3*av).toFixed(2)}" stroke-width="9" stroke-linecap="round"/>`;core+=`<path d="${d}" fill="none" stroke="${col}" stroke-opacity="${(0.5+0.4*av).toFixed(2)}" stroke-width="2" stroke-linecap="round"/>`;}}i=j+1;}}
+  h+=`<g filter="url(#blur)">${glow}</g>${core}`;
+  h=`<defs><filter id="blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter></defs>`+h;
+  if(opts.trail){
+    const T='M 150 600 C 178 540, 214 506, 240 466 S 280 410, 300 372';
+    h+=`<path d="${T}" fill="none" stroke="#7c5cff" stroke-opacity=".5" stroke-width="12" stroke-linecap="round" filter="url(#blur)"/>`;
+    h+=`<path d="${T}" fill="none" stroke="#9b7bff" stroke-width="4.5" stroke-linecap="round"/>`;
+    h+=`<path d="${T}" fill="none" stroke="#eae2ff" stroke-width="1.5" stroke-opacity=".85" stroke-dasharray="1 8" stroke-linecap="round"/>`;
+  }
+  s.innerHTML=h;
+}
+build('mapsvg',{trail:false});
+build('runsvg',{trail:true});
+</script>
+</body></html>
