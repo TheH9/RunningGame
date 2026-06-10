@@ -112,5 +112,5 @@ const styles = StyleSheet.create({
   meLabel: { color: c.textMuted, fontSize: 10.5, fontFamily: font.extrabold, textTransform: 'uppercase', letterSpacing: 0.4, marginTop: 3 },
   fresh: { color: '#C7CDD6', fontSize: 14, lineHeight: 21, textAlign: 'center', marginVertical: 18 },
   cta: { backgroundColor: c.violet, borderRadius: 18, paddingVertical: 17, alignItems: 'center' },
-  ctaText: { color: '#FFFFFF', fontSize: 16, fontFamily: font.extrabold },
+  ctaText: { color: '#0A0B0F', fontSize: 16, fontFamily: font.extrabold },
 });

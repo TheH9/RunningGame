@@ -10,10 +10,15 @@ export const TEAMS = {
 
 export type TeamSlug = keyof typeof TEAMS;
 
-// Couleur signature du jeu (énergie, XP, actions)
-export const VIOLET = '#7C5CFF';
-export const VIOLET_2 = '#9B7BFF';
+// Couleur signature du jeu = VERT ACIDE (énergie, XP, actions).
+// Texte foncé sur cette couleur (elle est claire) — look « energy drink / gamer ».
+export const ENERGY = '#B8FF2E';
+export const ENERGY_2 = '#D4FF6B';
+export const ON_ENERGY = '#0A0B0F';
 export const CYAN = '#48B9FF';
+// alias rétro-compat (anciens imports VIOLET) → pointent vers le vert acide
+export const VIOLET = ENERGY;
+export const VIOLET_2 = ENERGY_2;
 
 // Palette sombre (toute l'app)
 export const c = {
@@ -26,8 +31,11 @@ export const c = {
   text: '#FFFFFF',
   textDim: '#AAB0BD',
   textMuted: '#7A818F',
-  violet: VIOLET,
-  violet2: VIOLET_2,
+  violet: ENERGY,
+  violet2: ENERGY_2,
+  energy: ENERGY,
+  energy2: ENERGY_2,
+  onEnergy: ON_ENERGY,
   cyan: CYAN,
   gold: '#FFD23C',
   green: '#2EE6A6',
@@ -68,12 +76,14 @@ export const dark = {
   text: c.text,
   textMuted: c.textMuted,
   border: c.hairline,
-  accent: VIOLET_2,
+  accent: ENERGY,
 };
 export const light = dark; // l'app est dark-first désormais
 export const map = {
   land: '#0A0B0F', block: '#11131A', roadCase: '#070A0E', road: '#1B1F29',
   water: '#0F2133', park: '#10201A',
   darkLand: '#0A0B0F', darkBlock: '#11131A', darkRoad: '#1B1F29',
-  trailCore: VIOLET_2, trailHalo: VIOLET, trailHot: '#FFFFFF',
+  // la trace du joueur reste cyan lumineux pour rester lisible sur toutes
+  // les couleurs d'équipe (le vert acide se mélangerait aux Pousses)
+  trailCore: '#7ECBFF', trailHalo: CYAN, trailHot: '#FFFFFF',
 };

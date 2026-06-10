@@ -26,7 +26,7 @@ export default function Profile() {
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.scroll}>
       {/* Header carte de joueur */}
-      <LinearGradient colors={[t.color, '#7C5CFF', '#FF3CA0']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.head}>
+      <LinearGradient colors={[t.color, '#1A2030', '#0E1424']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.head}>
         <View style={styles.headRing} pointerEvents="none" />
         <View style={styles.titleBadge}>
           <Text style={{ fontSize: 13 }}>👑</Text>

@@ -79,5 +79,5 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   cta: { backgroundColor: VIOLET, borderRadius: 18, paddingVertical: 17, alignItems: 'center' },
-  ctaText: { color: '#FFFFFF', fontSize: 16, fontFamily: font.extrabold },
+  ctaText: { color: '#0A0B0F', fontSize: 16, fontFamily: font.extrabold },
 });

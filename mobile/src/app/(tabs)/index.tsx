@@ -146,8 +146,9 @@ export default function MapScreen() {
         <NeonButton
           label="GO"
           sub="START"
-          colors={['#9B7BFF', '#6A3CFF', '#5A2CF0']}
+          colors={['#D4FF6B', '#B8FF2E', '#8FD400']}
           glowColor={VIOLET}
+          textColor="#0A0B0F"
           onPress={() => startRun(false)}
           onLongPress={() => {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});

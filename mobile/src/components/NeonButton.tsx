@@ -13,6 +13,7 @@ type Props = {
   glowColor: string;
   size?: number;
   rings?: boolean;
+  textColor?: string;
   onPress?: () => void;
   onLongPress?: () => void;
   delayLongPress?: number;
@@ -20,7 +21,7 @@ type Props = {
 };
 
 export function NeonButton({
-  label, sub, colors, glowColor, size = 108, rings = true, onPress, onLongPress, delayLongPress, haptic,
+  label, sub, colors, glowColor, size = 108, rings = true, textColor = '#FFFFFF', onPress, onLongPress, delayLongPress, haptic,
 }: Props) {
   return (
     <Squish onPress={onPress} onLongPress={onLongPress} delayLongPress={delayLongPress} haptic={haptic}>
@@ -40,8 +41,8 @@ export function NeonButton({
             glow(glowColor, 30, 0.7),
           ]}>
           <View style={[styles.innerHi, { width: size, height: size, borderRadius: size / 2 }]} pointerEvents="none" />
-          <Text style={[styles.label, { fontSize: size * 0.28 }]}>{label}</Text>
-          {sub ? <Text style={styles.sub}>{sub}</Text> : null}
+          <Text style={[styles.label, { fontSize: size * 0.28, color: textColor }]}>{label}</Text>
+          {sub ? <Text style={[styles.sub, { color: textColor, opacity: 0.85 }]}>{sub}</Text> : null}
         </LinearGradient>
       </View>
     </Squish>
