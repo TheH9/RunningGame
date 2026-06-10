@@ -53,14 +53,14 @@ export function buildSeed(anchor: LatLon, seasonNumber: number, now: number): De
     totalPaintedM: Math.round((8000 + rng() * 30000) * r.runsPerWeek),
   }));
 
-  // ~40 traces : chaque rival a couru 3-5 fois près du QG de son équipe
+  // ~25 traces : chaque rival a couru 2-3 fois près du QG de son équipe
   let trailId = 0;
   for (const r of rivals) {
     const home = TEAM_HOME[r.team];
-    const nRuns = 3 + Math.floor(rng() * 3);
+    const nRuns = 2 + Math.floor(rng() * 2);
     for (let i = 0; i < nRuns; i++) {
-      const from = jitterGeo(world, home.mx + (rng() - 0.5) * 240, home.my + (rng() - 0.5) * 240);
-      const route = world.randomRoute(rng, 1200 + rng() * 1800, from);
+      const from = jitterGeo(world, home.mx + (rng() - 0.5) * 220, home.my + (rng() - 0.5) * 220);
+      const route = world.randomRoute(rng, 700 + rng() * 1100, from);
       if (route.length < 4) continue;
       const paintedAt = now - Math.floor(rng() * 12) * 24 * 3600 * 1000 - Math.floor(rng() * 20) * 3600 * 1000;
       const pts = simplify(route, 10);

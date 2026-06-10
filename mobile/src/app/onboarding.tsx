@@ -3,7 +3,7 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { MapCanvas } from '@/components/MapCanvas';
+import { MapView } from '@/components/map/MapView';
 import { useAppStore } from '@/store/useAppStore';
 import { dark } from '@/theme/tokens';
 
@@ -16,7 +16,7 @@ export default function Onboarding() {
   return (
     <View style={styles.root}>
       <View style={StyleSheet.absoluteFill}>
-        <MapCanvas dark />
+        <MapView dark interactive={false} initialScale={0.9} />
       </View>
       <View style={styles.scrim} />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.content}>

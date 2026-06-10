@@ -7,7 +7,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getBackend } from '@/backend/GameBackend';
 import type { TeamScore } from '@/backend/types';
-import { MapCanvas } from '@/components/MapCanvas';
+import { MapView, type InspectInfo } from '@/components/map/MapView';
+import { StreetCard } from '@/components/map/StreetCard';
 import { useAppStore } from '@/store/useAppStore';
 import { useRunStore } from '@/store/useRunStore';
 import { light, TEAMS } from '@/theme/tokens';
@@ -31,11 +32,12 @@ export default function MapScreen() {
   );
 
   const myShare = control.find((c) => c.team === team)?.percent ?? 0;
+  const [inspect, setInspect] = useState<InspectInfo | null>(null);
 
   return (
     <View style={styles.root}>
       <View style={StyleSheet.absoluteFill}>
-        <MapCanvas team={team} />
+        <MapView team={team} onInspect={setInspect} />
       </View>
 
       <View style={[styles.hud, { top: insets.top + 8 }]}>
@@ -59,6 +61,18 @@ export default function MapScreen() {
           </View>
         ))}
       </View>
+
+      {inspect && (
+        <StreetCard
+          info={inspect}
+          onClose={() => setInspect(null)}
+          onChallenge={() => {
+            setInspect(null);
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
+            router.push('/run');
+          }}
+        />
+      )}
 
       <View style={styles.goWrap}>
         <Pressable

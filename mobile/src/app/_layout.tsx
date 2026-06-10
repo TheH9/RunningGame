@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { getBackend } from '@/backend/GameBackend';
 import { useAppStore } from '@/store/useAppStore';
 import { useTerritoryStore } from '@/store/useTerritoryStore';
@@ -21,7 +22,7 @@ export default function RootLayout() {
   }, [pseudo, team]);
 
   return (
-    <>
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar style="auto" />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
@@ -31,6 +32,6 @@ export default function RootLayout() {
         <Stack.Screen name="run" options={{ gestureEnabled: false, animation: 'fade' }} />
         <Stack.Screen name="summary" options={{ animation: 'slide_from_bottom' }} />
       </Stack>
-    </>
+    </GestureHandlerRootView>
   );
 }

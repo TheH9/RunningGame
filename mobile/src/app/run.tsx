@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getBackend } from '@/backend/GameBackend';
-import { MapCanvas } from '@/components/MapCanvas';
+import { MapView } from '@/components/map/MapView';
 import { formatDuration, formatKm, formatPace } from '@/lib/geo';
 import { useAppStore } from '@/store/useAppStore';
 import { useRunStore } from '@/store/useRunStore';
@@ -109,7 +109,7 @@ export default function RunScreen() {
   return (
     <View style={styles.root}>
       <View style={StyleSheet.absoluteFill}>
-        <MapCanvas dark team={team} trail={trail} />
+        <MapView dark team={team} trail={trail} follow interactive={false} initialScale={1.4} />
       </View>
 
       <View style={[styles.hud, { top: insets.top + 8 }]}>

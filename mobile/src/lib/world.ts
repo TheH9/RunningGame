@@ -147,42 +147,67 @@ export function buildWorld(anchor: LatLon): World {
     return streets[best];
   }
 
-  // Itinéraire le long des rues : suit une rue, bifurque aux croisements approx.
+  // Graphe d'intersections : pour chaque point de rue, les bascules possibles
+  // vers une autre rue à < 45 m (jamais de saut en diagonale à travers la ville).
+  const crossings = new Map<string, { street: number; pt: number }[]>();
+  {
+    const CROSS_M = 45;
+    for (let a = 0; a < streetXY.length; a++) {
+      for (let b = a + 1; b < streetXY.length; b++) {
+        let bestD = CROSS_M, bi = -1, bj = -1;
+        for (let i = 0; i < streetXY[a].length; i += 1) {
+          for (let j = 0; j < streetXY[b].length; j += 1) {
+            const d = Math.hypot(streetXY[a][i].x - streetXY[b][j].x, streetXY[a][i].y - streetXY[b][j].y);
+            if (d < bestD) { bestD = d; bi = i; bj = j; }
+          }
+        }
+        if (bi >= 0) {
+          const ka = `${a}:${bi}`, kb = `${b}:${bj}`;
+          if (!crossings.has(ka)) crossings.set(ka, []);
+          if (!crossings.has(kb)) crossings.set(kb, []);
+          crossings.get(ka)!.push({ street: b, pt: bj });
+          crossings.get(kb)!.push({ street: a, pt: bi });
+        }
+      }
+    }
+  }
+
+  // Itinéraire réaliste : suit une rue, tourne UNIQUEMENT aux croisements.
   function randomRoute(rng2: Rng, lengthM: number, from?: LatLon): GeoPoint[] {
     const start: XY = from
       ? proj.toXY(from)
-      : { x: (rng2() - 0.5) * EXTENT_M * 1.4, y: (rng2() - 0.5) * EXTENT_M * 1.4 };
+      : { x: (rng2() - 0.5) * EXTENT_M * 1.2, y: (rng2() - 0.5) * EXTENT_M * 1.2 };
     const out: XY[] = [];
-    let cur = { ...start };
-    let streetIdx = nearestIdx(cur);
+    let streetIdx = nearestIdx(start);
+    let ptIdx = nearestPtIdx(streetIdx, start);
     let dir = rng2() < 0.5 ? 1 : -1;
-    let ptIdx = nearestPtIdx(streetIdx, cur);
+    let cur = streetXY[streetIdx][ptIdx];
+    out.push(cur);
     let dist = 0;
     let guard = 0;
-    while (dist < lengthM && guard++ < 600) {
+    while (dist < lengthM && guard++ < 400) {
       const pts = streetXY[streetIdx];
-      ptIdx += dir;
-      if (ptIdx < 0 || ptIdx >= pts.length) {
-        // bout de rue : bifurque
-        streetIdx = (streetIdx + 1 + Math.floor(rng2() * (streetXY.length - 1))) % streetXY.length;
-        ptIdx = nearestPtIdx(streetIdx, cur);
+      const nextIdx = ptIdx + dir;
+      const turns = crossings.get(`${streetIdx}:${ptIdx}`);
+      const mustTurn = nextIdx < 0 || nextIdx >= pts.length;
+      if ((mustTurn || rng2() < 0.3) && turns && turns.length > 0) {
+        // tourne au croisement
+        const turn = turns[Math.floor(rng2() * turns.length)];
+        streetIdx = turn.street;
+        ptIdx = turn.pt;
         dir = rng2() < 0.5 ? 1 : -1;
+        const p = streetXY[streetIdx][ptIdx];
+        dist += Math.hypot(p.x - cur.x, p.y - cur.y);
+        cur = p;
+        out.push(cur);
         continue;
       }
+      if (mustTurn) break; // cul-de-sac sans croisement : fin de course
+      ptIdx = nextIdx;
       const next = pts[ptIdx];
       dist += Math.hypot(next.x - cur.x, next.y - cur.y);
-      cur = { ...next };
+      cur = next;
       out.push(cur);
-      // bifurcation aléatoire aux « croisements » (tous les ~GRID_M)
-      if (rng2() < 0.22) {
-        streetIdx = (streetIdx + 1 + Math.floor(rng2() * (streetXY.length - 1))) % streetXY.length;
-        const cand = nearestPtIdx(streetIdx, cur);
-        const candPt = streetXY[streetIdx][cand];
-        if (Math.hypot(candPt.x - cur.x, candPt.y - cur.y) < GRID_M * 0.8) {
-          ptIdx = cand;
-          dir = rng2() < 0.5 ? 1 : -1;
-        }
-      }
     }
     const t0 = Date.now();
     return out.map((p, i) => ({ ...proj.toGeo(p), t: t0 + i * 1000 }));
