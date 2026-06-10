@@ -1,7 +1,25 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
+import { getBackend } from '@/backend/GameBackend';
+import { useAppStore } from '@/store/useAppStore';
+import { useTerritoryStore } from '@/store/useTerritoryStore';
 
 export default function RootLayout() {
+  const pseudo = useAppStore((s) => s.pseudo);
+  const team = useAppStore((s) => s.team);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      await getBackend().init({ pseudo, team });
+      if (alive) await useTerritoryStore.getState().hydrate();
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [pseudo, team]);
+
   return (
     <>
       <StatusBar style="auto" />

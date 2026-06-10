@@ -1,11 +1,13 @@
 // Map — l'écran principal (maquette 03) : territoire en veines + bouton GO.
 
 import * as Haptics from 'expo-haptics';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { getBackend } from '@/backend/GameBackend';
+import type { TeamScore } from '@/backend/types';
 import { MapCanvas } from '@/components/MapCanvas';
-import { CITY_CONTROL } from '@/lib/mockData';
 import { useAppStore } from '@/store/useAppStore';
 import { useRunStore } from '@/store/useRunStore';
 import { light, TEAMS } from '@/theme/tokens';
@@ -13,7 +15,22 @@ import { light, TEAMS } from '@/theme/tokens';
 export default function MapScreen() {
   const insets = useSafeAreaInsets();
   const team = useAppStore((s) => s.team) ?? 'vagues';
-  const myShare = CITY_CONTROL.find((c) => c.team === team)?.percent ?? 0;
+  const [control, setControl] = useState<TeamScore[]>([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      let alive = true;
+      getBackend()
+        .getLeaderboards()
+        .then((d) => alive && setControl(d.teams))
+        .catch(() => {});
+      return () => {
+        alive = false;
+      };
+    }, []),
+  );
+
+  const myShare = control.find((c) => c.team === team)?.percent ?? 0;
 
   return (
     <View style={styles.root}>
@@ -33,10 +50,12 @@ export default function MapScreen() {
       </View>
 
       <View style={[styles.legend, { top: insets.top + 86 }]}>
-        {CITY_CONTROL.map((c) => (
+        {control.map((c) => (
           <View key={c.team} style={styles.legendRow}>
             <View style={[styles.legendDot, { backgroundColor: TEAMS[c.team].color }]} />
-            <Text style={styles.legendText}>{TEAMS[c.team].name.replace('Les ', '')}</Text>
+            <Text style={styles.legendText}>
+              {TEAMS[c.team].name.replace('Les ', '')} {c.percent} %
+            </Text>
           </View>
         ))}
       </View>

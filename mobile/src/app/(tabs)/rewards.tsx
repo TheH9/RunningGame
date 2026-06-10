@@ -1,12 +1,36 @@
 // Récompenses (maquettes 07-09) — défi sponsorisé du mois + coffre à lots.
 
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { CHALLENGE } from '@/lib/mockData';
+import { getBackend } from '@/backend/GameBackend';
+import type { SponsorChallenge } from '@/backend/types';
 import { useAppStore } from '@/store/useAppStore';
 import { light } from '@/theme/tokens';
 
+const FALLBACK: SponsorChallenge = {
+  title: 'Défi du mois', partner: '', description: '', prize: '', emoji: '🎽',
+  goalKm: 25, endsAt: Date.now(),
+};
+
 export default function Rewards() {
-  const paintedKm = useAppStore((s) => s.totalPaintedM) / 1000;
+  const paintedKm = useAppStore((s) => s.seasonPaintedM) / 1000;
+  const [challenge, setChallenge] = useState<SponsorChallenge>(FALLBACK);
+
+  useFocusEffect(
+    useCallback(() => {
+      let alive = true;
+      getBackend()
+        .getChallenge()
+        .then((c) => alive && setChallenge(c))
+        .catch(() => {});
+      return () => {
+        alive = false;
+      };
+    }, []),
+  );
+
+  const CHALLENGE = challenge;
   const progress = Math.min(1, paintedKm / CHALLENGE.goalKm);
 
   return (
@@ -22,7 +46,8 @@ export default function Rewards() {
           <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
         </View>
         <Text style={styles.progressText}>
-          {paintedKm.toFixed(1).replace('.', ',')} / {CHALLENGE.goalKm} km peints · fin le {CHALLENGE.endsAt}
+          {paintedKm.toFixed(1).replace('.', ',')} / {CHALLENGE.goalKm} km peints · fin le{' '}
+          {new Date(CHALLENGE.endsAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
         </Text>
         <View style={styles.prizeBox}>
           <Text style={styles.prizeEmoji}>👟</Text>

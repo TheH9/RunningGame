@@ -8,10 +8,12 @@ import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { getBackend } from '@/backend/GameBackend';
 import { MapCanvas } from '@/components/MapCanvas';
 import { formatDuration, formatKm, formatPace } from '@/lib/geo';
 import { useAppStore } from '@/store/useAppStore';
 import { useRunStore } from '@/store/useRunStore';
+import { useTerritoryStore } from '@/store/useTerritoryStore';
 import { dark, TEAMS } from '@/theme/tokens';
 
 export default function RunScreen() {
@@ -46,8 +48,27 @@ export default function RunScreen() {
     if (locked) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
     const summary = useRunStore.getState().stop();
-    if (!summary.tooShort) {
+    if (!summary.tooShort && !summary.invalidated) {
       recordRun(summary.distanceM, summary.paintedM, summary.cells, summary.elapsedMs);
+      const pseudo = useAppStore.getState().pseudo ?? 'Moi';
+      // peinture optimiste immédiate + soumission backend (fire-and-forget)
+      useTerritoryStore.getState().applyMyRun(team, pseudo, summary.cells, {
+        id: `me-${Date.now()}`,
+        team,
+        runnerPseudo: pseudo,
+        points: summary.points,
+        paintedAt: Date.now(),
+      });
+      getBackend()
+        .submitRun({
+          segments: summary.segments,
+          distanceM: summary.distanceM,
+          paintedM: summary.paintedM,
+          elapsedMs: summary.elapsedMs,
+          startedAt: summary.startedAt,
+          seasonNumber: 1,
+        })
+        .catch(() => {});
     }
     router.replace('/summary');
   };
