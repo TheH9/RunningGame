@@ -17,7 +17,10 @@ const mPerDegLon = (lat: number) => 111320 * Math.cos((lat * Math.PI) / 180);
 
 /** Projection équirectangulaire centrée sur l'anchor. x→est, y→sud (px écran). */
 export function makeProjection(anchor: LatLon, metersPerPx = 2.2) {
-  const kLon = mPerDegLon(anchor.lat);
+  // plancher anti-division-par-zéro : aux latitudes extrêmes cos(lat)→0,
+  // ce qui ferait diverger toGeo (lon = …/kLon). Sans effet aux latitudes
+  // habituelles (à 89,9994° kLon vaut encore ~1).
+  const kLon = Math.max(1, mPerDegLon(anchor.lat));
   return {
     metersPerPx,
     toXY(p: LatLon): XY {

@@ -57,7 +57,9 @@ export const useTerritoryStore = create<TerritoryState>((set, get) => ({
   applyMyRun: (team, pseudo, cellIds, trail) => {
     const cells = get().cells;
     paintCells(cells, team, pseudo, cellIds, Date.now());
-    set({ cells, trails: [...get().trails, trail], version: get().version + 1 });
+    // borne mémoire : même plafond que les traces de bots (évite la croissance
+    // illimitée sur une longue session / beaucoup de runs)
+    set({ cells, trails: [...get().trails.slice(-149), trail], version: get().version + 1 });
   },
 
   applyLive: (e) => {

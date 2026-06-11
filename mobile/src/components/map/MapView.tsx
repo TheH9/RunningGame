@@ -136,10 +136,12 @@ export function MapView({
     .onUpdate((e) => {
       'worklet';
       const next = Math.min(SCALE_MAX, Math.max(SCALE_MIN, savedScale.value * e.scale));
-      // garde le point sous la caméra : t varie proportionnellement
-      const f = next / scale.value;
-      tx.value *= f;
-      ty.value *= f;
+      // zoom ancré sous les doigts (point focal) : le point du monde sous le
+      // focal reste sous le focal pendant le pinch.
+      const lx = (e.focalX - cx - tx.value) / scale.value;
+      const ly = (e.focalY - cy - ty.value) / scale.value;
+      tx.value = e.focalX - cx - lx * next;
+      ty.value = e.focalY - cy - ly * next;
       scale.value = next;
     })
     .onEnd(() => {
@@ -158,9 +160,12 @@ export function MapView({
     })
     .onUpdate((e) => {
       'worklet';
-      const bound = (CANVAS / 2) * scale.value;
-      tx.value = Math.min(bound, Math.max(-bound, savedTx.value + e.translationX));
-      ty.value = Math.min(bound, Math.max(-bound, savedTy.value + e.translationY));
+      // borne = demi-contenu zoomé moins la demi-fenêtre : empêche de tirer la
+      // carte dans le vide (le contenu couvre toujours l'écran).
+      const boundX = Math.max(0, (CANVAS / 2) * scale.value - cx);
+      const boundY = Math.max(0, (CANVAS / 2) * scale.value - cy);
+      tx.value = Math.min(boundX, Math.max(-boundX, savedTx.value + e.translationX));
+      ty.value = Math.min(boundY, Math.max(-boundY, savedTy.value + e.translationY));
     });
 
   // hit-test côté JS (rues/trails/cellules)
