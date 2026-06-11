@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "ignoreDeprecations": "6.0",
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "types": ["jest", "node"],
+    "rootDir": "./src",
+    "noEmit": false,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*.ts"]
+}

@@ -55,6 +55,19 @@ npx expo export --platform web
 node scripts/verify-web.mjs   # parcours complet automatisé + screenshots .verify/
 ```
 
+### Tests unitaires
+
+```bash
+npm test            # Jest — logique pure (geo, territoire, monde procédural)
+```
+
+54 tests (env Node, sans device) couvrant les fonctions pures : géométrie de
+trace (haversine, Douglas-Peucker, allure, Privacy Zone), règles de conflit
+territorial (`cellView`/`paintCells`, fading 14 j / neutre 30 j) et le monde
+géoréférencé (RNG déterministe, projection aller-retour, quartiers). Le reste
+(écrans, GPS réel, BotEngine, anti-triche temps réel) relève du plan de tests
+manuel/device.
+
 ## Règles du jeu (implémentées)
 
 - **Conflit** : scores coexistants par cellule H3 (~25 m) et par équipe ;
