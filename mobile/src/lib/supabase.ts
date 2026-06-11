@@ -26,7 +26,9 @@ export async function uploadRunPoints(
   await supabase.from('run_points').insert(
     points.map((p) => ({
       run_id: runId,
-      geom: `POINT(${p.lon} ${p.lat})`,
+      // EWKT avec SRID explicite : la colonne est geometry(Point,4326) et
+      // rejette une géométrie sans SRID (un simple "POINT(...)" échoue).
+      geom: `SRID=4326;POINT(${p.lon} ${p.lat})`,
       recorded_at: new Date(p.t).toISOString(),
       accuracy_m: p.accuracy ?? null,
     })),
