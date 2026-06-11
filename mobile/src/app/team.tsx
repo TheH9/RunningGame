@@ -6,11 +6,12 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Squish } from '@/components/ui';
 import { confirm } from '@/lib/confirm';
-import { useAppStore } from '@/store/useAppStore';
+import { useAppStore, useCityName } from '@/store/useAppStore';
 import { c, font, glow, TEAMS, type TeamSlug } from '@/theme/tokens';
 
 export default function TeamSelect() {
   const [selected, setSelected] = useState<TeamSlug | null>(null);
+  const city = useCityName();
   const chooseTeam = useAppStore((s) => s.chooseTeam);
 
   const onConfirm = () => {
@@ -30,7 +31,7 @@ export default function TeamSelect() {
     <View style={styles.root}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={styles.title}>CHOISIS{'\n'}TON CAMP</Text>
-        <Text style={styles.sub}>À Asnières · ton choix est définitif pour la saison</Text>
+        <Text style={styles.sub}>À {city} · ton choix est définitif pour la saison</Text>
         {(Object.keys(TEAMS) as TeamSlug[]).map((slug, i) => {
           const team = TEAMS[slug];
           const sel = selected === slug;

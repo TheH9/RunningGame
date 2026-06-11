@@ -30,9 +30,9 @@ export default function Legal() {
       </View>
 
       <Section title="📍 Localisation">
-        Bornes utilise ta position GPS <Text style={styles.b}>uniquement pendant un run</Text>, lorsque l'app est ouverte
-        à l'écran. Elle sert à tracer ton parcours et à peindre ton territoire. Aucune localisation n'est collectée en
-        arrière-plan.
+        Bornes utilise ta position GPS <Text style={styles.b}>uniquement app ouverte à l'écran</Text> : pendant un run
+        (tracer ton parcours, peindre ton territoire) et une fois à l'ouverture de la carte (la centrer sur ta ville).
+        Aucune localisation n'est collectée en arrière-plan.
       </Section>
 
       <Section title="🔒 Zone privée">

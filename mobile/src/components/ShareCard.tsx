@@ -7,6 +7,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import Animated, { Easing, useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
 import Svg, { Circle, Defs, G, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 import type { GeoPoint } from '@/lib/geo';
+import { useCityName } from '@/store/useAppStore';
 import { TEAMS, type TeamSlug } from '@/theme/tokens';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
@@ -64,8 +65,14 @@ type Props = {
   pseudo: string;
 };
 
+/** élision française : « d'Asnières » / « de Paris » */
+function cityPrefix(name: string): string {
+  return /^[aeiouyhéèêàâîïôûæœ]/i.test(name) ? `d’${name}` : `de ${name}`;
+}
+
 export function ShareCard({ points, team, paintedKm, distanceKm, duration, pace, pseudo }: Props) {
   const t = TEAMS[team];
+  const city = useCityName();
   const screen = useMemo(() => fitTrack(points), [points]);
   const d = screen.length >= 2 ? smooth(screen) : '';
   const len = useMemo(() => pathLength(screen), [screen]);
@@ -136,7 +143,7 @@ export function ShareCard({ points, team, paintedKm, distanceKm, duration, pace,
         <Text style={styles.bigValue}>
           {shownKm} <Text style={styles.bigUnit}>km peints</Text>
         </Text>
-        <Text style={styles.tagline}>{pseudo} a repeint un bout d’Asnières aux couleurs {t.name.toLowerCase()}.</Text>
+        <Text style={styles.tagline}>{pseudo} a repeint un bout {cityPrefix(city)} aux couleurs {t.name.toLowerCase()}.</Text>
         <View style={styles.row}>
           <Stat label="Distance" value={`${distanceKm} km`} />
           <Stat label="Durée" value={duration} />

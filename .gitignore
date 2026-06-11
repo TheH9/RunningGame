@@ -27,3 +27,4 @@ yarn-error.log*
 *.ipa
 *.apk
 *.aab
+.claude/

@@ -1,6 +1,7 @@
 // Interface backend — UNIQUE point de contact des écrans avec les données.
 // Factory : les env Supabase présents → SupabaseBackend, sinon DemoBackend.
 
+import type { LatLon } from '../lib/world';
 import type { TeamSlug } from '../theme/tokens';
 import type {
   Drop, Duel, FeedEvent, LiveEvent, RewardItem, Rival, RunnerScore,
@@ -30,6 +31,12 @@ export interface GameBackend {
   addToChest(item: RewardItem): Promise<void>;
   /** DemoBackend uniquement */
   resetDemo?(): Promise<void>;
+  /**
+   * DemoBackend uniquement : re-pose le monde démo autour de la nouvelle ancre
+   * si elle a sauté loin (autre ville). Retourne true si le monde a été re-seedé
+   * → l'appelant doit re-hydrater le store territoire.
+   */
+  rehome?(anchor: LatLon): Promise<boolean>;
 }
 
 let instance: GameBackend | null = null;

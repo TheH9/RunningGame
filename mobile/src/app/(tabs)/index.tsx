@@ -14,11 +14,13 @@ import { NeonButton } from '@/components/NeonButton';
 import { Glass, LevelRing, Bar, Streak, Micro } from '@/components/ui';
 import { TutorialOverlay } from '@/components/TutorialOverlay';
 import { confirm } from '@/lib/confirm';
+import { cityNameFor, locateOnce } from '@/lib/locate';
 import { levelFromXp, useGameStore } from '@/store/useGameStore';
-import { useAppStore } from '@/store/useAppStore';
+import { useAppStore, useCityName } from '@/store/useAppStore';
 import { clearRunSnapshot, readRunSnapshot, useRunStore } from '@/store/useRunStore';
 import { useSeasonStore } from '@/store/useSeasonStore';
 import { useSocialStore } from '@/store/useSocialStore';
+import { useTerritoryStore } from '@/store/useTerritoryStore';
 import { c, font, TEAMS, VIOLET } from '@/theme/tokens';
 
 export default function MapScreen() {
@@ -33,7 +35,38 @@ export default function MapScreen() {
   const unread = useSocialStore((s) => s.unread);
   const season = useSeasonStore((s) => s.current);
   const daysLeft = useSeasonStore((s) => s.daysLeft)();
+  const worldAnchor = useAppStore((s) => s.worldAnchor);
+  const city = useCityName();
   const t = TEAMS[team];
+
+  // la vraie carte montre chez toi sans attendre le 1er run : ancre le monde
+  // sur la position au 1er affichage (permission refusée → ville de lancement)
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      if (!worldAnchor) {
+        const fix = await locateOnce();
+        if (!alive || !fix) return;
+        useAppStore.getState().setWorldAnchor(fix);
+        try {
+          // mode démo : le monde (bots, territoire) se re-pose autour du joueur
+          const moved = await getBackend().rehome?.(fix);
+          if (moved) await useTerritoryStore.getState().resetForSeason();
+        } catch {
+          // best-effort — la carte reste cohérente au prochain démarrage
+        }
+        const name = await cityNameFor(fix);
+        if (alive && name) useAppStore.getState().setCityName(name);
+      } else if (!useAppStore.getState().cityName) {
+        // ancre déjà posée (run passé) mais ville jamais résolue → backfill
+        const name = await cityNameFor(worldAnchor);
+        if (alive && name) useAppStore.getState().setCityName(name);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [worldAnchor]);
 
   useFocusEffect(
     useCallback(() => {
@@ -98,7 +131,7 @@ export default function MapScreen() {
       {/* Ruban de saison */}
       <Glass style={[styles.ribbon, { top: insets.top + 84 }]}>
         <Text style={styles.ribbonText}>
-          SAISON <Text style={{ color: c.cyan }}>{season?.number ?? 1}</Text> · Asnières
+          SAISON <Text style={{ color: c.cyan }}>{season?.number ?? 1}</Text> · {city}
         </Text>
         <Text style={[styles.ribbonDays, daysLeft <= 3 && { color: c.red }]}>⏳ J-{daysLeft}</Text>
       </Glass>

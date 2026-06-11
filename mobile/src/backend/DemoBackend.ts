@@ -5,7 +5,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { trackToCells, paintCells } from '../lib/territory';
 import { DEFAULT_ANCHOR, getWorld, districtAt, makeRng, type LatLon } from '../lib/world';
-import { simplify } from '../lib/geo';
+import { haversine, simplify } from '../lib/geo';
 import { TEAMS, type TeamSlug } from '../theme/tokens';
 import { BotEngine } from './botEngine';
 import { buildChallenge, buildSeed, buildWeeklyDrop } from './demoSeed';
@@ -21,6 +21,10 @@ const STORE_KEY = 'bornes-demo-v1';
 const MAX_TRAILS = 150;
 const MAX_FEED = 60;
 const SEASON_MS = 42 * 24 * 3600 * 1000; // 6 semaines
+/** au-delà, l'ancre a changé de ville → le monde démo se re-pose autour d'elle */
+const REHOME_M = 3000;
+
+const dM = (a: LatLon, b: LatLon) => haversine({ ...a, t: 0 }, { ...b, t: 0 });
 
 type PersistedState = {
   season: SeasonInfo;
@@ -33,6 +37,8 @@ type PersistedState = {
   claimedDrops: string[];
   myPaintedKm: number;
   lastSimAt: number;
+  /** ancre du seed — absent sur les anciens états (=> ville de lancement) */
+  seedAnchor?: LatLon;
 };
 
 export class DemoBackend implements GameBackend {
@@ -50,6 +56,7 @@ export class DemoBackend implements GameBackend {
   private engine: BotEngine | null = null;
   private saveTimer: ReturnType<typeof setTimeout> | null = null;
   private ready: Promise<void> | null = null;
+  private seedAnchor: LatLon = DEFAULT_ANCHOR;
 
   private get anchor(): LatLon {
     return useAppStore.getState().worldAnchor ?? DEFAULT_ANCHOR;
@@ -68,17 +75,23 @@ export class DemoBackend implements GameBackend {
       const raw = await AsyncStorage.getItem(STORE_KEY);
       if (raw) {
         const s: PersistedState = JSON.parse(raw);
-        this.season = s.season;
-        this.cells = new Map(s.cells);
-        this.trails = s.trails;
-        this.rivals = s.rivals;
-        this.duels = s.duels;
-        this.chest = s.chest;
-        this.feed = s.feed;
-        this.claimedDrops = s.claimedDrops ?? [];
-        this.myPaintedKm = s.myPaintedKm ?? 0;
-        this.catchUp(s.lastSimAt, now);
-        return;
+        this.seedAnchor = s.seedAnchor ?? DEFAULT_ANCHOR;
+        // ancre partie vivre ailleurs (1re localisation après un seed à la
+        // ville de lancement) → on re-pose le monde plutôt que de restaurer
+        // un état invisible à 10 km du joueur
+        if (dM(this.seedAnchor, this.anchor) <= REHOME_M) {
+          this.season = s.season;
+          this.cells = new Map(s.cells);
+          this.trails = s.trails;
+          this.rivals = s.rivals;
+          this.duels = s.duels;
+          this.chest = s.chest;
+          this.feed = s.feed;
+          this.claimedDrops = s.claimedDrops ?? [];
+          this.myPaintedKm = s.myPaintedKm ?? 0;
+          this.catchUp(s.lastSimAt, now);
+          return;
+        }
       }
     } catch {
       // état corrompu → re-seed
@@ -87,6 +100,7 @@ export class DemoBackend implements GameBackend {
   }
 
   private seedFresh(now: number) {
+    this.seedAnchor = this.anchor;
     this.season = { number: 1, startsAt: now, endsAt: now + SEASON_MS, durationDays: 42 };
     const seed = buildSeed(this.anchor, 1, now);
     this.cells = seed.cells;
@@ -219,11 +233,23 @@ export class DemoBackend implements GameBackend {
       claimedDrops: this.claimedDrops,
       myPaintedKm: this.myPaintedKm,
       lastSimAt: Date.now(),
+      seedAnchor: this.seedAnchor,
     };
     AsyncStorage.setItem(STORE_KEY, JSON.stringify(s)).catch(() => {});
   }
 
   // --- API GameBackend ---
+
+  async rehome(anchor: LatLon): Promise<boolean> {
+    await this.ready;
+    if (dM(this.seedAnchor, anchor) <= REHOME_M) return false;
+    // le monde démo se re-pose autour du joueur : nouveau seed + bots relancés
+    this.seedFresh(Date.now());
+    this.engine?.stop();
+    this.engine = null;
+    this.startEngine();
+    return true;
+  }
 
   async getSeason(): Promise<SeasonInfo> {
     await this.ready;

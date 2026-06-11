@@ -3,8 +3,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { getBackend } from '@/backend/GameBackend';
+import { BASEMAP_ATTRIBUTION } from '@/components/map/RealBasemap';
 import { confirm } from '@/lib/confirm';
 import { DEFAULT_ANCHOR } from '@/lib/world';
 import { useAppStore } from '@/store/useAppStore';
@@ -17,6 +18,8 @@ const RADII = [200, 400, 600] as const;
 export default function Settings() {
   const privacyZone = useAppStore((s) => s.privacyZone);
   const setPrivacyZone = useAppStore((s) => s.setPrivacyZone);
+  const realMap = useAppStore((s) => s.realMap);
+  const setRealMap = useAppStore((s) => s.setRealMap);
   const worldAnchor = useAppStore((s) => s.worldAnchor);
   const [busy, setBusy] = useState(false);
 
@@ -119,6 +122,17 @@ export default function Settings() {
       </View>
 
       <View style={styles.card}>
+        <View style={styles.rowBetween}>
+          <Text style={[styles.cardTitle, { marginBottom: 0 }]}>🗺️ Carte réelle</Text>
+          <Switch value={realMap} onValueChange={setRealMap} accessibilityLabel="Carte réelle" />
+        </View>
+        <Text style={styles.text}>
+          Affiche les vraies rues de ta ville sous tes traces ({BASEMAP_ATTRIBUTION}). Désactive pour retrouver la
+          ville stylisée du mode démo (utile hors connexion).
+        </Text>
+      </View>
+
+      <View style={styles.card}>
         <Text style={styles.cardTitle}>🧪 Mode démo</Text>
         <Text style={styles.text}>
           L'app tourne en mode fictif : rivaux simulés, lots de démonstration. Les vraies données arrivent avec le
@@ -132,7 +146,8 @@ export default function Settings() {
       <View style={styles.card}>
         <Text style={styles.cardTitle}>🛡️ Confidentialité & données</Text>
         <Text style={styles.text}>
-          Ta position n'est utilisée que pendant un run, app ouverte. Tes données restent sur ton appareil.
+          Ta position n'est utilisée qu'app ouverte : pendant un run et pour centrer la carte sur ta ville. Tes données
+          restent sur ton appareil.
         </Text>
         <Pressable style={styles.linkBtn} onPress={() => router.push('/legal')} accessibilityRole="button">
           <Text style={styles.linkText}>Voir la politique de confidentialité →</Text>
@@ -161,6 +176,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 28, fontWeight: '800', color: light.text, letterSpacing: -0.8 },
   close: { fontSize: 18, color: light.textMuted, fontWeight: '700', padding: 4 },
   card: { backgroundColor: light.surface, borderRadius: 22, padding: 18, marginBottom: 14 },
+  rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   cardTitle: { fontSize: 13, fontWeight: '800', color: light.text, marginBottom: 8 },
   text: { fontSize: 13.5, lineHeight: 20, color: light.textMuted, fontWeight: '600' },
   radiusRow: { flexDirection: 'row', gap: 10, marginTop: 14, marginBottom: 10 },

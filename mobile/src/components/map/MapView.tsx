@@ -5,7 +5,7 @@
 
 import { latLngToCell } from 'h3-js';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Platform, StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   Easing, interpolate, runOnJS, useAnimatedStyle, useSharedValue, withRepeat, withTiming,
@@ -22,8 +22,9 @@ import { useTerritoryStore } from '../../store/useTerritoryStore';
 import { TEAMS, type TeamSlug } from '../../theme/tokens';
 import { BotsLayer } from './BotsLayer';
 import { CityBase } from './CityBase';
-import { CANVAS, LOD_HIGH, LOD_LOW, projectionFor, SCALE_MAX, SCALE_MIN } from './mapShared';
+import { CANVAS, LOD_HIGH, LOD_LOW, MAP_DARK, MAP_LIGHT, projectionFor, SCALE_MAX, SCALE_MIN } from './mapShared';
 import { MyTrail } from './MyTrail';
+import { BASEMAP_ATTRIBUTION, RealBasemap } from './RealBasemap';
 import { TerritoryHexes } from './TerritoryHexes';
 import { TerritoryVeins } from './TerritoryVeins';
 
@@ -57,6 +58,7 @@ export function MapView({
   initialScale = 1,
 }: Props) {
   const anchor = useAppStore((s) => s.worldAnchor) ?? DEFAULT_ANCHOR;
+  const realMap = useAppStore((s) => s.realMap);
   const version = useTerritoryStore((s) => s.version);
   const botsVersion = useTerritoryStore((s) => s.botsVersion);
   const trails = useTerritoryStore((s) => s.trails);
@@ -237,10 +239,27 @@ export function MapView({
       <GestureDetector gesture={composed}>
         <View style={StyleSheet.absoluteFill} collapsable={false}>
           <Animated.View
-            style={[{ position: 'absolute', left: canvasLeft, top: canvasTop, width: CANVAS, height: CANVAS }, cameraStyle]}>
-            <Svg width={CANVAS} height={CANVAS} viewBox={vb}>
-              <CityBase anchor={anchor} dark={dark} />
-            </Svg>
+            style={[
+              { position: 'absolute', left: canvasLeft, top: canvasTop, width: CANVAS, height: CANVAS },
+              realMap && { backgroundColor: (dark ? MAP_DARK : MAP_LIGHT).land },
+              cameraStyle,
+            ]}>
+            {realMap ? (
+              <RealBasemap
+                anchor={anchor}
+                dark={dark}
+                scale={scale}
+                tx={tx}
+                ty={ty}
+                viewW={size.w}
+                viewH={size.h}
+                initialScale={initialScale}
+              />
+            ) : (
+              <Svg width={CANVAS} height={CANVAS} viewBox={vb}>
+                <CityBase anchor={anchor} dark={dark} />
+              </Svg>
+            )}
             <Animated.View style={[StyleSheet.absoluteFill, hexStyle]} pointerEvents="none">
               <Svg width={CANVAS} height={CANVAS} viewBox={vb}>
                 <TerritoryHexes anchor={anchor} cells={cells} version={version} dark={dark} />
@@ -264,6 +283,15 @@ export function MapView({
           </Animated.View>
         </View>
       </GestureDetector>
+
+      {/* attribution légale du fond de carte réel */}
+      {realMap && (
+        <Text
+          pointerEvents="none"
+          style={[styles.attribution, { color: dark ? 'rgba(255,255,255,0.4)' : 'rgba(31,41,55,0.4)' }]}>
+          {BASEMAP_ATTRIBUTION}
+        </Text>
+      )}
 
       {/* curseur GPS fixe au centre — la ville défile dessous */}
       {follow && (
@@ -297,6 +325,7 @@ function DropMarker({ anchor, drop }: { anchor: LatLon; drop: Drop }) {
 
 const styles = StyleSheet.create({
   root: { flex: 1, overflow: 'hidden' },
+  attribution: { position: 'absolute', right: 8, bottom: 5, fontSize: 9, fontWeight: '600' },
   cursor: { position: 'absolute', width: 56, height: 56, alignItems: 'center', justifyContent: 'center' },
   halo: { position: 'absolute', width: 56, height: 56, borderRadius: 28 },
   arrowWrap: { width: 34, height: 34, alignItems: 'center', justifyContent: 'center' },

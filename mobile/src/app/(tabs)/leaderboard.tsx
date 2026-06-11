@@ -7,6 +7,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { getBackend } from '@/backend/GameBackend';
 import type { RunnerScore, TeamScore } from '@/backend/types';
 import { Bar, Glass, Micro, Squish } from '@/components/ui';
+import { useCityName } from '@/store/useAppStore';
 import { c, font, TEAMS } from '@/theme/tokens';
 
 type Segment = 'teams' | 'runners' | 'friends';
@@ -38,6 +39,7 @@ const RunnerRow = memo(function RunnerRow({ r, i }: { r: RunnerScore; i: number 
 });
 
 export default function Leaderboard() {
+  const city = useCityName();
   const [segment, setSegment] = useState<Segment>('teams');
   const [teams, setTeams] = useState<TeamScore[]>([]);
   const [runners, setRunners] = useState<RunnerScore[]>([]);
@@ -63,7 +65,7 @@ export default function Leaderboard() {
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.scroll}>
       <Text style={styles.title}>LIGUE</Text>
-      <Text style={styles.sub}>Asnières · cette semaine</Text>
+      <Text style={styles.sub}>{city} · cette semaine</Text>
 
       <View style={styles.segments}>
         {([['teams', 'Équipes'], ['runners', 'Coureurs'], ['friends', 'Amis']] as [Segment, string][]).map(([key, label]) => (

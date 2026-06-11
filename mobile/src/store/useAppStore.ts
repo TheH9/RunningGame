@@ -17,6 +17,10 @@ type AppState = {
   tutorialSeen: boolean;
   /** ancrage lat/lon du monde fictif — réancré sur le 1er fix GPS réel */
   worldAnchor: LatLon | null;
+  /** fond de carte réel (tuiles OSM/Mapbox) au lieu de la ville stylisée */
+  realMap: boolean;
+  /** ville réelle (reverse-geocode de l'ancre) — affichage uniquement */
+  cityName: string | null;
   privacyZone: PrivacyZone | null;
   /** cellules H3 uniques jamais visitées (stat « % découvert », ADR-003) */
   discoveredCells: string[];
@@ -31,6 +35,8 @@ type AppState = {
   completeOnboarding: () => void;
   markTutorialSeen: () => void;
   setWorldAnchor: (a: LatLon) => void;
+  setRealMap: (v: boolean) => void;
+  setCityName: (n: string | null) => void;
   setPrivacyZone: (z: PrivacyZone | null) => void;
   recordRun: (distanceM: number, paintedM: number, cells: string[], elapsedMs: number) => void;
   resetSeasonStats: () => void;
@@ -43,6 +49,8 @@ const initial = {
   onboarded: false,
   tutorialSeen: false,
   worldAnchor: null,
+  realMap: true,
+  cityName: null,
   privacyZone: null,
   discoveredCells: [] as string[],
   totalRuns: 0,
@@ -61,6 +69,8 @@ export const useAppStore = create<AppState>()(
       completeOnboarding: () => set({ onboarded: true }),
       markTutorialSeen: () => set({ tutorialSeen: true }),
       setWorldAnchor: (worldAnchor) => set({ worldAnchor }),
+      setRealMap: (realMap) => set({ realMap }),
+      setCityName: (cityName) => set({ cityName }),
       setPrivacyZone: (privacyZone) => set({ privacyZone }),
       recordRun: (distanceM, paintedM, cells, elapsedMs) => {
         const merged = new Set(get().discoveredCells);
@@ -86,3 +96,8 @@ export const useAppStore = create<AppState>()(
     { name: 'bornes-app', storage: createJSONStorage(() => AsyncStorage) },
   ),
 );
+
+/** Nom de ville à afficher (vraie ville localisée, sinon ville de lancement). */
+export function useCityName(): string {
+  return useAppStore((s) => s.cityName) ?? 'Asnières';
+}

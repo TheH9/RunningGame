@@ -10,7 +10,7 @@ droits. Contact : **privacy@bornes.app**.
 
 | Donnée | Pourquoi | Où |
 |---|---|---|
-| **Position GPS précise** | Tracer ton parcours et peindre ton territoire pendant un run | Sur l'appareil ; la trace publique (hors Privacy Zone) est synchronisée si tu as un compte |
+| **Position GPS précise** | Tracer ton parcours et peindre ton territoire pendant un run ; centrer la carte sur ta ville à l'ouverture | Sur l'appareil ; la trace publique (hors Privacy Zone) est synchronisée si tu as un compte |
 | **Pseudo & équipe** | T'identifier dans les classements et les duels | Sur l'appareil + serveur (si compte) |
 | **Progression** (XP, niveaux, badges, séries) | Faire fonctionner le jeu | Sur l'appareil |
 | **Stats de run** (distance, durée, allure) | Historique et classements | Sur l'appareil + serveur (si compte) |
@@ -21,9 +21,11 @@ donnée**.
 
 ## 2. Localisation
 
-La position n'est utilisée **que pendant un run, lorsque l'application est
-ouverte à l'écran**. Il n'y a **aucun suivi en arrière-plan**. Tu peux refuser
-l'accès à la localisation : l'app reste utilisable en mode démo.
+La position n'est utilisée **que lorsque l'application est ouverte à l'écran** :
+pendant un run, et une fois à l'ouverture de la carte pour la centrer sur ta
+ville (un seul relevé, jamais de suivi). Il n'y a **aucun suivi en
+arrière-plan**. Tu peux refuser l'accès à la localisation : l'app reste
+utilisable en mode démo.
 
 ## 3. Privacy Zone
 
