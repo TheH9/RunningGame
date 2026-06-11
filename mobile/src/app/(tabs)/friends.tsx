@@ -43,6 +43,7 @@ export default function Friends() {
   const rivals = useSocialStore((s) => s.rivals);
   const duels = useSocialStore((s) => s.duels);
   const challenge = useSocialStore((s) => s.challenge);
+  const setFriend = useSocialStore((s) => s.setFriend);
   const [busy, setBusy] = useState<string | null>(null);
 
   useFocusEffect(
@@ -70,6 +71,10 @@ export default function Friends() {
     }
   }, [challenge]);
 
+  const onToggleFriend = useCallback((r: Rival) => {
+    setFriend(r.id, !r.isFriend).catch(() => {});
+  }, [setFriend]);
+
   const renderRival = (r: Rival) => (
     <View key={r.id} style={styles.row}>
       <Text style={styles.emoji}>{r.emoji}</Text>
@@ -79,13 +84,18 @@ export default function Friends() {
         </Text>
         <Text style={styles.meta}>{(r.weekPaintedM / 1000).toFixed(1).replace('.', ',')} km cette semaine{r.title ? ` · ${r.title}` : ''}</Text>
       </View>
-      {activeDuels.has(r.id) ? (
-        <View style={styles.inDuel}><Text style={styles.inDuelText}>⚔️ en duel</Text></View>
-      ) : (
-        <Squish style={[styles.challengeBtn, busy === r.id && { opacity: 0.5 }]} disabled={busy === r.id} onPress={() => onChallenge(r)}>
-          <Text style={styles.challengeText}>Défier</Text>
+      <View style={styles.actions}>
+        <Squish style={[styles.friendBtn, r.isFriend && styles.friendBtnOn]} onPress={() => onToggleFriend(r)}>
+          <Text style={[styles.friendText, r.isFriend && styles.friendTextOn]}>{r.isFriend ? '✓ Ami' : '+ Ami'}</Text>
         </Squish>
-      )}
+        {activeDuels.has(r.id) ? (
+          <View style={styles.inDuel}><Text style={styles.inDuelText}>⚔️ en duel</Text></View>
+        ) : (
+          <Squish style={[styles.challengeBtn, busy === r.id && { opacity: 0.5 }]} disabled={busy === r.id} onPress={() => onChallenge(r)}>
+            <Text style={styles.challengeText}>Défier</Text>
+          </Squish>
+        )}
+      </View>
     </View>
   );
 
@@ -136,6 +146,11 @@ const styles = StyleSheet.create({
   pseudo: { fontSize: 15, fontFamily: font.extrabold, color: c.text },
   teamName: { fontSize: 12.5, fontFamily: font.bold },
   meta: { fontSize: 11.5, fontFamily: font.bold, color: c.textMuted, marginTop: 2 },
+  actions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  friendBtn: { borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.16)', backgroundColor: 'rgba(255,255,255,0.05)' },
+  friendBtnOn: { borderColor: c.green, backgroundColor: 'rgba(184,255,46,0.14)' },
+  friendText: { color: c.textMuted, fontSize: 12.5, fontFamily: font.extrabold },
+  friendTextOn: { color: c.green },
   challengeBtn: { backgroundColor: c.violet, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 8 },
   challengeText: { color: '#0A0B0F', fontSize: 12.5, fontFamily: font.extrabold },
   inDuel: { backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8 },

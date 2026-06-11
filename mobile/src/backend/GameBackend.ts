@@ -18,6 +18,8 @@ export interface GameBackend {
   subscribeLive(cb: (e: LiveEvent) => void): () => void;
   getLeaderboards(): Promise<{ teams: TeamScore[]; runners: RunnerScore[]; friends: RunnerScore[] }>;
   getRivals(): Promise<Rival[]>;
+  /** ajoute (on=true) ou retire (on=false) un coureur de ses amis */
+  setFriend(rivalId: string, on: boolean): Promise<void>;
   getDuels(): Promise<Duel[]>;
   startDuel(rivalId: string): Promise<Duel>;
   getFeed(limit: number): Promise<FeedEvent[]>;

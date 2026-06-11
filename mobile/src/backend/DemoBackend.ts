@@ -326,6 +326,15 @@ export class DemoBackend implements GameBackend {
     return this.rivals;
   }
 
+  async setFriend(rivalId: string, on: boolean): Promise<void> {
+    await this.ready;
+    const rival = this.rivals.find((r) => r.id === rivalId);
+    if (rival) {
+      rival.isFriend = on;
+      this.save();
+    }
+  }
+
   async getDuels(): Promise<Duel[]> {
     await this.ready;
     this.settleDuels(Date.now());

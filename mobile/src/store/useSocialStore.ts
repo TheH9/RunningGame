@@ -13,6 +13,7 @@ type SocialState = {
   hydrate: () => Promise<void>;
   refresh: () => Promise<void>;
   challenge: (rivalId: string) => Promise<Duel>;
+  setFriend: (rivalId: string, on: boolean) => Promise<void>;
   markFeedRead: () => void;
 };
 
@@ -51,6 +52,16 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     const duel = await getBackend().startDuel(rivalId);
     set({ duels: [duel, ...get().duels.filter((d) => d.id !== duel.id)] });
     return duel;
+  },
+
+  setFriend: async (rivalId, on) => {
+    // Optimiste : bascule local immédiat, puis persistance + resync.
+    set({ rivals: get().rivals.map((r) => (r.id === rivalId ? { ...r, isFriend: on } : r)) });
+    try {
+      await getBackend().setFriend(rivalId, on);
+    } finally {
+      await get().refresh();
+    }
   },
 
   markFeedRead: () => set({ unread: 0 }),

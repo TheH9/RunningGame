@@ -259,6 +259,19 @@ export class SupabaseBackend implements GameBackend {
       });
   }
 
+  async setFriend(rivalId: string, on: boolean): Promise<void> {
+    if (!supabase || !this.userId) return;
+    if (on) {
+      await supabase.from('friendships').upsert(
+        { user_id: this.userId, friend_id: rivalId, status: 'accepted' },
+        { onConflict: 'user_id,friend_id' },
+      );
+    } else {
+      await supabase.from('friendships').delete()
+        .eq('user_id', this.userId).eq('friend_id', rivalId);
+    }
+  }
+
   async getDuels(): Promise<Duel[]> {
     await this.ready;
     if (!supabase || !this.userId) return [];
