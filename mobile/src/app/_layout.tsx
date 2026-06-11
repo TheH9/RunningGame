@@ -80,6 +80,7 @@ export default function RootLayout() {
       <StatusBar style="light" />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: c.bg } }}>
         <Stack.Screen name="index" />
+        <Stack.Screen name="auth" options={{ gestureEnabled: false, animation: 'fade' }} />
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="team" />
         <Stack.Screen name="(tabs)" />

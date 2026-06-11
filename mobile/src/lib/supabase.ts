@@ -13,7 +13,15 @@ const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 export const supabase: SupabaseClient | null =
   url && anonKey
     ? createClient(url, anonKey, {
-        auth: { storage: AsyncStorage, autoRefreshToken: true, persistSession: true },
+        auth: {
+          storage: AsyncStorage,
+          autoRefreshToken: true,
+          persistSession: true,
+          // Mobile : on récupère la session via le deep-link OAuth nous-mêmes
+          // (échange du code PKCE), pas via une URL de navigateur.
+          detectSessionInUrl: false,
+          flowType: 'pkce',
+        },
       })
     : null;
 

@@ -54,15 +54,14 @@ export class SupabaseBackend implements GameBackend {
         this.slugByTeamId.set(t.id, t.slug as TeamSlug);
       }
     }
-    // Session : réutilise une session existante, sinon connexion anonyme.
+    // Session : établie par l'écran d'auth (Apple / Google / Email). Sans
+    // session, on reste en lecture seule jusqu'à la connexion.
     const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) {
-      this.userId = session.user.id;
-    } else {
-      const { data, error } = await supabase.auth.signInAnonymously();
-      // Auth anonyme non activée côté projet → on reste en lecture seule.
-      if (!error) this.userId = data.user?.id ?? null;
-    }
+    this.userId = session?.user?.id ?? null;
+    // Réagit à la connexion/déconnexion sans recharger l'app.
+    supabase.auth.onAuthStateChange((_event, s) => {
+      this.userId = s?.user?.id ?? null;
+    });
   }
 
   /** Aligne le profil serveur (pseudo / équipe) sur le choix d'onboarding. */
