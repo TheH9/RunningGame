@@ -20,6 +20,8 @@ yarn-error.log*
 .env
 .env.*
 !.env.example
+# valeurs par défaut PUBLIQUES (clé publishable Supabase) → .env au postinstall
+!.env.default
 
 # Mobile build artifacts
 *.ipa
