@@ -2,6 +2,7 @@
 
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
+import { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Bar, Glass, Micro, Pop, Squish, Ticker } from '@/components/ui';
 import { discoveryPercent } from '@/lib/territory';
@@ -13,14 +14,27 @@ import { c, font, TEAMS } from '@/theme/tokens';
 const CITY_CELLS = 12000;
 
 export default function Profile() {
-  const { pseudo, team, totalRuns, totalDistanceM, totalPaintedM, discoveredCells, bestRun } = useAppStore();
+  // Sélecteurs étroits : chaque champ s'abonne séparément, l'écran ne re-rend
+  // que si une valeur qu'il affiche change (pas à chaque mutation du store).
+  const pseudo = useAppStore((s) => s.pseudo);
+  const team = useAppStore((s) => s.team);
+  const totalRuns = useAppStore((s) => s.totalRuns);
+  const totalDistanceM = useAppStore((s) => s.totalDistanceM);
+  const totalPaintedM = useAppStore((s) => s.totalPaintedM);
+  const discoveredCells = useAppStore((s) => s.discoveredCells);
+  const bestRun = useAppStore((s) => s.bestRun);
   const xp = useGameStore((s) => s.xp);
   const streak = useGameStore((s) => s.streak);
   const badges = useGameStore((s) => s.getBadges)();
   const hallOfFame = useSeasonStore((s) => s.hallOfFame);
   const lvl = levelFromXp(xp);
   const t = team ? TEAMS[team] : TEAMS.vagues;
-  const discovered = discoveryPercent(new Set(discoveredCells), CITY_CELLS);
+  // new Set(...) sur potentiellement des milliers de cellules : à ne refaire que
+  // quand la liste change, pas à chaque rendu.
+  const discovered = useMemo(
+    () => discoveryPercent(new Set(discoveredCells), CITY_CELLS),
+    [discoveredCells],
+  );
   const unlocked = badges.filter((b) => b.unlocked).length;
 
   return (

@@ -4,6 +4,8 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { latLngToCell } from 'h3-js';
+import { H3_RES } from './territory';
 
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
@@ -31,6 +33,9 @@ export async function uploadRunPoints(
       geom: `SRID=4326;POINT(${p.lon} ${p.lat})`,
       recorded_at: new Date(p.t).toISOString(),
       accuracy_m: p.accuracy ?? null,
+      // Cellule H3 calculée côté client (l'extension Postgres h3 n'est pas
+      // dispo sur Supabase) : c'est la source du scoring serveur (score_run).
+      h3_index: latLngToCell(p.lat, p.lon, H3_RES),
     })),
   );
 }

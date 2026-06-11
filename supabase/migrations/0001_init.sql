@@ -1,9 +1,11 @@
 -- Bornes — schéma initial (MVP)
 -- Modèle validé par ADR-002 (Trail Paint) et ADR-003 (affichage territoire).
--- Extensions : PostGIS (géo), h3 (scoring en cellules), pgcrypto (uuid).
+-- Extensions : PostGIS (géo), pgcrypto (uuid).
+-- NB : le scoring en cellules H3 est calculé CÔTÉ CLIENT (h3-js) et l'index est
+-- stocké en texte. L'extension Postgres `h3` n'est pas disponible sur l'image
+-- Supabase actuelle (PG17 / PostGIS 3.3.7), d'où ce choix (cf. ADR-002 §4).
 
 create extension if not exists postgis;
-create extension if not exists h3;
 create extension if not exists pgcrypto;
 
 -- ----------------------------------------------------------------------------
@@ -64,6 +66,8 @@ create table run_points (
   geom        geometry(Point, 4326) not null,
   recorded_at timestamptz not null,
   accuracy_m  double precision,
+  -- cellule H3 (rés. 11 ≈ 25 m) calculée par le client (h3-js), source du scoring
+  h3_index    text,
   -- true si dans la Privacy Zone : compté en stats, jamais affiché/peint
   is_private  boolean not null default false
 );
@@ -75,7 +79,7 @@ create index run_points_geom_idx on run_points using gist (geom);
 -- ----------------------------------------------------------------------------
 
 create table territory_cells (
-  h3_index    h3index not null,
+  h3_index    text not null,
   city_id     uuid not null references cities(id),
   team_id     uuid not null references teams(id),
   score       double precision not null default 0,
@@ -167,11 +171,11 @@ begin
 
   -- Agrégation de la trace publique en cellules H3 rés. 11 (~25 m), ADR-002 §4
   insert into territory_cells (h3_index, city_id, team_id, score, last_seen)
-  select h3_lat_lng_to_cell(point(st_x(geom), st_y(geom)), 11) as h3_index,
+  select h3_index,
          v_city, v_run.team_id, count(*)::double precision, max(recorded_at)
   from run_points
-  where run_id = p_run_id and is_private = false
-  group by 1
+  where run_id = p_run_id and is_private = false and h3_index is not null
+  group by h3_index
   on conflict (h3_index, team_id) do update
     set score = territory_cells.score + excluded.score,
         last_seen = greatest(territory_cells.last_seen, excluded.last_seen);

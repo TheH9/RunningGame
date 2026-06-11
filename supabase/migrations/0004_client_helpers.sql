@@ -8,7 +8,7 @@ begin;
 -- Lecture publique (run_points.is_private = false via RLS / filtre explicite).
 create or replace function recent_trails(p_city uuid, p_limit integer default 120)
 returns jsonb language sql stable security invoker set search_path = public as $$
-  select coalesce(jsonb_agg(t order by t.painted_at desc), '[]'::jsonb)
+  select coalesce(jsonb_agg(t order by t."paintedAt" desc), '[]'::jsonb)
   from (
     select
       r.id::text                                   as id,

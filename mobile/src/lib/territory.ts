@@ -22,8 +22,18 @@ export type TerritoryCell = {
   fading?: boolean;
 };
 
+// Contours H3 mis en cache : cellToBoundary est déterministe, mais coûteux et
+// appelé pour chaque cellule à chaque rendu de la carte (zoom/pan). On évite de
+// recalculer la même frontière des milliers de fois.
+const _polyCache = new Map<string, { lat: number; lon: number }[]>();
+
 export function cellPolygon(h3: string): { lat: number; lon: number }[] {
-  return cellToBoundary(h3).map(([lat, lon]) => ({ lat, lon }));
+  let poly = _polyCache.get(h3);
+  if (!poly) {
+    poly = cellToBoundary(h3).map(([lat, lon]) => ({ lat, lon }));
+    _polyCache.set(h3, poly);
+  }
+  return poly;
 }
 
 /** % de découverte perso (stat fog-of-war, ADR-003 §3) */

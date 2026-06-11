@@ -31,6 +31,10 @@ alter table territory_cells
   add column if not exists last_runner_id     uuid references profiles(id),
   add column if not exists last_runner_pseudo text;
 
+-- Index H3 calculé côté client (h3-js) — source du scoring, voir score_run.
+alter table run_points
+  add column if not exists h3_index text;
+
 -- Carte d'identité du coureur (rivaux : rue fétiche + titre de quartier).
 alter table profiles
   add column if not exists signature_street text,
@@ -201,15 +205,16 @@ begin
   select city_id into v_city from teams where id = v_run.team_id;
   select pseudo  into v_pseudo from profiles where id = v_run.user_id;
 
-  -- Cellules touchées par la trace publique (hors Privacy Zone).
+  -- Cellules touchées par la trace publique (hors Privacy Zone). L'index H3
+  -- (rés. 11) est calculé côté client (h3-js) et stocké sur run_points.
   drop table if exists _touched;
   create temp table _touched as
-    select h3_lat_lng_to_cell(point(st_x(geom), st_y(geom)), 11) as h3,
-           count(*)::double precision as inc,
-           max(recorded_at)           as ts
+    select h3_index                   as h3,
+           count(*)::double precision  as inc,
+           max(recorded_at)            as ts
     from run_points
-    where run_id = p_run_id and is_private = false
-    group by 1;
+    where run_id = p_run_id and is_private = false and h3_index is not null
+    group by h3_index;
 
   if (select count(*) from _touched) = 0 then
     drop table if exists _touched; return;
