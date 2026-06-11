@@ -58,15 +58,23 @@ node scripts/verify-web.mjs   # parcours complet automatisé + screenshots .veri
 ### Tests unitaires
 
 ```bash
-npm test            # Jest — logique pure (geo, territoire, monde procédural)
+npm test            # Jest — logique pure + mécanique de jeu (stores)
 ```
 
-54 tests (env Node, sans device) couvrant les fonctions pures : géométrie de
-trace (haversine, Douglas-Peucker, allure, Privacy Zone), règles de conflit
-territorial (`cellView`/`paintCells`, fading 14 j / neutre 30 j) et le monde
-géoréférencé (RNG déterministe, projection aller-retour, quartiers). Le reste
-(écrans, GPS réel, BotEngine, anti-triche temps réel) relève du plan de tests
-manuel/device.
+75 tests (env Node, sans device), en deux niveaux :
+
+- **Logique pure** (`src/lib`) : géométrie de trace (haversine, Douglas-Peucker,
+  allure, Privacy Zone), règles de conflit territorial (`cellView`/`paintCells`,
+  fading 14 j / neutre 30 j), monde géoréférencé (RNG déterministe, projection
+  aller-retour, quartiers).
+- **Stores** (`src/store`) : moteur de run de bout en bout via une source GPS
+  factice (distance, segments coupés sur trou GPS, filtre de précision,
+  anti-triche 25/40 km/h, Privacy Zone), territoire live (mes runs + bots,
+  re-rendu sélectif) et stats de profil (records d'allure, cumuls, découverte).
+
+Mocks légers (`react-native` Platform, `AsyncStorage`, `locationSource`) — pas
+de chaîne Expo/Reanimated. Le reste (écrans, GPS réel, rendu carte) relève du
+plan de tests manuel/device.
 
 ## Règles du jeu (implémentées)
 
