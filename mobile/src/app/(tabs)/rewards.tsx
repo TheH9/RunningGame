@@ -7,6 +7,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { getBackend } from '@/backend/GameBackend';
 import type { Drop, RewardItem, SponsorChallenge } from '@/backend/types';
 import { Bar, Glass, Micro, Squish } from '@/components/ui';
+import { scheduleDropEnd } from '@/lib/notifications';
 import { clearQualifiedDrop, getQualifiedDrop } from '@/lib/runDirector';
 import { useAppStore } from '@/store/useAppStore';
 import { c, font } from '@/theme/tokens';
@@ -27,7 +28,10 @@ export default function Rewards() {
     b.getChest().then(setChest).catch(() => {});
     b.getActiveDrop().then(async (d) => {
       setDrop(d);
-      if (d) setQualified((await getQualifiedDrop()) === d.id);
+      if (d) {
+        setQualified((await getQualifiedDrop()) === d.id);
+        scheduleDropEnd(d.id, d.endsAt).catch(() => {});
+      }
     }).catch(() => {});
   }, []);
 

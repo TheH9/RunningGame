@@ -9,6 +9,7 @@ import { AppState } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AnimatedSplash } from '@/components/AnimatedSplash';
 import { getBackend } from '@/backend/GameBackend';
+import { registerPushToken, scheduleSeasonEnd, scheduleStreakReminder } from '@/lib/notifications';
 import { useAppStore } from '@/store/useAppStore';
 import { useSeasonStore } from '@/store/useSeasonStore';
 import { useTerritoryStore } from '@/store/useTerritoryStore';
@@ -21,12 +22,26 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 export default function RootLayout() {
   const pseudo = useAppStore((s) => s.pseudo);
   const team = useAppStore((s) => s.team);
+  const onboarded = useAppStore((s) => s.onboarded);
   const [fontsLoaded] = useFonts({ Archivo_700Bold, Archivo_800ExtraBold, Archivo_900Black });
   const [splashDone, setSplashDone] = useState(false);
 
   useEffect(() => {
     if (fontsLoaded) SplashScreen.hideAsync().catch(() => {});
   }, [fontsLoaded]);
+
+  // Notifications (push + rappels locaux) une fois l'onboarding passé.
+  useEffect(() => {
+    if (!onboarded) return;
+    (async () => {
+      await registerPushToken().catch(() => null);
+      await scheduleStreakReminder().catch(() => {});
+      try {
+        const season = await getBackend().getSeason();
+        await scheduleSeasonEnd(season.endsAt);
+      } catch {}
+    })();
+  }, [onboarded]);
 
   useEffect(() => {
     let alive = true;

@@ -2,6 +2,7 @@
 
 import { create } from 'zustand';
 import { getBackend } from '../backend/GameBackend';
+import { scheduleDuelEnd } from '../lib/notifications';
 import type { Duel, FeedEvent, Rival } from '../backend/types';
 
 type SocialState = {
@@ -50,6 +51,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
 
   challenge: async (rivalId) => {
     const duel = await getBackend().startDuel(rivalId);
+    scheduleDuelEnd(duel.id, duel.endsAt).catch(() => {});
     set({ duels: [duel, ...get().duels.filter((d) => d.id !== duel.id)] });
     return duel;
   },
