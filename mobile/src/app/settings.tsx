@@ -1,5 +1,6 @@
 // Réglages — Privacy Zone (RGPD), reset démo, à-propos.
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -38,6 +39,28 @@ export default function Settings() {
     } finally {
       setBusy(false);
     }
+  };
+
+  const deleteAllData = () => {
+    confirm(
+      'Effacer toutes mes données ?',
+      'Profil, progression, runs et préférences seront définitivement supprimés de cet appareil. Cette action est irréversible.',
+      'Tout effacer',
+      () => {
+        confirm('Vraiment sûr ?', 'Dernière confirmation.', 'Oui, tout supprimer', async () => {
+          try {
+            await getBackend().resetDemo?.();
+          } catch {
+            // best-effort
+          }
+          await AsyncStorage.clear();
+          useAppStore.getState().resetAll();
+          useSeasonStore.setState({ current: null, hallOfFame: [], pendingRecap: null });
+          await useTerritoryStore.getState().resetForSeason();
+          router.replace('/onboarding');
+        });
+      },
+    );
   };
 
   const resetDemo = () => {
@@ -107,9 +130,22 @@ export default function Settings() {
       </View>
 
       <View style={styles.card}>
+        <Text style={styles.cardTitle}>🛡️ Confidentialité & données</Text>
+        <Text style={styles.text}>
+          Ta position n'est utilisée que pendant un run, app ouverte. Tes données restent sur ton appareil.
+        </Text>
+        <Pressable style={styles.linkBtn} onPress={() => router.push('/legal')} accessibilityRole="button">
+          <Text style={styles.linkText}>Voir la politique de confidentialité →</Text>
+        </Pressable>
+        <Pressable style={styles.danger} onPress={deleteAllData} accessibilityRole="button">
+          <Text style={styles.dangerText}>Effacer toutes mes données</Text>
+        </Pressable>
+      </View>
+
+      <View style={styles.card}>
         <Text style={styles.cardTitle}>ℹ️ À propos</Text>
         <Text style={styles.text}>
-          Bornes v0.1 — cours, peins ta ville, défends-la.{'\n'}Mécanique « Trail Paint » : ta trace GPS rejoint le
+          Bornes v1.0 — cours, peins ta ville, défends-la.{'\n'}Mécanique « Trail Paint » : ta trace GPS rejoint le
           territoire de ton équipe ; de loin, la ville devient un plateau d'hexagones. La carte est remise à zéro à
           chaque saison (6 semaines).
         </Text>
@@ -135,4 +171,6 @@ const styles = StyleSheet.create({
   remove: { fontSize: 13, fontWeight: '800', color: '#FF4D5E', marginTop: 10 },
   danger: { backgroundColor: 'rgba(255,77,94,0.08)', borderRadius: 14, paddingVertical: 13, alignItems: 'center', marginTop: 14 },
   dangerText: { color: '#FF4D5E', fontSize: 14, fontWeight: '800' },
+  linkBtn: { paddingVertical: 12, marginTop: 4 },
+  linkText: { color: '#B8FF2E', fontSize: 14, fontWeight: '800' },
 });

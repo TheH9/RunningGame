@@ -63,6 +63,7 @@ export default function RootLayout() {
         <Stack.Screen name="reward-qr" options={{ presentation: 'transparentModal', animation: 'fade' }} />
         <Stack.Screen name="badge" options={{ presentation: 'transparentModal', animation: 'fade' }} />
         <Stack.Screen name="settings" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="legal" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
       </Stack>
     </GestureHandlerRootView>
   );

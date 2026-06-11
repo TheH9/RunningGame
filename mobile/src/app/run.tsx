@@ -158,6 +158,8 @@ export default function RunScreen() {
           rings={false}
           colors={['#FF6B78', '#E7263A', '#C81e32']}
           glowColor={c.red}
+          accessibilityLabel="Arrêter le run"
+          accessibilityHint="Termine ta course et affiche le résumé"
           onPress={onStop}
           haptic={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {})}
         />

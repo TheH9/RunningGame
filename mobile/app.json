@@ -6,26 +6,52 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "bornes",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0A0B0F",
+    "primaryColor": "#B8FF2E",
+    "description": "Cours, peins ta ville et défends ton territoire. Bornes transforme tes runs en jeu de conquête en équipe.",
     "ios": {
       "icon": "./assets/expo.icon",
+      "bundleIdentifier": "fr.bornes.app",
+      "buildNumber": "1",
       "supportsTablet": false,
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Bornes utilise ta position pour peindre ta trace pendant tes runs.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "Bornes suit ta course en arrière-plan pour continuer à peindre ta trace."
+        "NSLocationWhenInUseUsageDescription": "Bornes utilise ta position pendant tes runs pour tracer ton parcours et peindre ton territoire. La localisation n'est utilisée que lorsque l'app est ouverte.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "privacyManifests": {
+        "NSPrivacyAccessedAPITypes": [
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+            "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+          }
+        ],
+        "NSPrivacyCollectedDataTypes": [
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypePreciseLocation",
+            "NSPrivacyCollectedDataTypeLinked": false,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
+          }
+        ]
       }
     },
     "android": {
+      "package": "fr.bornes.app",
+      "versionCode": 1,
+      "predictiveBackGestureEnabled": false,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false,
       "permissions": [
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION"
+      ],
+      "blockedPermissions": [
+        "android.permission.ACCESS_BACKGROUND_LOCATION"
       ]
     },
     "web": {
@@ -37,20 +63,29 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
-          "android": {
+          "backgroundColor": "#0A0B0F",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 120,
+          "resizeMode": "contain",
+          "dark": {
+            "backgroundColor": "#0A0B0F",
             "image": "./assets/images/splash-icon.png",
-            "imageWidth": 76
+            "imageWidth": 120
           }
         }
       ],
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Bornes utilise ta position pour peindre ta trace pendant tes runs."
+          "locationWhenInUsePermission": "Bornes utilise ta position pendant tes runs pour tracer ton parcours et peindre ton territoire.",
+          "isAndroidBackgroundLocationEnabled": false,
+          "isIosBackgroundLocationEnabled": false
         }
       ]
     ],
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true

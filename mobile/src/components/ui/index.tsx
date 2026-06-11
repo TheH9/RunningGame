@@ -15,6 +15,7 @@ const AP = Animated.createAnimatedComponent(Pressable);
 // ---------- Pressable élastique (feedback tactile partout) ----------
 export function Squish({
   children, onPress, onLongPress, delayLongPress, style, disabled, haptic,
+  accessibilityLabel, accessibilityHint, accessibilityRole = 'button',
 }: {
   children: React.ReactNode;
   onPress?: () => void;
@@ -23,6 +24,9 @@ export function Squish({
   style?: StyleProp<ViewStyle>;
   disabled?: boolean;
   haptic?: () => void;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
+  accessibilityRole?: 'button' | 'link';
 }) {
   const s = useSharedValue(1);
   const a = useAnimatedStyle(() => ({ transform: [{ scale: s.value }] }));
@@ -37,6 +41,11 @@ export function Squish({
       onLongPress={onLongPress}
       delayLongPress={delayLongPress}
       disabled={disabled}
+      accessible
+      accessibilityRole={accessibilityRole}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityHint={accessibilityHint}
+      accessibilityState={{ disabled: !!disabled }}
       style={[a, style]}>
       {children}
     </AP>

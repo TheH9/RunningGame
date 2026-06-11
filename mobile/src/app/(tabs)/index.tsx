@@ -150,6 +150,8 @@ export default function MapScreen() {
           glowColor={VIOLET}
           textColor="#0A0B0F"
           pulse
+          accessibilityLabel="Démarrer un run"
+          accessibilityHint="Lance le suivi GPS et commence à peindre ton territoire"
           onPress={() => startRun(false)}
           onLongPress={() => {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});

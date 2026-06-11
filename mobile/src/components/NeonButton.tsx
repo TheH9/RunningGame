@@ -20,10 +20,13 @@ type Props = {
   onLongPress?: () => void;
   delayLongPress?: number;
   haptic?: () => void;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
 };
 
 export function NeonButton({
-  label, sub, colors, glowColor, size = 108, rings = true, pulse = false, textColor = '#FFFFFF', onPress, onLongPress, delayLongPress, haptic,
+  label, sub, colors, glowColor, size = 108, rings = true, pulse = false, textColor = '#FFFFFF',
+  onPress, onLongPress, delayLongPress, haptic, accessibilityLabel, accessibilityHint,
 }: Props) {
   const p = useSharedValue(0);
   useEffect(() => {
@@ -32,7 +35,13 @@ export function NeonButton({
   const pulseStyle = useAnimatedStyle(() => ({ transform: [{ scale: 1 + p.value * 0.16 }], opacity: 0.4 - p.value * 0.3 }));
 
   return (
-    <Squish onPress={onPress} onLongPress={onLongPress} delayLongPress={delayLongPress} haptic={haptic}>
+    <Squish
+      onPress={onPress}
+      onLongPress={onLongPress}
+      delayLongPress={delayLongPress}
+      haptic={haptic}
+      accessibilityLabel={accessibilityLabel ?? (sub ? `${label}, ${sub}` : label)}
+      accessibilityHint={accessibilityHint}>
       <View style={{ width: size + 52, height: size + 52, alignItems: 'center', justifyContent: 'center' }}>
         {pulse && (
           <Animated.View
