@@ -24,14 +24,19 @@ const RAW_TOKEN = process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? '';
 /** token réellement utilisable (pas le placeholder `pk.xxxxx` du .env.default) */
 const MAPBOX_TOKEN = RAW_TOKEN.startsWith('pk.') && !RAW_TOKEN.includes('xxxxx') ? RAW_TOKEN : null;
 
+// Styles Mapbox au format `username/styleId` — surchargeables pour brancher les
+// styles custom dessinés dans Mapbox Studio (backlog 0.2) sans toucher au code.
+const STYLE_DARK = process.env.EXPO_PUBLIC_MAPBOX_STYLE_DARK ?? 'mapbox/dark-v11';
+const STYLE_LIGHT = process.env.EXPO_PUBLIC_MAPBOX_STYLE_LIGHT ?? 'mapbox/light-v11';
+
 export const BASEMAP_ATTRIBUTION = MAPBOX_TOKEN
   ? '© Mapbox © OpenStreetMap'
   : '© OpenStreetMap contributors © CARTO';
 
 function tileUrl(z: number, x: number, y: number, dark: boolean): string {
   if (MAPBOX_TOKEN) {
-    const style = dark ? 'dark-v11' : 'light-v11';
-    return `https://api.mapbox.com/styles/v1/mapbox/${style}/tiles/256/${z}/${x}/${y}@2x?access_token=${MAPBOX_TOKEN}`;
+    const style = dark ? STYLE_DARK : STYLE_LIGHT;
+    return `https://api.mapbox.com/styles/v1/${style}/tiles/256/${z}/${x}/${y}@2x?access_token=${MAPBOX_TOKEN}`;
   }
   const sub = 'abcd'[(x + y) % 4];
   return `https://${sub}.basemaps.cartocdn.com/${dark ? 'dark_all' : 'light_all'}/${z}/${x}/${y}@2x.png`;

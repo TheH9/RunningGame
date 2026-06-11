@@ -30,9 +30,11 @@ contenu simulé.
 
 Fond de carte **réel** (tuiles raster, vraies rues) sous les calques de jeu :
 CARTO/OpenStreetMap sans clé par défaut, styles Mapbox si `EXPO_PUBLIC_MAPBOX_TOKEN`
-(`pk.*`) est posé. Le monde s'ancre sur la position du joueur à l'ouverture de
-la carte (1 fix, jamais de suivi) ; nom de ville et de rue via le geocoder
-natif. Le SDK natif Mapbox (vecteur) viendra avec le dev build.
+(`pk.*`) est posé — styles custom Mapbox Studio via
+`EXPO_PUBLIC_MAPBOX_STYLE_DARK` / `_LIGHT` (`username/styleId`). Le monde
+s'ancre sur la position du joueur à l'ouverture de la carte (1 fix, jamais de
+suivi) ; nom de ville et de rue via le geocoder natif. Le SDK natif Mapbox
+(vecteur) viendra avec le dev build.
 
 ## Architecture
 
