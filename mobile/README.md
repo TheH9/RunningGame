@@ -28,13 +28,19 @@ contenu simulé.
 
 ## Carte
 
-Fond de carte **réel** (tuiles raster, vraies rues) sous les calques de jeu :
-CARTO/OpenStreetMap sans clé par défaut, styles Mapbox si `EXPO_PUBLIC_MAPBOX_TOKEN`
-(`pk.*`) est posé — styles custom Mapbox Studio via
-`EXPO_PUBLIC_MAPBOX_STYLE_DARK` / `_LIGHT` (`username/styleId`). Le monde
-s'ancre sur la position du joueur à l'ouverture de la carte (1 fix, jamais de
-suivi) ; nom de ville et de rue via le geocoder natif. Le SDK natif Mapbox
-(vecteur) viendra avec le dev build.
+`MapView` a **deux moteurs**, même API et mêmes calques de jeu (veines,
+hexagones H3 avec crossfade LOD, comète de run, drop, curseur de suivi) :
+
+- **Natif vecteur** (`@rnmapbox/maps`, SDK Mapbox 11) — actif quand le module
+  natif est présent (dev/standalone build) **et** qu'un token
+  `EXPO_PUBLIC_MAPBOX_TOKEN` (`pk.*`) est posé. Styles custom Mapbox Studio via
+  `EXPO_PUBLIC_MAPBOX_STYLE_DARK` / `_LIGHT` (`username/styleId`).
+- **Raster** (`RealBasemap`, tuiles 256@2x sous les calques SVG) — repli
+  partout ailleurs : Expo Go, web, build sans token. Tuiles Mapbox si token,
+  sinon CARTO/OpenStreetMap sans clé.
+
+Le monde s'ancre sur la position du joueur à l'ouverture de la carte (1 fix,
+jamais de suivi) ; nom de ville et de rue via le geocoder natif.
 
 ## Architecture
 

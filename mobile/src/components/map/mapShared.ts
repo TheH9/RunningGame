@@ -1,9 +1,15 @@
-// Constantes et helpers partagés des calques carte.
-// Système : monde en mètres autour de l'anchor → px canvas (PX_PER_M),
+// Constantes, types et helpers partagés des calques carte.
+// Système raster : monde en mètres autour de l'anchor → px canvas (PX_PER_M),
 // canvas centré sur world(0,0) ; la caméra est un transform GPU sur la View.
+// Le rendu natif (NativeMap) partage les mêmes constantes de LOD via la
+// conversion échelle ↔ zoom Mapbox (zoomFromScale).
 
+import type { PaintedTrail } from '../../backend/types';
+import type { GeoPoint } from '../../lib/geo';
+import type { CellView } from '../../lib/territory';
 import type { LatLon, Projection } from '../../lib/world';
 import { makeProjection } from '../../lib/world';
+import type { TeamSlug } from '../../theme/tokens';
 
 export const M_PER_PX = 2.2;
 export const PX_PER_M = 1 / M_PER_PX;
@@ -19,8 +25,37 @@ export const LOD_HIGH = 0.8;
 
 export type Pt = { x: number; y: number };
 
+export type InspectInfo = {
+  geo: LatLon;
+  streetName: string;
+  trail: PaintedTrail | null;
+  cell: CellView;
+};
+
+export type MapProps = {
+  dark?: boolean;
+  team?: TeamSlug;
+  /** trace du run en cours */
+  trail?: GeoPoint[];
+  /** gestes pinch/pan actifs */
+  interactive?: boolean;
+  /** caméra qui suit le coureur (run actif) */
+  follow?: boolean;
+  onInspect?: (info: InspectInfo) => void;
+  initialScale?: number;
+};
+
 export function projectionFor(anchor: LatLon): Projection {
   return makeProjection(anchor, M_PER_PX);
+}
+
+/**
+ * Échelle caméra raster → niveau de zoom Mapbox GL (tuiles 512 px) à cette
+ * latitude. Permet au rendu natif de partager LOD et cadrage initial.
+ */
+export function zoomFromScale(scale: number, lat: number): number {
+  const mPerPx = M_PER_PX / scale;
+  return Math.log2((78271.517 * Math.cos((lat * Math.PI) / 180)) / mPerPx);
 }
 
 /** lissage Catmull-Rom → Bézier (héritée des maquettes validées) */

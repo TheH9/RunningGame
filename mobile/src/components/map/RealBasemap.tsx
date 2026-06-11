@@ -17,22 +17,10 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { runOnJS, useAnimatedReaction, useSharedValue, type SharedValue } from 'react-native-reanimated';
 import { makeProjection, type LatLon } from '../../lib/world';
+import { MAPBOX_TOKEN, STYLE_DARK, STYLE_LIGHT } from './mapboxConfig';
 import { HALF, M_PER_PX, SCALE_MIN } from './mapShared';
 
 // ---- source de tuiles -------------------------------------------------------
-const RAW_TOKEN = process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? '';
-/** token réellement utilisable (pas le placeholder `pk.xxxxx` du .env.default) */
-const MAPBOX_TOKEN = RAW_TOKEN.startsWith('pk.') && !RAW_TOKEN.includes('xxxxx') ? RAW_TOKEN : null;
-
-// Styles Mapbox au format `username/styleId` — surchargeables pour brancher les
-// styles custom dessinés dans Mapbox Studio (backlog 0.2) sans toucher au code.
-const STYLE_DARK = process.env.EXPO_PUBLIC_MAPBOX_STYLE_DARK ?? 'mapbox/dark-v11';
-const STYLE_LIGHT = process.env.EXPO_PUBLIC_MAPBOX_STYLE_LIGHT ?? 'mapbox/light-v11';
-
-export const BASEMAP_ATTRIBUTION = MAPBOX_TOKEN
-  ? '© Mapbox © OpenStreetMap'
-  : '© OpenStreetMap contributors © CARTO';
-
 function tileUrl(z: number, x: number, y: number, dark: boolean): string {
   if (MAPBOX_TOKEN) {
     const style = dark ? STYLE_DARK : STYLE_LIGHT;
