@@ -11,7 +11,6 @@
     "primaryColor": "#B8FF2E",
     "description": "Cours, peins ta ville et défends ton territoire. Bornes transforme tes runs en jeu de conquête en équipe.",
     "ios": {
-      "icon": "./assets/expo.icon",
       "bundleIdentifier": "fr.bornes.app",
       "buildNumber": "1",
       "supportsTablet": false,
@@ -41,9 +40,8 @@
       "versionCode": 1,
       "predictiveBackGestureEnabled": false,
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#0A0B0F",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "permissions": [
