@@ -1,7 +1,7 @@
 // Ligue — Équipes (contrôle ville) / Coureurs / Amis. Dark glass + animations.
 
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { getBackend } from '@/backend/GameBackend';
@@ -10,6 +10,32 @@ import { Bar, Glass, Micro, Squish } from '@/components/ui';
 import { c, font, TEAMS } from '@/theme/tokens';
 
 type Segment = 'teams' | 'runners' | 'friends';
+
+// Lignes mémoïsées : une mise à jour du parent (ex. changement de segment) ne
+// re-render que les lignes dont les props ont réellement changé.
+const TeamRow = memo(function TeamRow({ t, i }: { t: TeamScore; i: number }) {
+  return (
+    <Animated.View entering={FadeInDown.delay(i * 70)} style={styles.row}>
+      <Text style={styles.rank}>{i + 1}</Text>
+      <View style={[styles.dot, { backgroundColor: TEAMS[t.team].color, shadowColor: TEAMS[t.team].color }]} />
+      <Text style={styles.rowName}>{TEAMS[t.team].emoji} {TEAMS[t.team].name}</Text>
+      <Text style={[styles.rowValue, { color: TEAMS[t.team].color }]}>{t.percent}%</Text>
+    </Animated.View>
+  );
+});
+
+const RunnerRow = memo(function RunnerRow({ r, i }: { r: RunnerScore; i: number }) {
+  return (
+    <Animated.View entering={FadeInDown.delay(i * 50)} style={[styles.row, r.isMe && styles.meRow]}>
+      <Text style={styles.rank}>{i + 1}</Text>
+      <View style={[styles.dot, { backgroundColor: TEAMS[r.team].color }]} />
+      <Text style={[styles.rowName, r.isMe && { color: TEAMS[r.team].color }]}>
+        {r.pseudo}{r.isMe ? ' (toi)' : ''}
+      </Text>
+      <Text style={styles.rowValue}>{r.paintedKm.toFixed(1).replace('.', ',')} km</Text>
+    </Animated.View>
+  );
+});
 
 export default function Leaderboard() {
   const [segment, setSegment] = useState<Segment>('teams');
@@ -56,12 +82,7 @@ export default function Leaderboard() {
             ))}
           </View>
           {teams.map((t, i) => (
-            <Animated.View key={t.team} entering={FadeInDown.delay(i * 70)} style={styles.row}>
-              <Text style={styles.rank}>{i + 1}</Text>
-              <View style={[styles.dot, { backgroundColor: TEAMS[t.team].color, shadowColor: TEAMS[t.team].color }]} />
-              <Text style={styles.rowName}>{TEAMS[t.team].emoji} {TEAMS[t.team].name}</Text>
-              <Text style={[styles.rowValue, { color: TEAMS[t.team].color }]}>{t.percent}%</Text>
-            </Animated.View>
+            <TeamRow key={t.team} t={t} i={i} />
           ))}
           <Text style={styles.hint}>Les zones non défendues pâlissent après 14 jours.</Text>
         </Glass>
@@ -69,14 +90,7 @@ export default function Leaderboard() {
         <Glass style={styles.card}>
           <Micro style={{ marginBottom: 12 }}>{segment === 'runners' ? 'Top peintres' : 'Entre amis'} · km peints</Micro>
           {list.map((r, i) => (
-            <Animated.View key={r.pseudo} entering={FadeInDown.delay(i * 50)} style={[styles.row, r.isMe && styles.meRow]}>
-              <Text style={styles.rank}>{i + 1}</Text>
-              <View style={[styles.dot, { backgroundColor: TEAMS[r.team].color }]} />
-              <Text style={[styles.rowName, r.isMe && { color: TEAMS[r.team].color }]}>
-                {r.pseudo}{r.isMe ? ' (toi)' : ''}
-              </Text>
-              <Text style={styles.rowValue}>{r.paintedKm.toFixed(1).replace('.', ',')} km</Text>
-            </Animated.View>
+            <RunnerRow key={r.pseudo} r={r} i={i} />
           ))}
           {list.length === 0 && <Text style={styles.hint}>Cours pour entrer au classement !</Text>}
         </Glass>

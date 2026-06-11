@@ -33,6 +33,8 @@ export default function Rewards() {
 
   useFocusEffect(useCallback(() => refresh(), [refresh]));
 
+  const viewReward = useCallback((id: string) => router.push({ pathname: '/reward-qr', params: { id } }), []);
+
   const claim = async () => {
     if (!drop) return;
     setClaiming(true);
@@ -94,7 +96,7 @@ export default function Rewards() {
       <Glass style={styles.card}>
         <Micro style={{ marginBottom: 10 }}>Mon coffre</Micro>
         {chest.map((item) => (
-          <Squish key={item.id} style={styles.chestRow} onPress={() => router.push({ pathname: '/reward-qr', params: { id: item.id } })}>
+          <Squish key={item.id} style={styles.chestRow} onPress={() => viewReward(item.id)}>
             <Text style={{ fontSize: 24 }}>{item.emoji}</Text>
             <View style={{ flex: 1 }}>
               <Text style={styles.chestTitle}>{item.title}</Text>

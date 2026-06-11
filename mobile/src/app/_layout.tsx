@@ -2,9 +2,10 @@ import {
   Archivo_700Bold, Archivo_800ExtraBold, Archivo_900Black, useFonts,
 } from '@expo-google-fonts/archivo';
 import { router, Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { AppState, View } from 'react-native';
+import { AppState } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { getBackend } from '@/backend/GameBackend';
 import { useAppStore } from '@/store/useAppStore';
@@ -12,10 +13,18 @@ import { useSeasonStore } from '@/store/useSeasonStore';
 import { useTerritoryStore } from '@/store/useTerritoryStore';
 import { c } from '@/theme/tokens';
 
+// Garde le splash natif affiché tant que les polices ne sont pas prêtes :
+// évite un flash d'écran blanc au démarrage (perçu comme un long chargement).
+SplashScreen.preventAutoHideAsync().catch(() => {});
+
 export default function RootLayout() {
   const pseudo = useAppStore((s) => s.pseudo);
   const team = useAppStore((s) => s.team);
   const [fontsLoaded] = useFonts({ Archivo_700Bold, Archivo_800ExtraBold, Archivo_900Black });
+
+  useEffect(() => {
+    if (fontsLoaded) SplashScreen.hideAsync().catch(() => {});
+  }, [fontsLoaded]);
 
   useEffect(() => {
     let alive = true;
@@ -46,7 +55,8 @@ export default function RootLayout() {
     };
   }, []);
 
-  if (!fontsLoaded) return <View style={{ flex: 1, backgroundColor: c.bg }} />;
+  // Pas de vue intermédiaire : on laisse le splash natif visible jusqu'aux polices.
+  if (!fontsLoaded) return null;
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: c.bg }}>

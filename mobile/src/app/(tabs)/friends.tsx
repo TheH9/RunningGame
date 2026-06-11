@@ -61,14 +61,14 @@ export default function Friends() {
     Share.share({ message: 'Rejoins-moi sur Bornes — on peint la ville en courant. Je te défie ! https://bornes.app/invite/demo' }).catch(() => {});
   };
 
-  const onChallenge = async (r: Rival) => {
+  const onChallenge = useCallback(async (r: Rival) => {
     setBusy(r.id);
     try {
       await challenge(r.id);
     } finally {
       setBusy(null);
     }
-  };
+  }, [challenge]);
 
   const renderRival = (r: Rival) => (
     <View key={r.id} style={styles.row}>
