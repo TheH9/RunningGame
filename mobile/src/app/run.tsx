@@ -89,13 +89,10 @@ export default function RunScreen() {
         <Text style={{ fontSize: 56, marginBottom: 16 }}>📍</Text>
         <Text style={styles.permTitle}>Bornes a besoin de ta position</Text>
         <Text style={styles.permText}>
-          Sans GPS, impossible de peindre ta trace. Autorise la localisation, ou essaie le mode démo.
+          Sans GPS, impossible de peindre ta trace. Autorise la localisation dans les réglages, puis relance ton run.
         </Text>
         <Squish style={styles.permCta} onPress={() => Linking.openSettings()}>
           <Text style={styles.permCtaText}>Ouvrir les réglages</Text>
-        </Squish>
-        <Squish style={styles.permAlt} onPress={() => useRunStore.getState().start({ replay: true })}>
-          <Text style={styles.permAltText}>▶ Essayer en mode démo</Text>
         </Squish>
         <Squish style={{ paddingVertical: 10 }} onPress={() => router.back()}>
           <Text style={{ color: c.textMuted, fontFamily: font.bold, fontSize: 13.5 }}>Retour</Text>
@@ -219,6 +216,4 @@ const styles = StyleSheet.create({
   permText: { color: c.textMuted, fontSize: 14.5, lineHeight: 21, textAlign: 'center', marginTop: 10, marginBottom: 28, fontFamily: font.bold },
   permCta: { backgroundColor: VIOLET, borderRadius: 18, paddingVertical: 15, paddingHorizontal: 36, marginBottom: 12 },
   permCtaText: { color: '#0A0B0F', fontSize: 15, fontFamily: font.extrabold },
-  permAlt: { backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 18, paddingVertical: 14, paddingHorizontal: 30, marginBottom: 12 },
-  permAltText: { color: '#FFFFFF', fontSize: 14, fontFamily: font.bold },
 });

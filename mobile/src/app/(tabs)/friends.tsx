@@ -59,7 +59,7 @@ export default function Friends() {
 
   const invite = async () => {
     if (Platform.OS === 'web') return;
-    Share.share({ message: 'Rejoins-moi sur Bornes — on peint la ville en courant. Je te défie ! https://bornes.app/invite/demo' }).catch(() => {});
+    Share.share({ message: 'Rejoins-moi sur Bornes — on peint la ville en courant. Je te défie ! https://bornes.app' }).catch(() => {});
   };
 
   const onChallenge = useCallback(async (r: Rival) => {

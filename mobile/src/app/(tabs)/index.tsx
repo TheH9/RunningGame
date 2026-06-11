@@ -20,7 +20,6 @@ import { useAppStore, useCityName } from '@/store/useAppStore';
 import { clearRunSnapshot, readRunSnapshot, useRunStore } from '@/store/useRunStore';
 import { useSeasonStore } from '@/store/useSeasonStore';
 import { useSocialStore } from '@/store/useSocialStore';
-import { useTerritoryStore } from '@/store/useTerritoryStore';
 import { c, font, TEAMS, VIOLET } from '@/theme/tokens';
 
 export default function MapScreen() {
@@ -48,13 +47,6 @@ export default function MapScreen() {
         const fix = await locateOnce();
         if (!alive || !fix) return;
         useAppStore.getState().setWorldAnchor(fix);
-        try {
-          // mode démo : le monde (bots, territoire) se re-pose autour du joueur
-          const moved = await getBackend().rehome?.(fix);
-          if (moved) await useTerritoryStore.getState().resetForSeason();
-        } catch {
-          // best-effort — la carte reste cohérente au prochain démarrage
-        }
         const name = await cityNameFor(fix);
         if (alive && name) useAppStore.getState().setCityName(name);
       } else if (!useAppStore.getState().cityName) {
@@ -99,10 +91,9 @@ export default function MapScreen() {
     })();
   }, []);
 
-  const startRun = (replay: boolean) => {
+  const startRun = () => {
     if (useRunStore.getState().status === 'running') return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
-    if (replay) useRunStore.getState().start({ replay: true });
     router.push('/run');
   };
 
@@ -167,7 +158,7 @@ export default function MapScreen() {
           onClose={() => setInspect(null)}
           onChallenge={() => {
             setInspect(null);
-            startRun(false);
+            startRun();
           }}
         />
       )}
@@ -185,14 +176,8 @@ export default function MapScreen() {
           pulse
           accessibilityLabel="Démarrer un run"
           accessibilityHint="Lance le suivi GPS et commence à peindre ton territoire"
-          onPress={() => startRun(false)}
-          onLongPress={() => {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-            startRun(true);
-          }}
-          delayLongPress={1500}
+          onPress={startRun}
         />
-        <Text style={styles.goHint}>appui long = démo</Text>
       </View>
     </View>
   );
@@ -216,5 +201,4 @@ const styles = StyleSheet.create({
   bellBadge: { position: 'absolute', top: -4, right: -4, backgroundColor: c.red, borderRadius: 9, minWidth: 18, height: 18, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
   bellBadgeText: { color: '#FFFFFF', fontSize: 10, fontFamily: font.extrabold },
   goWrap: { position: 'absolute', left: 0, right: 0, alignItems: 'center' },
-  goHint: { color: c.textMuted, fontSize: 10, fontFamily: font.bold, marginTop: 2 },
 });

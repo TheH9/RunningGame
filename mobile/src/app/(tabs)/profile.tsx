@@ -105,7 +105,7 @@ export default function Profile() {
       )}
 
       <Squish style={styles.settings} onPress={() => router.push('/settings')}>
-        <Text style={styles.settingsText}>⚙️ Réglages · Privacy Zone · Reset démo</Text>
+        <Text style={styles.settingsText}>⚙️ Réglages · Privacy Zone · Mes données</Text>
       </Squish>
     </ScrollView>
   );

@@ -1,5 +1,6 @@
-// Sources de position interchangeables : GPS réel (expo-location) ou
-// replay simulé (démo, web, tests). Le moteur de run ne sait pas la différence.
+// Sources de position interchangeables : GPS réel (expo-location) en
+// production, replay simulé pour les tests. Le moteur de run ne sait pas la
+// différence.
 
 import type { GeoPoint } from './geo';
 import { haversine } from './geo';

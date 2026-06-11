@@ -1,6 +1,7 @@
-// Client Supabase — fonctionne en mode "offline/démo" si les variables
-// EXPO_PUBLIC_SUPABASE_URL / EXPO_PUBLIC_SUPABASE_ANON_KEY sont absentes :
-// l'app reste utilisable (tracking local), la synchro est simplement coupée.
+// Client Supabase — singleton de production. Si les variables
+// EXPO_PUBLIC_SUPABASE_URL / EXPO_PUBLIC_SUPABASE_ANON_KEY manquent (build mal
+// configuré), `supabase` vaut null : l'auth bloque et les lectures retombent
+// sur du vide — l'app échoue visiblement plutôt que de simuler du contenu.
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';

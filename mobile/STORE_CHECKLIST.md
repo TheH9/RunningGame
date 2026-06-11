@@ -16,7 +16,7 @@
 - [x] **Arrière-plan retiré** : la clé `NSLocationAlwaysAndWhenInUse…` et
       `ACCESS_BACKGROUND_LOCATION` sont supprimées/bloquées (déclarer un usage
       non utilisé = rejet Apple/Google garanti)
-- [x] Refus de permission géré proprement (écran dédié + repli mode démo)
+- [x] Refus de permission géré proprement (écran dédié → réglages système)
 
 ### Confidentialité (obligatoire pour la localisation)
 - [x] **Privacy Manifest iOS** (`NSPrivacyAccessedAPITypes` UserDefaults

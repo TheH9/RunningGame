@@ -1,9 +1,8 @@
-// Monde géoréférencé — la clé de voûte du mode démo.
-// La ville procédurale (seed 913, héritée des maquettes validées) est générée
-// en MÈTRES autour d'un ancrage lat/lon réel, puis convertie en GeoPoint.
-// Ainsi trace GPS réelle, bots, cellules H3 et drops vivent dans le même
-// système de coordonnées : trackToCells (h3-js) fonctionne tel quel, et la
-// ville « se pose » là où l'utilisateur court vraiment (réancrage 1er fix).
+// Monde géoréférencé — fournit la projection ancre↔mètres partagée par toute
+// la carte (makeProjection). La ville procédurale (seed 913) n'est conservée
+// que pour les tests et les routes de replay : générée en MÈTRES autour d'un
+// ancrage lat/lon réel puis convertie en GeoPoint, elle vit dans le même
+// système de coordonnées que les traces GPS réelles et les cellules H3.
 
 import type { GeoPoint } from './geo';
 

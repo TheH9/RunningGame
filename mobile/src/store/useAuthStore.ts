@@ -29,6 +29,7 @@ if (supabase) {
     useAuthStore.setState({ session, ready: true });
   });
 } else {
-  // Mode démo (sans clés Supabase) : pas d'auth requise.
+  // Clés Supabase absentes = build mal configuré : `ready` sans session →
+  // l'app reste sur l'écran d'auth (échec visible, pas de contenu simulé).
   useAuthStore.setState({ ready: true });
 }

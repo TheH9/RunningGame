@@ -1,7 +1,7 @@
 // Localisation ponctuelle — ancre le monde sur la vraie position à l'ouverture
 // de la carte (la « vraie carte » montre chez toi sans attendre le 1er run).
 // Foreground uniquement, jamais de suivi : un fix + un reverse-geocode.
-// Sur le web on s'abstient (prompt navigateur intrusif, le replay démo suffit).
+// Sur le web on s'abstient (prompt navigateur intrusif au mauvais moment).
 
 import { Platform } from 'react-native';
 import type { LatLon } from './world';
@@ -26,6 +26,18 @@ export async function cityNameFor(p: LatLon): Promise<string | null> {
     const Location = await import('expo-location');
     const res = await Location.reverseGeocodeAsync({ latitude: p.lat, longitude: p.lon });
     return res[0]?.city ?? res[0]?.subregion ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Nom de rue réel au point donné (geocoder natif) — null si indisponible. */
+export async function streetNameFor(p: LatLon): Promise<string | null> {
+  if (Platform.OS === 'web') return null;
+  try {
+    const Location = await import('expo-location');
+    const res = await Location.reverseGeocodeAsync({ latitude: p.lat, longitude: p.lon });
+    return res[0]?.street ?? null;
   } catch {
     return null;
   }

@@ -1,5 +1,5 @@
 // État global persistant : profil local, équipe (définitive pour la saison),
-// ancrage du monde démo, privacy zone, stats cumulées.
+// ancrage du monde, privacy zone, stats cumulées.
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
@@ -15,10 +15,8 @@ type AppState = {
   team: TeamSlug | null;
   onboarded: boolean;
   tutorialSeen: boolean;
-  /** ancrage lat/lon du monde fictif — réancré sur le 1er fix GPS réel */
+  /** ancrage lat/lon du monde — posé à l'ouverture de la carte ou au 1er fix GPS */
   worldAnchor: LatLon | null;
-  /** fond de carte réel (tuiles OSM/Mapbox) au lieu de la ville stylisée */
-  realMap: boolean;
   /** ville réelle (reverse-geocode de l'ancre) — affichage uniquement */
   cityName: string | null;
   privacyZone: PrivacyZone | null;
@@ -35,7 +33,6 @@ type AppState = {
   completeOnboarding: () => void;
   markTutorialSeen: () => void;
   setWorldAnchor: (a: LatLon) => void;
-  setRealMap: (v: boolean) => void;
   setCityName: (n: string | null) => void;
   setPrivacyZone: (z: PrivacyZone | null) => void;
   recordRun: (distanceM: number, paintedM: number, cells: string[], elapsedMs: number) => void;
@@ -49,7 +46,6 @@ const initial = {
   onboarded: false,
   tutorialSeen: false,
   worldAnchor: null,
-  realMap: true,
   cityName: null,
   privacyZone: null,
   discoveredCells: [] as string[],
@@ -69,7 +65,6 @@ export const useAppStore = create<AppState>()(
       completeOnboarding: () => set({ onboarded: true }),
       markTutorialSeen: () => set({ tutorialSeen: true }),
       setWorldAnchor: (worldAnchor) => set({ worldAnchor }),
-      setRealMap: (realMap) => set({ realMap }),
       setCityName: (cityName) => set({ cityName }),
       setPrivacyZone: (privacyZone) => set({ privacyZone }),
       recordRun: (distanceM, paintedM, cells, elapsedMs) => {

@@ -7,8 +7,6 @@ import { getBackend } from '../backend/GameBackend';
 import type { Drop } from '../backend/types';
 import { haversine, type GeoPoint } from './geo';
 import { H3_RES } from './territory';
-import { getWorld, DEFAULT_ANCHOR } from './world';
-import { useAppStore } from '../store/useAppStore';
 import { useRunEventsStore } from '../store/useRunEventsStore';
 import { useRunStore } from '../store/useRunStore';
 import { useTerritoryStore } from '../store/useTerritoryStore';
@@ -77,7 +75,6 @@ export function startRunDirector(team: TeamSlug): () => void {
       seen.add(h3);
       const territory = useTerritoryStore.getState();
       const v = territory.ownerOf(h3);
-      const anchor = useAppStore.getState().worldAnchor ?? DEFAULT_ANCHOR;
       if (!v.owner) {
         useRunEventsStore.getState().bumpZones(1, 0, 0);
       } else if (v.owner === team) {
@@ -85,14 +82,13 @@ export function startRunDirector(team: TeamSlug): () => void {
         push({ kind: 'defend', text: `🛡 Tu renforces le territoire ${TEAMS[team].name}`, team, haptic: 'none' });
       } else {
         // cellule adverse : un passage suffit-il à la prendre ?
-        const street = getWorld(anchor).nearestStreet({ lat: p.lat, lon: p.lon }).name;
         const enemy = TEAMS[v.owner].name;
         if (v.strength <= 0.18 || v.fading) {
           useRunEventsStore.getState().bumpZones(1, 1, 0);
-          push({ kind: 'capture', text: `💥 Tu reprends ${street} aux ${enemy.replace('Les ', '')} !`, team, haptic: 'success' });
+          push({ kind: 'capture', text: `💥 Zone reprise aux ${enemy.replace('Les ', '')} !`, team, haptic: 'success' });
         } else {
           useRunEventsStore.getState().bumpZones(1, 0, 1);
-          push({ kind: 'contest', text: `⚔️ ${street} (${enemy}) contestée — repasse pour la prendre`, team: v.owner, haptic: 'medium' });
+          push({ kind: 'contest', text: `⚔️ Zone ${enemy} contestée — repasse pour la prendre`, team: v.owner, haptic: 'medium' });
         }
       }
     }

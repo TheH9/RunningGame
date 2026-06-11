@@ -29,7 +29,6 @@ export default function RewardQr() {
             <Text style={styles.partner}>{item.partner}</Text>
             <View style={styles.qrBox}>
               <QRCode value={item.qrPayload} size={190} backgroundColor="#FFFFFF" color="#1C1E24" />
-              <Text style={styles.demo}>MODE DÉMO</Text>
             </View>
             <Text style={styles.hint}>Montre ce code en boutique pour récupérer ton lot.</Text>
             <Text style={styles.code}>{item.qrPayload}</Text>
@@ -52,7 +51,6 @@ const styles = StyleSheet.create({
   title: { fontSize: 21, fontWeight: '800', color: light.text, marginTop: 8, letterSpacing: -0.5, textAlign: 'center' },
   partner: { fontSize: 13, fontWeight: '700', color: light.textMuted, marginTop: 4, marginBottom: 18 },
   qrBox: { padding: 16, borderRadius: 20, borderWidth: 1.5, borderColor: 'rgba(31,41,55,0.08)', alignItems: 'center' },
-  demo: { marginTop: 8, fontSize: 10, fontWeight: '800', color: '#F5B82E', letterSpacing: 2 },
   hint: { fontSize: 13, fontWeight: '600', color: light.textMuted, textAlign: 'center', marginTop: 16, lineHeight: 19 },
   code: { fontSize: 11, fontWeight: '700', color: light.textMuted, marginTop: 6, letterSpacing: 0.5 },
   close: { marginTop: 20, backgroundColor: '#1C1E24', borderRadius: 16, paddingVertical: 13, paddingHorizontal: 40 },

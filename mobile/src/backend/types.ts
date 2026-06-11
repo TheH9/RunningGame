@@ -1,5 +1,5 @@
-// Types du domaine — partagés par DemoBackend (mode fictif) et
-// SupabaseBackend (prod). Les écrans ne connaissent que ces types.
+// Types du domaine — contrat entre les écrans et le backend (SupabaseBackend).
+// Les écrans ne connaissent que ces types.
 
 import type { GeoPoint } from '../lib/geo';
 import type { LatLon } from '../lib/world';

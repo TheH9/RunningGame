@@ -1,10 +1,11 @@
 // MapView — la carte vivante. Caméra = transform GPU sur la View englobante
-// (zéro re-rendu SVG en mouvement). Pinch-zoom avec fondu LOD veines↔hexagones
-// (ADR-003), suivi du coureur façon GPS (curseur fixe, la ville défile),
-// tap d'inspection (rue conquise → carte du conquérant).
+// (zéro re-rendu SVG en mouvement). Fond = vraies rues (RealBasemap, tuiles
+// raster). Pinch-zoom avec fondu LOD veines↔hexagones (ADR-003), suivi du
+// coureur façon GPS (curseur fixe, la ville défile), tap d'inspection
+// (zone conquise → carte du conquérant, nom de rue réel via geocoder).
 
 import { latLngToCell } from 'h3-js';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -14,14 +15,13 @@ import Svg, { Circle, G, Path } from 'react-native-svg';
 import { getBackend } from '../../backend/GameBackend';
 import type { Drop, PaintedTrail } from '../../backend/types';
 import type { GeoPoint } from '../../lib/geo';
+import { streetNameFor } from '../../lib/locate';
 import { H3_RES, type CellView } from '../../lib/territory';
-import { DEFAULT_ANCHOR, getWorld, type LatLon } from '../../lib/world';
+import { DEFAULT_ANCHOR, type LatLon } from '../../lib/world';
 import { useAppStore } from '../../store/useAppStore';
 import { useRunStore } from '../../store/useRunStore';
 import { useTerritoryStore } from '../../store/useTerritoryStore';
 import { TEAMS, type TeamSlug } from '../../theme/tokens';
-import { BotsLayer } from './BotsLayer';
-import { CityBase } from './CityBase';
 import { CANVAS, LOD_HIGH, LOD_LOW, MAP_DARK, MAP_LIGHT, projectionFor, SCALE_MAX, SCALE_MIN } from './mapShared';
 import { MyTrail } from './MyTrail';
 import { BASEMAP_ATTRIBUTION, RealBasemap } from './RealBasemap';
@@ -58,16 +58,9 @@ export function MapView({
   initialScale = 1,
 }: Props) {
   const anchor = useAppStore((s) => s.worldAnchor) ?? DEFAULT_ANCHOR;
-  const realMap = useAppStore((s) => s.realMap);
   const version = useTerritoryStore((s) => s.version);
-  const botsVersion = useTerritoryStore((s) => s.botsVersion);
   const trails = useTerritoryStore((s) => s.trails);
   const cells = useTerritoryStore((s) => s.cells);
-  const bots = useMemo(
-    () => [...useTerritoryStore.getState().bots.values()],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [botsVersion],
-  );
 
   const [size, setSize] = useState({ w: 390, h: 844 });
   const [drop, setDrop] = useState<Drop | null>(null);
@@ -170,12 +163,11 @@ export function MapView({
       ty.value = Math.min(boundY, Math.max(-boundY, savedTy.value + e.translationY));
     });
 
-  // hit-test côté JS (rues/trails/cellules)
+  // hit-test côté JS (trails/cellules)
   const handleTap = (wx: number, wy: number) => {
     if (!onInspect) return;
     const proj = projectionFor(anchor);
     const geo = proj.toGeo({ x: wx, y: wy });
-    const world = getWorld(anchor);
     // trail le plus proche (< 40 m)
     let best: PaintedTrail | null = null;
     let bestD = 40;
@@ -192,7 +184,12 @@ export function MapView({
     const h3 = latLngToCell(geo.lat, geo.lon, H3_RES);
     const cell = useTerritoryStore.getState().ownerOf(h3);
     if (!best && !cell.owner) return; // tap dans le vide → rien
-    onInspect({ geo, streetName: world.nearestStreet(geo).name, trail: best, cell });
+    // carte immédiate, puis vrai nom de rue (geocoder natif) quand il arrive
+    const info: InspectInfo = { geo, streetName: 'Cette zone', trail: best, cell };
+    onInspect(info);
+    streetNameFor(geo)
+      .then((name) => name && onInspect({ ...info, streetName: name }))
+      .catch(() => {});
   };
 
   const tap = Gesture.Tap()
@@ -241,25 +238,19 @@ export function MapView({
           <Animated.View
             style={[
               { position: 'absolute', left: canvasLeft, top: canvasTop, width: CANVAS, height: CANVAS },
-              realMap && { backgroundColor: (dark ? MAP_DARK : MAP_LIGHT).land },
+              { backgroundColor: (dark ? MAP_DARK : MAP_LIGHT).land },
               cameraStyle,
             ]}>
-            {realMap ? (
-              <RealBasemap
-                anchor={anchor}
-                dark={dark}
-                scale={scale}
-                tx={tx}
-                ty={ty}
-                viewW={size.w}
-                viewH={size.h}
-                initialScale={initialScale}
-              />
-            ) : (
-              <Svg width={CANVAS} height={CANVAS} viewBox={vb}>
-                <CityBase anchor={anchor} dark={dark} />
-              </Svg>
-            )}
+            <RealBasemap
+              anchor={anchor}
+              dark={dark}
+              scale={scale}
+              tx={tx}
+              ty={ty}
+              viewW={size.w}
+              viewH={size.h}
+              initialScale={initialScale}
+            />
             <Animated.View style={[StyleSheet.absoluteFill, hexStyle]} pointerEvents="none">
               <Svg width={CANVAS} height={CANVAS} viewBox={vb}>
                 <TerritoryHexes anchor={anchor} cells={cells} version={version} dark={dark} />
@@ -268,7 +259,6 @@ export function MapView({
             <Animated.View style={[StyleSheet.absoluteFill, veinsStyle]} pointerEvents="none">
               <Svg width={CANVAS} height={CANVAS} viewBox={vb}>
                 <TerritoryVeins anchor={anchor} trails={trails} version={version} dark={dark} />
-                <BotsLayer anchor={anchor} bots={bots} showNames={!follow} dark={dark} />
                 {drop && <DropMarker anchor={anchor} drop={drop} />}
                 <MyTrail anchor={anchor} trail={trail} dark={dark} />
                 {/* point « moi » statique quand on ne court pas */}
@@ -284,14 +274,12 @@ export function MapView({
         </View>
       </GestureDetector>
 
-      {/* attribution légale du fond de carte réel */}
-      {realMap && (
-        <Text
-          pointerEvents="none"
-          style={[styles.attribution, { color: dark ? 'rgba(255,255,255,0.4)' : 'rgba(31,41,55,0.4)' }]}>
-          {BASEMAP_ATTRIBUTION}
-        </Text>
-      )}
+      {/* attribution légale du fond de carte */}
+      <Text
+        pointerEvents="none"
+        style={[styles.attribution, { color: dark ? 'rgba(255,255,255,0.4)' : 'rgba(31,41,55,0.4)' }]}>
+        {BASEMAP_ATTRIBUTION}
+      </Text>
 
       {/* curseur GPS fixe au centre — la ville défile dessous */}
       {follow && (

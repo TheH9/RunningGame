@@ -1,10 +1,10 @@
-// Moteur de run — source de position interchangeable (GPS réel ou replay démo),
-// segments publics (coupés sur perte de signal), auto-pause GPS, anti-triche
-// vitesse, snapshot de récupération. Le rendu et les événements (RunDirector)
-// s'abonnent à ce store ; lui ne connaît ni la carte ni l'UI.
+// Moteur de run — GPS réel en production (la source replay n'existe que pour
+// les tests automatisés), segments publics (coupés sur perte de signal),
+// auto-pause GPS, anti-triche vitesse, snapshot de récupération. Le rendu et
+// les événements (RunDirector) s'abonnent à ce store ; lui ne connaît ni la
+// carte ni l'UI.
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
 import { create } from 'zustand';
 import { applyPrivacy, haversine, simplify, trackDistance, type GeoPoint } from '../lib/geo';
 import { GpsSource, ReplaySource, type LocationSource } from '../lib/locationSource';
@@ -95,7 +95,7 @@ export const useRunStore = create<RunState>((set, get) => ({
 
   start: async (opts) => {
     if (get().status === 'running' || get().status === 'paused') return;
-    const wantReplay = opts?.replay ?? Platform.OS === 'web';
+    const wantReplay = opts?.replay ?? false;
 
     set({
       status: 'running',

@@ -1,7 +1,9 @@
 // Interface backend — UNIQUE point de contact des écrans avec les données.
-// Factory : les env Supabase présents → SupabaseBackend, sinon DemoBackend.
+// Production : SupabaseBackend, point. Les variables EXPO_PUBLIC_SUPABASE_*
+// sont injectées au build (mobile/.env, créé par scripts/ensure-env.js) ;
+// sans elles le client reste en lecture vide et l'auth bloque — un build mal
+// configuré échoue visiblement plutôt que de basculer sur du contenu simulé.
 
-import type { LatLon } from '../lib/world';
 import type { TeamSlug } from '../theme/tokens';
 import type {
   Drop, Duel, FeedEvent, LiveEvent, RewardItem, Rival, RunnerScore,
@@ -15,7 +17,7 @@ export interface GameBackend {
   resetSeason(next: SeasonInfo): Promise<void>;
   getTerritory(): Promise<TerritorySnapshot>;
   submitRun(run: RunSubmission): Promise<RunResult>;
-  /** flux temps réel : bots qui courent/peignent + feed. Retourne l'unsubscribe. */
+  /** flux temps réel : feed de la ville (et demain, coureurs live). Retourne l'unsubscribe. */
   subscribeLive(cb: (e: LiveEvent) => void): () => void;
   getLeaderboards(): Promise<{ teams: TeamScore[]; runners: RunnerScore[]; friends: RunnerScore[] }>;
   getRivals(): Promise<Rival[]>;
@@ -29,28 +31,13 @@ export interface GameBackend {
   getChallenge(): Promise<SponsorChallenge>;
   getChest(): Promise<RewardItem[]>;
   addToChest(item: RewardItem): Promise<void>;
-  /** DemoBackend uniquement */
-  resetDemo?(): Promise<void>;
-  /**
-   * DemoBackend uniquement : re-pose le monde démo autour de la nouvelle ancre
-   * si elle a sauté loin (autre ville). Retourne true si le monde a été re-seedé
-   * → l'appelant doit re-hydrater le store territoire.
-   */
-  rehome?(anchor: LatLon): Promise<boolean>;
 }
 
 let instance: GameBackend | null = null;
 
 export function getBackend(): GameBackend {
   if (instance) return instance;
-  const hasSupabase =
-    !!process.env.EXPO_PUBLIC_SUPABASE_URL && !!process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
-  if (hasSupabase) {
-    const { SupabaseBackend } = require('./SupabaseBackend') as typeof import('./SupabaseBackend');
-    instance = new SupabaseBackend();
-  } else {
-    const { DemoBackend } = require('./DemoBackend') as typeof import('./DemoBackend');
-    instance = new DemoBackend();
-  }
+  const { SupabaseBackend } = require('./SupabaseBackend') as typeof import('./SupabaseBackend');
+  instance = new SupabaseBackend();
   return instance;
 }

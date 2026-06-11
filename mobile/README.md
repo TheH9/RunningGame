@@ -1,8 +1,9 @@
 # Bornes — app mobile (Expo)
 
-**App complète jouable en mode démo** (multijoueur simulé, persisté localement) :
-cours, peins ta trace, conquiers ta ville, défie tes amis — la carte est remise
-à zéro à chaque saison (6 semaines).
+**Jeu de course multijoueur en production** (backend Supabase : comptes, runs,
+territoire, duels, drops) : cours, peins ta trace sur la vraie carte de ta
+ville, conquiers-la, défie les autres équipes — la carte est remise à zéro à
+chaque saison (6 semaines).
 Décisions produit : [ADR-002](../docs/decisions/ADR-002-trail-paint.md) · [ADR-003](../docs/decisions/ADR-003-affichage-territoire.md).
 
 ## Lancer
@@ -11,53 +12,48 @@ Décisions produit : [ADR-002](../docs/decisions/ADR-002-trail-paint.md) · [ADR
 cd mobile && npm install && npx expo start   # scanner le QR avec Expo Go
 ```
 
-- **Vrai run** : bouton GO (GPS réel, foreground).
-- **Run démo** : appui long 1,5 s sur GO → replay simulé qui traverse des zones
-  adverses et le drop (idéal pour montrer le jeu sans courir).
-- **Web** : `npx expo start --web` (le replay est le mode par défaut).
-- **Fin de saison forcée** (web) : ajouter `?debugSeasonEnd=1` à l'URL.
+- `npm install` crée `mobile/.env` (clés publiques Supabase) via `ensure-env`.
+- **Compte obligatoire** : e-mail (code OTP) — Apple/Google arrivent avec le
+  dev build ([go-live](../docs/12-go-live.md)).
+- **Run** : bouton GO (GPS réel, foreground uniquement).
 
-## Mode démo vs production
+## Backend
 
-Sans variables d'env, l'app tourne sur `DemoBackend` : 10 rivaux (bots) qui
-courent en live et peignent la carte, duels, drop hebdo, feed, rattrapage
-accéléré du temps manqué. Tout passe par l'interface `GameBackend`
-(`src/backend/`) — poser les clés bascule sur `SupabaseBackend` sans toucher
-aux écrans :
+`SupabaseBackend` est l'unique backend (`src/backend/`) : lectures via les
+vues/RPC publiques (RLS), écritures sous la session utilisateur, scoring côté
+serveur (edge function `score-run`), feed temps réel (Realtime). Les écrans ne
+connaissent que l'interface `GameBackend`. Sans variables d'env (build mal
+configuré), l'auth bloque et les lectures retombent sur du vide — jamais de
+contenu simulé.
 
-```bash
-EXPO_PUBLIC_SUPABASE_URL=...        # + appliquer ../supabase/migrations
-EXPO_PUBLIC_SUPABASE_ANON_KEY=...   # + déployer l'edge function score-run
-```
+## Carte
+
+Fond de carte **réel** (tuiles raster, vraies rues) sous les calques de jeu :
+CARTO/OpenStreetMap sans clé par défaut, styles Mapbox si `EXPO_PUBLIC_MAPBOX_TOKEN`
+(`pk.*`) est posé. Le monde s'ancre sur la position du joueur à l'ouverture de
+la carte (1 fix, jamais de suivi) ; nom de ville et de rue via le geocoder
+natif. Le SDK natif Mapbox (vecteur) viendra avec le dev build.
 
 ## Architecture
 
 ```
 src/app/                  # routes expo-router
-  onboarding → team → (tabs: Map · Classement · Défis · Récompenses · Profil)
+  auth → onboarding → team → (tabs: Map · Classement · Défis · Récompenses · Profil)
   run (sombre, curseur GPS fixe + comète) · summary (story 9:16 partageable)
-  season-recap · feed · reward-qr · settings
-src/backend/              # GameBackend (interface) · DemoBackend · SupabaseBackend
-  botEngine (rivaux live) · demoSeed (monde initial)
+  season-recap · feed · reward-qr · settings · legal
+src/backend/              # GameBackend (interface) · SupabaseBackend
 src/components/map/       # MapView (caméra GPU, pinch LOD veines↔hex, tap
-  inspection → StreetCard) · CityBase (fake-3D) · TerritoryVeins/Hexes · Bots
-src/store/                # app · run (GPS/replay, segments, anti-triche,
+  inspection → StreetCard) · RealBasemap (tuiles) · TerritoryVeins/Hexes
+src/store/                # app · auth · run (GPS, segments, anti-triche,
   snapshot) · territory (cellules H3 multi-équipes) · season · social · events
-src/lib/                  # world (ville géoréférencée, graphe d'intersections)
-  geo · territory (règles de conflit) · runDirector (événements live)
+src/lib/                  # geo · territory (règles de conflit) · locate
+  (ancrage + geocoder) · runDirector (événements live) · supabase
 ```
 
 ## Vérification
 
 ```bash
 npx tsc --noEmit
-npx expo export --platform web
-node scripts/verify-web.mjs   # parcours complet automatisé + screenshots .verify/
-```
-
-### Tests unitaires
-
-```bash
 npm test            # Jest — logique pure + mécanique de jeu (stores)
 ```
 
@@ -65,12 +61,11 @@ npm test            # Jest — logique pure + mécanique de jeu (stores)
 
 - **Logique pure** (`src/lib`) : géométrie de trace (haversine, Douglas-Peucker,
   allure, Privacy Zone), règles de conflit territorial (`cellView`/`paintCells`,
-  fading 14 j / neutre 30 j), monde géoréférencé (RNG déterministe, projection
-  aller-retour, quartiers).
+  fading 14 j / neutre 30 j), monde géoréférencé (projection aller-retour).
 - **Stores** (`src/store`) : moteur de run de bout en bout via une source GPS
   factice (distance, segments coupés sur trou GPS, filtre de précision,
-  anti-triche 25/40 km/h, Privacy Zone), territoire live (mes runs + bots,
-  re-rendu sélectif) et stats de profil (records d'allure, cumuls, découverte).
+  anti-triche 25/40 km/h, Privacy Zone), territoire live et stats de profil
+  (records d'allure, cumuls, découverte).
 
 Mocks légers (`react-native` Platform, `AsyncStorage`, `locationSource`) — pas
 de chaîne Expo/Reanimated. Le reste (écrans, GPS réel, rendu carte) relève du
@@ -81,8 +76,8 @@ plan de tests manuel/device.
 - **Conflit** : scores coexistants par cellule H3 (~25 m) et par équipe ;
   propriétaire = équipe dominante ; écart < 30 % → « contesté » (pointillés
   bicolores) ; on reprend en repassant. Décroissance 14 j (pâlit) / 30 j (neutre).
-- **Saisons** : 42 jours, rollover automatique (même après absence), récap
-  podium + hall of fame, carte vierge + léger re-seed.
+- **Saisons** : 42 jours, rollover côté serveur (`rollover_seasons`, cron),
+  récap podium + hall of fame, carte remise à zéro.
 - **Anti-triche** : >25 km/h soutenu = peinture suspendue ; >40 km/h = run
-  non soumis. Perte GPS = auto-pause + segments (pas de trait fantôme).
+  non soumis (re-validé côté serveur). Perte GPS = auto-pause + segments.
 - **Privacy Zone** : la trace publique saute la zone (réglages).
