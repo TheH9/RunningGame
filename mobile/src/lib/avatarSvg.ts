@@ -17,10 +17,20 @@ const STYLE_MAP: Record<AvatarStyleKey, Style<any>> = {
 /** Construit le SVG (string) prêt pour SvgXml. */
 export function buildAvatarSvg(cfg: AvatarConfig): string {
   const style = STYLE_MAP[cfg.style] ?? adventurer;
-  const bg = cfg.backgroundColor && cfg.backgroundColor !== 'transparent' ? [cfg.backgroundColor] : [];
+  const hasBg = !!cfg.backgroundColor && cfg.backgroundColor !== 'transparent';
+  const gradient = hasBg && !!cfg.backgroundColor2;
+  const colors = hasBg
+    ? gradient
+      ? [cfg.backgroundColor as string, cfg.backgroundColor2 as string]
+      : [cfg.backgroundColor as string]
+    : [];
   return createAvatar(style, {
     seed: cfg.seed,
-    backgroundColor: bg,
+    backgroundColor: colors,
+    backgroundType: gradient ? ['gradientLinear'] : ['solid'],
+    flip: cfg.flip ?? false,
+    rotate: cfg.rotate ?? 0,
+    scale: cfg.scale ?? 100,
     radius: 50,
   }).toString();
 }

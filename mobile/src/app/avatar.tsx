@@ -7,7 +7,8 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Avatar } from '@/components/Avatar';
 import { Squish } from '@/components/ui';
 import {
-  AVATAR_BACKGROUNDS, AVATAR_STYLES, avatarFromSeed, randomSeed,
+  AVATAR_BACKGROUNDS, AVATAR_GRADIENTS, AVATAR_ROTATIONS, AVATAR_SCALES, AVATAR_STYLES,
+  avatarFromSeed, normalizeAvatar, randomSeed,
   type AvatarConfig, type AvatarStyleKey,
 } from '@/lib/avatar';
 import { useAppStore } from '@/store/useAppStore';
@@ -23,11 +24,22 @@ export default function AvatarEditor() {
   const [style, setStyle] = useState<AvatarStyleKey>(start.style);
   const [seed, setSeed] = useState(start.seed);
   const [bg, setBg] = useState(start.backgroundColor ?? 'transparent');
+  const [bg2, setBg2] = useState(start.backgroundColor2 ?? 'aucun');
+  const [flip, setFlip] = useState(start.flip ?? false);
+  const [rotate, setRotate] = useState(start.rotate ?? 0);
+  const [scale, setScale] = useState(start.scale ?? 100);
 
-  const cfg: AvatarConfig = { style, seed, backgroundColor: bg };
+  const hasBg = bg !== 'transparent';
+
+  const cfg: AvatarConfig = {
+    style, seed, backgroundColor: bg,
+    backgroundColor2: hasBg && bg2 !== 'aucun' ? bg2 : undefined,
+    flip, rotate, scale,
+  };
 
   const save = () => {
-    setAvatar(cfg);
+    // Canonicalise (omet les défauts) avant de persister dans le profil jsonb.
+    setAvatar(normalizeAvatar(cfg, seed));
     router.back();
   };
 
@@ -55,6 +67,27 @@ export default function AvatarEditor() {
           ))}
         </ScrollView>
 
+        <Text style={styles.section}>Zoom</Text>
+        <View style={styles.rowGap}>
+          {AVATAR_SCALES.map((s) => (
+            <Squish key={s.v} onPress={() => setScale(s.v)} style={[styles.chip, scale === s.v && styles.chipOn]}>
+              <Text style={[styles.chipText, scale === s.v && styles.chipTextOn]}>{s.label}</Text>
+            </Squish>
+          ))}
+        </View>
+
+        <Text style={styles.section}>Inclinaison</Text>
+        <View style={styles.rowGap}>
+          {AVATAR_ROTATIONS.map((r) => (
+            <Squish key={r.v} onPress={() => setRotate(r.v)} style={[styles.chip, rotate === r.v && styles.chipOn]}>
+              <Text style={[styles.chipText, rotate === r.v && styles.chipTextOn]}>{r.label}</Text>
+            </Squish>
+          ))}
+          <Squish onPress={() => setFlip((f) => !f)} style={[styles.chip, flip && styles.chipOn]}>
+            <Text style={[styles.chipText, flip && styles.chipTextOn]}>⇆ Miroir</Text>
+          </Squish>
+        </View>
+
         <Text style={styles.section}>Fond</Text>
         <View style={styles.rowGap}>
           {AVATAR_BACKGROUNDS.map((b) => (
@@ -71,6 +104,27 @@ export default function AvatarEditor() {
             </Squish>
           ))}
         </View>
+
+        {hasBg && (
+          <>
+            <Text style={styles.section}>Dégradé</Text>
+            <View style={styles.rowGap}>
+              {AVATAR_GRADIENTS.map((g) => (
+                <Squish
+                  key={g}
+                  onPress={() => setBg2(g)}
+                  style={[
+                    styles.swatch,
+                    { backgroundColor: g === 'aucun' ? 'rgba(255,255,255,0.06)' : `#${g}` },
+                    bg2 === g && styles.swatchOn,
+                  ]}
+                >
+                  {g === 'aucun' && <Text style={styles.swatchNone}>∅</Text>}
+                </Squish>
+              ))}
+            </View>
+          </>
+        )}
       </ScrollView>
 
       <View style={styles.footer}>
@@ -95,6 +149,10 @@ const styles = StyleSheet.create({
   styleCard: { alignItems: 'center', gap: 6, padding: 8, borderRadius: 16, borderWidth: 1, borderColor: 'transparent' },
   styleCardOn: { borderColor: c.violet, backgroundColor: 'rgba(124,92,255,0.12)' },
   styleLabel: { fontSize: 11, fontFamily: font.bold, color: c.textMuted },
+  chip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', backgroundColor: 'rgba(255,255,255,0.06)' },
+  chipOn: { borderColor: c.violet, backgroundColor: 'rgba(124,92,255,0.12)' },
+  chipText: { color: c.textMuted, fontFamily: font.extrabold, fontSize: 13.5 },
+  chipTextOn: { color: c.text },
   swatch: { width: 44, height: 44, borderRadius: 14, borderWidth: 2, borderColor: 'transparent', alignItems: 'center', justifyContent: 'center' },
   swatchOn: { borderColor: c.text },
   swatchNone: { color: c.textMuted, fontSize: 18, fontFamily: font.bold },

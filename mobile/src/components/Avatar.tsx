@@ -13,7 +13,7 @@ import { TEAMS, type TeamSlug } from '@/theme/tokens';
 const _svgCache = new Map<string, string>();
 
 function svgFor(config: AvatarConfig): string {
-  const key = `${config.style}|${config.seed}|${config.backgroundColor ?? ''}`;
+  const key = `${config.style}|${config.seed}|${config.backgroundColor ?? ''}|${config.backgroundColor2 ?? ''}|${config.flip ? 1 : 0}|${config.rotate ?? 0}|${config.scale ?? 100}`;
   let svg = _svgCache.get(key);
   if (!svg) {
     svg = buildAvatarSvg(config);
@@ -31,7 +31,10 @@ type Props = {
 };
 
 export const Avatar = memo(function Avatar({ config, team, size = 48, ring = false }: Props) {
-  const xml = useMemo(() => svgFor(config), [config.style, config.seed, config.backgroundColor]);
+  const xml = useMemo(
+    () => svgFor(config),
+    [config.style, config.seed, config.backgroundColor, config.backgroundColor2, config.flip, config.rotate, config.scale],
+  );
   const ringWidth = ring ? Math.max(2, Math.round(size * 0.06)) : 0;
   const inner = size - ringWidth * 2;
   const ringColor = team ? TEAMS[team].color : 'rgba(255,255,255,0.18)';
