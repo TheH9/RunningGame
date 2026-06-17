@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import type { LatLon } from '../lib/world';
+import type { AvatarConfig } from '../lib/avatar';
 import type { TeamSlug } from '../theme/tokens';
 
 export type PrivacyZone = { center: LatLon; radiusM: number };
@@ -13,6 +14,8 @@ export type BestRun = { distanceM: number; paceMinKm: number } | null;
 type AppState = {
   pseudo: string | null;
   team: TeamSlug | null;
+  /** avatar personnalisé (DiceBear) — partagé via le profil Supabase */
+  avatar: AvatarConfig | null;
   onboarded: boolean;
   tutorialSeen: boolean;
   /** ancrage lat/lon du monde — posé à l'ouverture de la carte ou au 1er fix GPS */
@@ -29,6 +32,7 @@ type AppState = {
   seasonPaintedM: number;
   bestRun: BestRun;
   setPseudo: (p: string) => void;
+  setAvatar: (a: AvatarConfig) => void;
   chooseTeam: (t: TeamSlug) => void;
   completeOnboarding: () => void;
   markTutorialSeen: () => void;
@@ -43,6 +47,7 @@ type AppState = {
 const initial = {
   pseudo: null,
   team: null,
+  avatar: null as AvatarConfig | null,
   onboarded: false,
   tutorialSeen: false,
   worldAnchor: null,
@@ -61,6 +66,7 @@ export const useAppStore = create<AppState>()(
     (set, get) => ({
       ...initial,
       setPseudo: (pseudo) => set({ pseudo }),
+      setAvatar: (avatar) => set({ avatar }),
       chooseTeam: (team) => set({ team }),
       completeOnboarding: () => set({ onboarded: true }),
       markTutorialSeen: () => set({ tutorialSeen: true }),

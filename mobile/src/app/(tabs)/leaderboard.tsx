@@ -6,7 +6,9 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { getBackend } from '@/backend/GameBackend';
 import type { RunnerScore, TeamScore } from '@/backend/types';
+import { Avatar } from '@/components/Avatar';
 import { Bar, Glass, Micro, Squish } from '@/components/ui';
+import { avatarFromSeed } from '@/lib/avatar';
 import { useCityName } from '@/store/useAppStore';
 import { c, font, TEAMS } from '@/theme/tokens';
 
@@ -29,7 +31,7 @@ const RunnerRow = memo(function RunnerRow({ r, i }: { r: RunnerScore; i: number 
   return (
     <Animated.View entering={FadeInDown.delay(i * 50)} style={[styles.row, r.isMe && styles.meRow]}>
       <Text style={styles.rank}>{i + 1}</Text>
-      <View style={[styles.dot, { backgroundColor: TEAMS[r.team].color }]} />
+      <Avatar config={r.avatar ?? avatarFromSeed(r.pseudo)} team={r.team} size={30} />
       <Text style={[styles.rowName, r.isMe && { color: TEAMS[r.team].color }]}>
         {r.pseudo}{r.isMe ? ' (toi)' : ''}
       </Text>

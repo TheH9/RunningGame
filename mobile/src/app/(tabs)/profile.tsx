@@ -4,7 +4,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Avatar } from '@/components/Avatar';
 import { Bar, Glass, Micro, Pop, Squish, Ticker } from '@/components/ui';
+import { avatarFromSeed } from '@/lib/avatar';
 import { discoveryPercent } from '@/lib/territory';
 import { levelFromXp, useGameStore } from '@/store/useGameStore';
 import { useAppStore } from '@/store/useAppStore';
@@ -23,6 +25,8 @@ export default function Profile() {
   const totalPaintedM = useAppStore((s) => s.totalPaintedM);
   const discoveredCells = useAppStore((s) => s.discoveredCells);
   const bestRun = useAppStore((s) => s.bestRun);
+  const avatar = useAppStore((s) => s.avatar);
+  const avatarCfg = useMemo(() => avatar ?? avatarFromSeed(pseudo ?? 'moi'), [avatar, pseudo]);
   const xp = useGameStore((s) => s.xp);
   const streak = useGameStore((s) => s.streak);
   const badges = useGameStore((s) => s.getBadges)();
@@ -46,9 +50,12 @@ export default function Profile() {
           <Text style={{ fontSize: 13 }}>👑</Text>
           <Text style={styles.titleBadgeText}>NIV {lvl.level}</Text>
         </View>
-        <View style={styles.avatar}>
-          <Text style={{ fontSize: 30 }}>{t.emoji}</Text>
-        </View>
+        <Squish style={styles.avatar} onPress={() => router.push('/avatar')}>
+          <Avatar config={avatarCfg} team={team} size={68} ring />
+          <View style={styles.avatarEdit}>
+            <Text style={{ fontSize: 12 }}>✏️</Text>
+          </View>
+        </Squish>
         <Text style={styles.pseudo}>{(pseudo ?? 'Coureur').toUpperCase()}</Text>
         <View style={styles.tag}>
           <Text style={styles.tagText}>
@@ -139,7 +146,8 @@ const styles = StyleSheet.create({
   headRing: { position: 'absolute', right: -40, top: -40, width: 170, height: 170, borderRadius: 85, borderWidth: 24, borderColor: 'rgba(255,255,255,0.1)' },
   titleBadge: { position: 'absolute', right: 18, top: 20, flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(0,0,0,0.3)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.25)', borderRadius: 14, paddingHorizontal: 11, paddingVertical: 6 },
   titleBadgeText: { color: '#FFFFFF', fontFamily: font.black, fontSize: 11 },
-  avatar: { width: 60, height: 60, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.2)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)', alignItems: 'center', justifyContent: 'center' },
+  avatar: { width: 68, height: 68 },
+  avatarEdit: { position: 'absolute', right: -2, bottom: -2, width: 24, height: 24, borderRadius: 12, backgroundColor: '#0E1424', borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)', alignItems: 'center', justifyContent: 'center' },
   pseudo: { color: '#FFFFFF', fontFamily: font.black, fontSize: 26, marginTop: 12, letterSpacing: -0.5 },
   tag: { alignSelf: 'flex-start', backgroundColor: 'rgba(0,0,0,0.25)', borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4, marginTop: 8 },
   tagText: { color: '#FFFFFF', fontFamily: font.extrabold, fontSize: 11 },

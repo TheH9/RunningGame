@@ -1,6 +1,7 @@
 // Types du domaine — contrat entre les écrans et le backend (SupabaseBackend).
 // Les écrans ne connaissent que ces types.
 
+import type { AvatarConfig } from '../lib/avatar';
 import type { GeoPoint } from '../lib/geo';
 import type { LatLon } from '../lib/world';
 import type { TeamSlug } from '../theme/tokens';
@@ -35,6 +36,7 @@ export type Rival = {
   team: TeamSlug;
   isFriend: boolean;
   emoji: string;
+  avatar: AvatarConfig;
   weekPaintedM: number;
   totalPaintedM: number;
   runsPerWeek: number;
@@ -97,6 +99,7 @@ export type RunnerScore = {
   pseudo: string;
   team: TeamSlug;
   paintedKm: number;
+  avatar?: AvatarConfig;
   isMe?: boolean;
   isFriend?: boolean;
 };

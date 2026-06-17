@@ -4,6 +4,7 @@
 // sans elles le client reste en lecture vide et l'auth bloque — un build mal
 // configuré échoue visiblement plutôt que de basculer sur du contenu simulé.
 
+import type { AvatarConfig } from '../lib/avatar';
 import type { TeamSlug } from '../theme/tokens';
 import type {
   Drop, Duel, FeedEvent, LiveEvent, RewardItem, Rival, RunnerScore,
@@ -11,8 +12,11 @@ import type {
   TerritorySnapshot,
 } from './types';
 
+/** Profil local transmis au backend à l'init. */
+export type BackendProfile = { pseudo: string | null; team: TeamSlug | null; avatar: AvatarConfig | null };
+
 export interface GameBackend {
-  init(profile: { pseudo: string | null; team: TeamSlug | null }): Promise<void>;
+  init(profile: BackendProfile): Promise<void>;
   getSeason(): Promise<SeasonInfo>;
   resetSeason(next: SeasonInfo): Promise<void>;
   getTerritory(): Promise<TerritorySnapshot>;

@@ -5,11 +5,12 @@
 // aux pannes : toute requête en échec retombe sur une valeur vide plutôt que de
 // casser l'UI.
 
+import { avatarFromSeed, normalizeAvatar } from '../lib/avatar';
 import { supabase, uploadRunPoints, finishRun } from '../lib/supabase';
 import { trackToCells } from '../lib/territory';
 import { TEAMS, type TeamSlug } from '../theme/tokens';
 import type { GeoPoint } from '../lib/geo';
-import type { GameBackend } from './GameBackend';
+import type { BackendProfile, GameBackend } from './GameBackend';
 import type {
   CellScore, Drop, Duel, FeedEvent, LiveEvent, PaintedTrail, RewardItem, Rival,
   RunnerScore, RunResult, RunSubmission, SeasonInfo, SponsorChallenge, TeamScore,
@@ -25,14 +26,14 @@ function ms(v: string | number | null | undefined): number {
 }
 
 export class SupabaseBackend implements GameBackend {
-  private profile: { pseudo: string | null; team: TeamSlug | null } = { pseudo: null, team: null };
+  private profile: BackendProfile = { pseudo: null, team: null, avatar: null };
   private userId: string | null = null;
   private cityId: string | null = null;
   private teamIdBySlug = new Map<TeamSlug, string>();
   private slugByTeamId = new Map<string, TeamSlug>();
   private ready: Promise<void> | null = null;
 
-  async init(profile: { pseudo: string | null; team: TeamSlug | null }): Promise<void> {
+  async init(profile: BackendProfile): Promise<void> {
     this.profile = profile;
     if (!this.ready) this.ready = this.bootstrap();
     await this.ready;
@@ -73,6 +74,7 @@ export class SupabaseBackend implements GameBackend {
       pseudo: this.profile.pseudo ?? 'Coureur',
       team_id: teamId,
       city_id: this.cityId,
+      avatar: this.profile.avatar ?? null,
     }, { onConflict: 'id' });
   }
 
@@ -203,7 +205,7 @@ export class SupabaseBackend implements GameBackend {
     const [teamRes, runnerRes, friendIds] = await Promise.all([
       supabase.from('team_scores').select('team_id, cells').eq('city_id', this.cityId),
       supabase.from('runner_scores')
-        .select('user_id, pseudo, team_slug, week_painted_m')
+        .select('user_id, pseudo, team_slug, avatar, week_painted_m')
         .eq('city_id', this.cityId)
         .order('week_painted_m', { ascending: false }).limit(100),
       this.friendIds(),
@@ -222,6 +224,7 @@ export class SupabaseBackend implements GameBackend {
       pseudo: r.pseudo,
       team: r.team_slug as TeamSlug,
       paintedKm: (r.week_painted_m ?? 0) / 1000,
+      avatar: normalizeAvatar(r.avatar, r.pseudo),
       isMe: r.user_id === this.userId,
       isFriend: friendIds.has(r.user_id),
     }));
@@ -234,7 +237,7 @@ export class SupabaseBackend implements GameBackend {
     if (!supabase || !this.cityId) return [];
     const [{ data }, friendIds] = await Promise.all([
       supabase.from('runner_scores')
-        .select('user_id, pseudo, team_slug, signature_street, title, week_painted_m, total_painted_m, runs_week')
+        .select('user_id, pseudo, team_slug, avatar, signature_street, title, week_painted_m, total_painted_m, runs_week')
         .eq('city_id', this.cityId)
         .order('week_painted_m', { ascending: false }).limit(60),
       this.friendIds(),
@@ -249,6 +252,7 @@ export class SupabaseBackend implements GameBackend {
           team,
           isFriend: friendIds.has(r.user_id),
           emoji: TEAMS[team]?.emoji ?? '🏃',
+          avatar: normalizeAvatar(r.avatar, r.pseudo),
           weekPaintedM: r.week_painted_m ?? 0,
           totalPaintedM: r.total_painted_m ?? 0,
           runsPerWeek: r.runs_week ?? 0,

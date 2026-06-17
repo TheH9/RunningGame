@@ -4,6 +4,7 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Platform, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import type { Duel, Rival } from '@/backend/types';
+import { Avatar } from '@/components/Avatar';
 import { Glass, Micro, Squish } from '@/components/ui';
 import { useAppStore } from '@/store/useAppStore';
 import { useSocialStore } from '@/store/useSocialStore';
@@ -77,7 +78,7 @@ export default function Friends() {
 
   const renderRival = (r: Rival) => (
     <View key={r.id} style={styles.row}>
-      <Text style={styles.emoji}>{r.emoji}</Text>
+      <Avatar config={r.avatar} team={r.team} size={40} />
       <View style={{ flex: 1 }}>
         <Text style={styles.pseudo}>
           {r.pseudo} <Text style={[styles.teamName, { color: TEAMS[r.team].color }]}>· {TEAMS[r.team].name.replace('Les ', '')}</Text>

@@ -6,12 +6,14 @@ import { KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } fro
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { MapView } from '@/components/map/MapView';
 import { Squish } from '@/components/ui';
+import { avatarFromSeed } from '@/lib/avatar';
 import { useAppStore } from '@/store/useAppStore';
 import { c, font, VIOLET } from '@/theme/tokens';
 
 export default function Onboarding() {
   const [pseudo, setPseudo] = useState('');
   const setStorePseudo = useAppStore((s) => s.setPseudo);
+  const setAvatar = useAppStore((s) => s.setAvatar);
   const complete = useAppStore((s) => s.completeOnboarding);
   const valid = pseudo.trim().length >= 2;
 
@@ -46,7 +48,9 @@ export default function Onboarding() {
             style={[styles.cta, !valid && { opacity: 0.4 }]}
             disabled={!valid}
             onPress={() => {
-              setStorePseudo(pseudo.trim());
+              const name = pseudo.trim();
+              setStorePseudo(name);
+              if (!useAppStore.getState().avatar) setAvatar(avatarFromSeed(name));
               complete();
               router.replace('/team');
             }}>

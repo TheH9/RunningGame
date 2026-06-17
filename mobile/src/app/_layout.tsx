@@ -22,6 +22,7 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 export default function RootLayout() {
   const pseudo = useAppStore((s) => s.pseudo);
   const team = useAppStore((s) => s.team);
+  const avatar = useAppStore((s) => s.avatar);
   const onboarded = useAppStore((s) => s.onboarded);
   const [fontsLoaded] = useFonts({ Archivo_700Bold, Archivo_800ExtraBold, Archivo_900Black });
   const [splashDone, setSplashDone] = useState(false);
@@ -46,7 +47,7 @@ export default function RootLayout() {
   useEffect(() => {
     let alive = true;
     (async () => {
-      await getBackend().init({ pseudo, team });
+      await getBackend().init({ pseudo, team, avatar });
       if (!alive) return;
       await useTerritoryStore.getState().hydrate();
       await useSeasonStore.getState().hydrateAndCheck();
@@ -54,7 +55,7 @@ export default function RootLayout() {
     return () => {
       alive = false;
     };
-  }, [pseudo, team]);
+  }, [pseudo, team, avatar]);
 
   // rollover au retour au premier plan + affichage du récap en attente
   useEffect(() => {
@@ -91,6 +92,7 @@ export default function RootLayout() {
         <Stack.Screen name="reward-qr" options={{ presentation: 'transparentModal', animation: 'fade' }} />
         <Stack.Screen name="badge" options={{ presentation: 'transparentModal', animation: 'fade' }} />
         <Stack.Screen name="settings" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="avatar" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
         <Stack.Screen name="legal" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
       </Stack>
       {!splashDone && <AnimatedSplash onDone={() => setSplashDone(true)} />}
